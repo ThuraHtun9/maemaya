@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
+    <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
+    <title th:text="#{error.title}">Something went wrong</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap");
+        :root {
+            --brand-bg: #f4eadb;
+            --brand-bg-soft: #fbf4e9;
+            --brand-surface: #fffaf2;
+            --brand-line: #e4d0b4;
+            --brand-text: #3f281b;
+            --brand-muted: #7f6351;
+            --brand-primary: #5c3320;
+            --brand-danger: #8f3c2d;
+        }
+        body {
+            font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
+            background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+            margin: 0;
+            padding: 24px;
+            color: var(--brand-text);
+        }
+        .box {
+            max-width: 640px;
+            margin: 60px auto;
+            background: var(--brand-surface);
+            border: 1px solid var(--brand-line);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
+        }
+        h1 { margin-top: 0; color: var(--brand-danger); }
+        p { color: var(--brand-text); line-height: 1.6; }
+        a { color: var(--brand-primary); text-decoration: none; font-weight: 700; }
+        .lang-switch a { color: var(--brand-muted); font-weight: 500; }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
+    <script defer th:src="@{/js/smooth-ui.js}"></script>
+
+</head>
+<body>
+<div class="box">
+    <div class="lang-switch" style="text-align:right; font-size:0.85rem; margin-bottom:8px;">
+        <a th:href="@{/error(lang='my')}" th:text="#{lang.myanmar}">မြန်မာ</a> |
+        <a th:href="@{/error(lang='en')}" th:text="#{lang.english}">English</a> |
+        <a th:href="@{/error(lang='ja')}" th:text="#{lang.japanese}">日本語</a>
+    </div>
+    <h1 th:text="#{error.heading}">An unexpected error occurred</h1>
+    <p th:text="#{error.message}">Please try again later. If it continues, share error details with developer.</p>
+    <p th:if="${timestamp}"><span th:text="#{error.timestamp}">Time</span>: <span th:text="${timestamp}"></span></p>
+    <p th:if="${status}"><span th:text="#{error.status}">Status</span>: <span th:text="${status}"></span></p>
+    <p th:if="${error}"><span th:text="#{error.error}">Error</span>: <span th:text="${error}"></span></p>
+    <p><a href="/" th:text="#{nav.home}">Back to Home</a></p>
+    <p style="margin-top:18px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
+       th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
+</div>
+</body>
+</html>

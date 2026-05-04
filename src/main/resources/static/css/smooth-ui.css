@@ -1,0 +1,41 @@
+:root {
+    --motion-duration-fast: 160ms;
+    --motion-duration-page: 220ms;
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.js-motion body {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+}
+
+html.js-motion body.page-ready {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+            opacity var(--motion-duration-page) var(--motion-ease),
+            transform var(--motion-duration-page) var(--motion-ease);
+}
+
+html.js-motion body.page-leaving {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    html.js-motion body,
+    html.js-motion body.page-ready,
+    html.js-motion body.page-leaving {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
+    <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
+    <title th:text="#{admin.title}">Admin</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap");
+        :root {
+            --brand-bg: #f4eadb;
+            --brand-bg-soft: #fbf4e9;
+            --brand-surface: #fffaf2;
+            --brand-line: #e4d0b4;
+            --brand-text: #3f281b;
+            --brand-muted: #7f6351;
+            --brand-primary: #5c3320;
+            --brand-primary-hover: #74442b;
+            --brand-accent: #c99340;
+            --brand-danger: #8f3c2d;
+        }
+
+        body {
+            font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
+            padding: 20px;
+            background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+            color: var(--brand-text);
+        }
+        input, select, textarea, button { font-family: inherit; }
+        .amount-font { font-family: "Helvetica Neue", Arial, sans-serif; }
+        .admin-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--brand-surface);
+            border: 1px solid var(--brand-line);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
+        }
+        h1 {
+            border-bottom: 2px solid var(--brand-line);
+            padding-bottom: 10px;
+            color: var(--brand-primary);
+            margin-top: 0;
+        }
+        h2 {
+            color: var(--brand-primary);
+            margin-bottom: 12px;
+        }
+        section { margin-bottom: 40px; }
+        .admin-collapse {
+            border: 1px solid var(--brand-line);
+            border-radius: 10px;
+            background: #fffdf8;
+        }
+        .admin-collapse > summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--brand-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            padding: 12px 14px;
+            user-select: none;
+            border-bottom: 1px solid var(--brand-line);
+        }
+        .admin-collapse > summary::-webkit-details-marker { display: none; }
+        .admin-collapse > summary::after {
+            content: "▾";
+            font-size: 1rem;
+            color: var(--brand-muted);
+            transition: transform 0.18s ease;
+        }
+        .admin-collapse:not([open]) > summary {
+            border-bottom: none;
+        }
+        .admin-collapse:not([open]) > summary::after {
+            transform: rotate(-90deg);
+        }
+        .admin-collapse-content {
+            padding: 0 0 8px 0;
+        }
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        th, td {
+            border: 1px solid var(--brand-line);
+            padding: 10px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background: #f7eee1;
+            color: var(--brand-primary);
+            font-weight: 700;
+        }
+
+        input[type="text"], input[type="number"], select, input[type="file"] {
+            padding: 8px;
+            margin-right: 5px;
+            border: 1px solid var(--brand-line);
+            border-radius: 6px;
+            color: var(--brand-text);
+            background: #fff;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: 0;
+            border-color: #c58e4e;
+            box-shadow: 0 0 0 3px rgba(197, 142, 78, 0.16);
+        }
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            font-weight: 700;
+        }
+
+        .btn-add { background: var(--brand-primary); }
+        .btn-add:hover { background: var(--brand-primary-hover); }
+        .btn-update { background: #8a5538; }
+        .btn-update:hover { background: #75462f; }
+        .btn-delete { background: #b5493d; margin-left: 5px; }
+        .btn-delete:hover { background: #993b30; }
+
+        .admin-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: nowrap;
+            margin-bottom: 10px;
+        }
+        .admin-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            min-width: 0;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .admin-brand.live-3d {
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform 0.22s ease, filter 0.22s ease;
+            will-change: transform;
+        }
+        .admin-brand.live-3d.is-live {
+            filter: drop-shadow(0 10px 16px rgba(54, 30, 18, 0.2));
+        }
+        .admin-brand.live-3d::after {
+            content: "";
+            position: absolute;
+            inset: -4px;
+            border-radius: 14px;
+            pointer-events: none;
+            background: linear-gradient(118deg, rgba(255,255,255,0) 18%, rgba(255,255,255,0.38) 49%, rgba(255,255,255,0) 80%);
+            opacity: 0;
+            transform: translateZ(38px);
+            transition: opacity 0.22s ease;
+        }
+        .admin-brand.live-3d.is-live::after {
+            opacity: 0.34;
+        }
+        .admin-brand-logo {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--brand-line);
+            box-shadow: 0 6px 14px rgba(68, 39, 22, 0.16);
+            background: #f6eada;
+            transform: translateZ(24px);
+            transition: transform 0.22s ease;
+        }
+        .admin-brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+            transform: translateZ(34px);
+            transition: transform 0.22s ease;
+        }
+        .admin-brand-name {
+            color: var(--brand-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .admin-brand-sub {
+            color: var(--brand-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .admin-top-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: nowrap;
+            margin-left: auto;
+        }
+        .lang-picker-form {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--brand-line);
+            border-radius: 999px;
+            background: #fff;
+            padding: 6px 10px;
+            min-height: 36px;
+            flex: 0 0 auto;
+        }
+        .lang-icon {
+            font-size: 0.85rem;
+            line-height: 1;
+            color: var(--brand-muted);
+            user-select: none;
+        }
+        .lang-select {
+            -webkit-appearance: none;
+            appearance: none;
+            border: 0 !important;
+            outline: 0;
+            background-color: transparent;
+            color: var(--brand-primary);
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 2px 18px 2px 0;
+            margin-right: 0 !important;
+            cursor: pointer;
+            min-width: 56px;
+            line-height: 1.1;
+            white-space: nowrap;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%237f6351' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 2px center;
+            background-size: 10px 6px;
+        }
+        .lang-select:focus {
+            box-shadow: none;
+        }
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+        .logout-form { margin: 0; }
+        .top-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 9px 16px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+            box-shadow: 0 5px 10px rgba(66, 35, 21, 0.15);
+        }
+        .top-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(66, 35, 21, 0.2);
+        }
+        .top-btn-ghost {
+            color: var(--brand-primary);
+            background: #fff;
+            border-color: var(--brand-line);
+        }
+        .top-btn-ghost:hover {
+            background: #f8efe3;
+        }
+        .top-btn-danger {
+            color: #fff;
+            background: linear-gradient(145deg, #7b4b33, #5a3320);
+        }
+        .top-btn-danger:hover {
+            background: linear-gradient(145deg, #8a5639, #6a3f2a);
+        }
+        .logout-btn {
+            border: 0;
+        }
+        .top-btn-glyph {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+        .top-btn-text {
+            display: inline;
+            white-space: nowrap;
+        }
+        .admin-inline-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .admin-inline-form > * {
+            margin-right: 0;
+        }
+
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; }
+        .badge-gray { background: #efe6d8; color: var(--brand-muted); }
+        .badge-blue { background: #f3e7d6; color: var(--brand-primary); border: 1px solid #d9b98b; }
+        .badge-green { background: #eaf8ef; color: #1d6f42; border: 1px solid #77c69a; }
+        .badge-orange { background: #fff3e6; color: #9b5b1d; border: 1px solid #dfb178; }
+
+        .alert-msg { display: block; font-size: 0.8rem; font-weight: bold; margin-top: 5px; }
+        .text-danger { color: var(--brand-danger); }
+        .text-warning { color: #b45a00; }
+        .bg-danger-light { background-color: #fff0eb; }
+        .order-item-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .order-item-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 3px 0;
+            border-bottom: 1px dashed #e5d7c4;
+        }
+        .order-item-list li:last-child { border-bottom: none; }
+        .item-qty {
+            display: inline-block;
+            min-width: 36px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--brand-text);
+            background: #f4ecdf;
+            border-radius: 999px;
+            padding: 2px 8px;
+        }
+        .item-qty-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .order-item-main {
+            flex: 1 1 auto;
+            min-width: 0;
+            word-break: break-word;
+        }
+        .order-item-reduce-form {
+            display: inline-flex !important;
+            margin: 0 !important;
+        }
+        .order-item-add-form {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .order-item-add-form select {
+            flex: 1 1 auto;
+            min-width: 160px;
+            margin-right: 0;
+        }
+        .order-item-add-form button {
+            white-space: nowrap;
+        }
+        .orders-table .order-row td {
+            vertical-align: top;
+            background: #fffefb;
+        }
+        .orders-table .order-subcard {
+            border: 1px solid #ead8bd;
+            background: #fcf5e9;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .orders-table .products-cell {
+            background: #fff8ee;
+        }
+        .orders-table .order-products-panel {
+            border: 1px solid #e7d3b2;
+            background: #fffdf8;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+        }
+        .orders-table .order-item-list li {
+            padding: 7px 0;
+        }
+        .orders-table .order-item-add-form {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e7d8c2;
+        }
+        .orders-table .total-cell {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+        }
+        .orders-table .actions-cell {
+            background: #fff4ea;
+            min-width: 150px;
+        }
+        .orders-table .actions-cell form {
+            display: block;
+            width: 100%;
+            margin: 0 0 8px 0;
+        }
+        .orders-table .actions-cell button {
+            width: 100%;
+            margin-left: 0;
+        }
+        .orders-table .actions-cell .status-delivered-inline,
+        .orders-table .actions-cell .status-canceled-inline {
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .orders-table .order-row + .order-row td {
+            border-top-width: 2px;
+            border-top-color: #dec49f;
+        }
+        .order-action-cell form { display: inline-block; margin-right: 6px; }
+        .request-action-cell form { display: inline-block; margin-right: 6px; margin-top: 4px; }
+        .product-action-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .product-action-cell form {
+            display: block !important;
+            margin: 0 !important;
+        }
+        .btn-ready { background: #b1742d; }
+        .btn-delivered { background: #2f7d4b; }
+        .btn-ready:hover { background: #985f22; }
+        .btn-delivered:hover { background: #25643c; }
+        .order-search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+            margin-bottom: 10px;
+        }
+        .order-search-form input {
+            width: 180px;
+            margin-right: 0;
+        }
+        .search-clear {
+            color: var(--brand-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 4px;
+        }
+        .search-clear:hover { text-decoration: underline; }
+        .category-order-form {
+            background: #fcf5e9;
+            border: 1px solid var(--brand-line);
+            border-radius: 8px;
+            padding: 12px;
+            overflow: hidden;
+        }
+        .category-add-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: stretch;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid var(--brand-line);
+            border-radius: 10px;
+            background: #fffdf8;
+        }
+        .category-add-form input[type="text"] {
+            min-width: 0;
+            width: 100%;
+            margin-right: 0;
+            height: 38px;
+        }
+        .category-add-form .btn-add {
+            margin: 0;
+            min-width: 96px;
+            height: 38px;
+            padding: 8px 14px;
+            white-space: nowrap;
+        }
+        .category-order-help {
+            margin: 4px 0 12px 0;
+            color: var(--brand-muted);
+            font-size: 0.92rem;
+        }
+        .category-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .category-table th,
+        .category-table td {
+            border: 1px solid var(--brand-line);
+            padding: 8px;
+            text-align: left;
+        }
+        .category-table th {
+            background: #f7eee1;
+            color: var(--brand-primary);
+        }
+        .category-action-cell form {
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 0.82rem;
+        }
+        .flash-notice {
+            background: #f3e7d6;
+            color: var(--brand-primary);
+            border: 1px solid #d9b98b;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 12px 0 20px 0;
+        }
+        .flash-error {
+            background: #fff0eb;
+            color: var(--brand-danger);
+            border: 1px solid #f0c5ba;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 12px 0 20px 0;
+        }
+        .admin-tabs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 8px 0 18px 0;
+        }
+        .admin-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+            border: 1px solid var(--brand-line);
+            background: #fff;
+            color: var(--brand-muted);
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+        }
+        .admin-tab-btn:hover {
+            background: #f8efe3;
+            color: var(--brand-primary);
+        }
+        .admin-tab-btn.is-active {
+            background: linear-gradient(145deg, #7b4b33, #5a3320);
+            border-color: transparent;
+            color: #fff;
+        }
+        .admin-tab-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .admin-overview {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            margin: 10px 0 18px 0;
+        }
+        .kpi-card {
+            border: 1px solid var(--brand-line);
+            border-radius: 12px;
+            background: linear-gradient(165deg, #fffdf8 0%, #f8ecda 100%);
+            padding: 10px 12px;
+            box-shadow: 0 5px 12px rgba(70, 39, 23, 0.08);
+            min-height: 78px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+        }
+        .kpi-label {
+            font-size: 0.75rem;
+            color: var(--brand-muted);
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .kpi-value {
+            color: var(--brand-primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .kpi-note {
+            color: #875f45;
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+        .admin-surface {
+            border: 1px solid var(--brand-line);
+            border-radius: 14px;
+            background: linear-gradient(180deg, #fffdf9 0%, #fff7ea 100%);
+            padding: 14px;
+            box-shadow: 0 8px 18px rgba(70, 39, 23, 0.08);
+        }
+        .admin-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .admin-section-head h2 {
+            margin: 0;
+        }
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--brand-line);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            color: var(--brand-muted);
+            background: #fff;
+            white-space: nowrap;
+        }
+        .admin-toolbar {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto auto;
+            gap: 8px;
+            align-items: center;
+            margin: 0 0 12px 0;
+            padding: 10px;
+            border: 1px solid var(--brand-line);
+            border-radius: 10px;
+            background: #fffdf8;
+        }
+        .admin-toolbar .toolbar-input,
+        .admin-toolbar .toolbar-select {
+            height: 36px;
+            margin-right: 0;
+            width: 100%;
+        }
+        .toolbar-reset {
+            height: 36px;
+            border: 1px solid var(--brand-line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--brand-primary);
+            font-weight: 700;
+            padding: 0 10px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .toolbar-reset:hover {
+            background: #f8efe3;
+        }
+        .toolbar-result {
+            font-size: 0.82rem;
+            color: var(--brand-muted);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .status-delivered-inline { color: #1f6d42; font-weight: 700; }
+        .status-canceled-inline { color: var(--brand-muted); }
+        @media (max-width: 1100px) {
+            .admin-overview {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .admin-topbar {
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: nowrap;
+                gap: 8px;
+            }
+            .admin-brand {
+                width: auto;
+                flex: 0 0 auto;
+                gap: 8px;
+            }
+            .admin-brand-logo {
+                width: 34px;
+                height: 34px;
+            }
+            .admin-brand-text {
+                display: none;
+            }
+            .admin-top-right {
+                width: auto;
+                justify-content: flex-end;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: nowrap;
+                flex: 0 0 auto;
+                margin-left: auto;
+            }
+            .lang-picker-form {
+                min-height: 34px;
+                padding: 4px 8px;
+                border-radius: 999px;
+                flex: 0 0 auto;
+            }
+            .lang-select {
+                min-width: 50px;
+                font-size: 0.8rem;
+                padding-right: 16px;
+            }
+            .top-actions {
+                width: auto;
+                display: flex;
+                gap: 6px;
+                flex-wrap: nowrap;
+            }
+            .top-btn {
+                padding: 0;
+                min-height: 32px;
+                min-width: 32px;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                width: auto;
+                white-space: nowrap;
+                justify-content: center;
+                box-shadow: 0 3px 8px rgba(66, 35, 21, 0.12);
+            }
+            .top-btn-text {
+                display: none;
+            }
+            .top-btn-glyph {
+                font-size: 0.84rem;
+            }
+        }
+        @media (max-width: 900px) {
+            body { padding: 8px; }
+            .admin-container { padding: 14px; }
+            h1 { font-size: 1.55rem; line-height: 1.25; }
+            h2 { font-size: 1.15rem; line-height: 1.3; }
+            .admin-overview {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+            .kpi-card {
+                min-height: 72px;
+            }
+            .kpi-value {
+                font-size: 1.15rem;
+            }
+            .admin-topbar {
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: nowrap;
+                gap: 8px;
+            }
+            .admin-brand {
+                width: auto;
+                flex: 0 0 auto;
+                gap: 8px;
+            }
+            .admin-brand-logo {
+                width: 34px;
+                height: 34px;
+            }
+            .admin-brand-text {
+                display: none;
+            }
+            .admin-top-right {
+                width: auto;
+                justify-content: flex-end;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: nowrap;
+                flex: 0 0 auto;
+                margin-left: auto;
+            }
+            .lang-picker-form {
+                min-height: 34px;
+                padding: 4px 8px;
+                border-radius: 999px;
+                flex: 0 0 auto;
+            }
+            .lang-select {
+                min-width: 50px;
+                font-size: 0.8rem;
+                padding-right: 16px;
+            }
+            .top-actions {
+                width: auto;
+                display: flex;
+                gap: 6px;
+                flex-wrap: nowrap;
+            }
+            .top-btn {
+                padding: 0;
+                min-height: 32px;
+                width: 32px;
+                min-width: 32px;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                width: auto;
+                white-space: nowrap;
+                justify-content: center;
+                box-shadow: 0 3px 8px rgba(66, 35, 21, 0.12);
+            }
+            .top-btn-text {
+                display: none;
+            }
+            .top-btn-glyph {
+                font-size: 0.84rem;
+            }
+            .admin-tabs {
+                flex-wrap: nowrap;
+                gap: 8px;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                margin-bottom: 14px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .admin-tab-btn {
+                flex: 0 0 auto;
+                min-height: 34px;
+                padding: 7px 12px;
+                font-size: 0.84rem;
+            }
+            .admin-inline-form,
+            .category-add-form,
+            .order-search-form {
+                display: grid;
+                grid-template-columns: 1fr;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .admin-toolbar {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .toolbar-result {
+                white-space: normal;
+            }
+            .search-clear {
+                margin-left: 0;
+                text-align: center;
+                padding: 4px 0;
+            }
+            .admin-inline-form input[type="text"],
+            .admin-inline-form input[type="number"],
+            .admin-inline-form input[type="file"],
+            .admin-inline-form select,
+            .category-add-form input[type="text"],
+            .category-add-form button,
+            .order-search-form input[type="text"],
+            .order-search-form button {
+                width: 100% !important;
+                margin-right: 0;
+            }
+            .category-add-form {
+                padding: 8px;
+            }
+            .category-add-form .btn-add {
+                min-width: 0;
+                height: 36px;
+            }
+            .stack-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0 10px;
+            }
+            .stack-table thead {
+                display: none;
+            }
+            .stack-table tbody {
+                display: block;
+            }
+            .stack-table tr {
+                display: block;
+                border: 1px solid var(--brand-line);
+                border-radius: 10px;
+                overflow: hidden;
+                background: #fff;
+                box-shadow: 0 4px 10px rgba(70, 39, 23, 0.08);
+            }
+            .stack-table td {
+                display: grid;
+                grid-template-columns: minmax(92px, 36%) 1fr;
+                gap: 10px;
+                align-items: flex-start;
+                border: none;
+                border-bottom: 1px dashed #e7d8c2;
+                padding: 10px 12px;
+                text-align: left;
+                font-size: 0.9rem;
+            }
+            .stack-table td:last-child {
+                border-bottom: none;
+            }
+            .stack-table td::before {
+                content: attr(data-label);
+                color: var(--brand-muted);
+                font-size: 0.8rem;
+                font-weight: 700;
+                line-height: 1.3;
+            }
+            .stack-table td > * {
+                max-width: 100%;
+                min-width: 0;
+            }
+            .stack-table input[type="text"],
+            .stack-table input[type="number"],
+            .stack-table input[type="file"],
+            .stack-table select {
+                width: 100% !important;
+                margin-right: 0;
+            }
+            .stack-table .product-action-cell,
+            .stack-table .order-action-cell,
+            .stack-table .category-action-cell,
+            .stack-table .request-action-cell {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .stack-table .product-action-cell form,
+            .stack-table .order-action-cell form,
+            .stack-table .category-action-cell form,
+            .stack-table .request-action-cell form {
+                display: block !important;
+                width: 100%;
+                margin: 0 !important;
+            }
+            .stack-table .product-action-cell button,
+            .stack-table .order-action-cell button,
+            .stack-table .category-action-cell button,
+            .stack-table .request-action-cell button {
+                width: 100%;
+                margin-left: 0;
+            }
+            .order-item-list li {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+            .item-qty-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .order-item-add-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .order-item-add-form button {
+                width: 100%;
+            }
+            .orders-table.stack-table tr.order-row {
+                border: 1px solid #d9ba8d;
+                border-radius: 12px;
+                background: linear-gradient(180deg, #fffdf8 0%, #fff8ee 100%);
+            }
+            .orders-table.stack-table tr.order-row + tr.order-row {
+                margin-top: 14px;
+            }
+            .orders-table.stack-table td {
+                background: transparent;
+            }
+            .orders-table.stack-table td::before {
+                color: #6f533f;
+                letter-spacing: 0.01em;
+            }
+            .orders-table.stack-table td.products-cell {
+                border-top: 2px solid #ead5b4;
+                border-bottom: 2px solid #ead5b4;
+                background: #fff9f0;
+            }
+            .orders-table.stack-table td.actions-cell {
+                background: #fff2e6;
+                border-top: 2px solid #e5c79a;
+            }
+            .orders-table.stack-table .order-subcard {
+                border-radius: 8px;
+                padding: 8px 10px;
+            }
+            .orders-table.stack-table .order-products-panel {
+                border-radius: 10px;
+                padding: 8px;
+            }
+            .orders-table.stack-table .actions-cell form {
+                margin: 0 0 10px 0 !important;
+            }
+            .orders-table.stack-table .actions-cell form:last-of-type {
+                margin-bottom: 0 !important;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .admin-brand.live-3d,
+            .admin-brand-logo,
+            .admin-brand-text {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
+    <script defer th:src="@{/js/smooth-ui.js}"></script>
+
+</head>
+<body>
+<div class="admin-container">
+    <div class="admin-topbar">
+        <a href="/" class="admin-brand live-3d" data-live-3d>
+            <img th:src="@{/images/maemaya.jpg}" class="admin-brand-logo" alt="Mae Ma Ya logo">
+            <span class="admin-brand-text">
+                <span class="admin-brand-name">မေ့မရ</span>
+                <span class="admin-brand-sub">Admin Panel</span>
+            </span>
+        </a>
+        <div class="admin-top-right">
+            <form class="lang-picker-form" th:action="@{/admin}" method="get">
+                <label for="adminLangSelect" class="lang-icon" aria-hidden="true">🌐</label>
+                <input type="hidden" name="tab" th:value="${activeTab}">
+                <select id="adminLangSelect" name="lang" class="lang-select" aria-label="Language" onchange="this.form.submit()">
+                    <option value="my" th:selected="${#locale.language == 'my'}">MY</option>
+                    <option value="en" th:selected="${#locale.language == 'en'}">EN</option>
+                    <option value="ja" th:selected="${#locale.language == 'ja'}">JA</option>
+                </select>
+            </form>
+            <div class="top-actions">
+                <a href="/" class="top-btn top-btn-ghost" th:title="#{nav.shop.view}" th:aria-label="#{nav.shop.view}">
+                    <span class="top-btn-glyph" aria-hidden="true">🏪</span>
+                    <span class="top-btn-text" th:text="#{nav.shop.view}">View Shop</span>
+                </a>
+                <form th:action="@{/logout}" method="post" class="logout-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="logout-btn top-btn top-btn-danger" th:title="#{nav.logout}" th:aria-label="#{nav.logout}">
+                        <span class="top-btn-glyph" aria-hidden="true">⎋</span>
+                        <span class="top-btn-text" th:text="#{nav.logout}">Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <h1 th:text="#{admin.dashboard}">Admin Dashboard</h1>
+    <div th:if="${adminNotice}" class="flash-notice" th:text="${adminNotice}"></div>
+    <div th:if="${adminError}" class="flash-error" th:text="${adminError}"></div>
+    <section class="admin-overview" aria-label="Admin Overview">
+        <article class="kpi-card">
+            <p class="kpi-label">Products</p>
+            <p class="kpi-value amount-font" th:text="${#lists.size(products)}">0</p>
+            <p class="kpi-note amount-font"
+               th:text="|${#lists.size(products.?[stock == 0])} sold out|">0 sold out</p>
+        </article>
+        <article class="kpi-card">
+            <p class="kpi-label">Active Orders</p>
+            <p class="kpi-value amount-font" th:text="${#lists.size(orders.?[orderStatus == 'ACTIVE'])}">0</p>
+            <p class="kpi-note">Need packing/delivery prep</p>
+        </article>
+        <article class="kpi-card">
+            <p class="kpi-label">Ready Orders</p>
+            <p class="kpi-value amount-font" th:text="${#lists.size(orders.?[orderStatus == 'READY'])}">0</p>
+            <p class="kpi-note">Waiting to be delivered</p>
+        </article>
+        <article class="kpi-card">
+            <p class="kpi-label">Delivered</p>
+            <p class="kpi-value amount-font" th:text="${#lists.size(orders.?[orderStatus == 'DELIVERED'])}">0</p>
+            <p class="kpi-note">Completed orders</p>
+        </article>
+        <article class="kpi-card">
+            <p class="kpi-label">New Requests</p>
+            <p class="kpi-value amount-font" th:text="${#lists.size(productRequests.?[requestStatus == 'NEW'])}">0</p>
+            <p class="kpi-note amount-font"
+               th:text="|${#lists.size(productRequests)} total requests|">0 total requests</p>
+        </article>
+    </section>
+
+    <nav class="admin-tabs" aria-label="Admin Sections">
+        <a th:href="@{/admin(tab='products',lang=${#locale.language})}"
+           class="admin-tab-btn"
+           th:classappend="${activeTab == 'products'} ? ' is-active'"
+           th:text="#{admin.tab.products}">Products</a>
+        <a th:href="@{/admin(tab='orders',lang=${#locale.language})}"
+           class="admin-tab-btn"
+           th:classappend="${activeTab == 'orders'} ? ' is-active'"
+           th:text="#{admin.tab.orders}">Orders</a>
+        <a th:href="@{/admin(tab='requests',lang=${#locale.language})}"
+           class="admin-tab-btn"
+           th:classappend="${activeTab == 'requests'} ? ' is-active'"
+           th:text="#{admin.tab.requests}">Requests</a>
+    </nav>
+
+    <div class="admin-tab-panel" th:if="${activeTab == 'products'}">
+    <section class="admin-surface">
+        <div class="admin-section-head">
+            <h2 th:text="#{admin.addProduct}">Add Product</h2>
+            <span class="section-badge amount-font" th:text="|${#lists.size(products)} items|">0 items</span>
+        </div>
+        <form th:action="@{/admin/add}" method="post" enctype="multipart/form-data" class="admin-inline-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" name="tab" value="products">
+            <input type="text" name="name" th:placeholder="#{admin.placeholder.name}" required>
+
+            <input type="text" name="category" list="category_list" th:placeholder="#{admin.placeholder.category}" required style="width: 180px;">
+            <datalist id="category_list">
+                <option th:each="cat : ${categories}" th:value="${cat}"></option>
+            </datalist>
+
+            <input type="number" name="price" class="amount-font" th:placeholder="#{admin.placeholder.price}" required style="width: 100px;">
+            <input type="number" name="stock" th:placeholder="#{admin.placeholder.stock}" required style="width: 80px;">
+            <input type="file" name="image" accept="image/*">
+            <button type="submit" class="btn-add" th:text="#{admin.btn.add}">Add</button>
+        </form>
+    </section>
+
+    <section class="admin-surface">
+        <div class="admin-section-head">
+            <h2 th:text="#{admin.category.manage}">Category Display Order</h2>
+            <span class="section-badge amount-font"
+                  th:text="|${#lists.size(categorySettings)} categories|">0 categories</span>
+        </div>
+        <p class="category-order-help" th:text="#{admin.category.description}">
+            Set smaller numbers first. This order is used on the customer website.
+        </p>
+        <form th:action="@{/admin/categories/add}" method="post" class="category-add-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" name="tab" value="products">
+            <input type="text" name="categoryName" th:placeholder="#{admin.placeholder.category}" required>
+            <button type="submit" class="btn-add btn-small" th:text="#{admin.btn.add}">Add</button>
+        </form>
+        <div class="category-order-form">
+            <table class="category-table stack-table">
+                <thead>
+                <tr>
+                    <th th:text="#{admin.category.col.name}">Category</th>
+                    <th th:text="#{admin.category.col.order}">Display Order</th>
+                    <th th:text="#{admin.col.product}">Product</th>
+                    <th th:text="#{admin.col.action}">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(categorySettings)}">
+                    <td colspan="4" style="text-align:center; color:#7f6351;">-</td>
+                </tr>
+                <tr th:each="cat, catStat : ${categorySettings}">
+                    <td th:attr="data-label=#{admin.category.col.name}">
+                        <input type="hidden"
+                               name="originalCategoryName"
+                               th:value="${cat.categoryName}"
+                               th:attr="form=|cat-update-${catStat.index}|">
+                        <input type="text"
+                               name="categoryName"
+                               th:value="${cat.categoryName}"
+                               th:attr="form=|cat-update-${catStat.index}|"
+                               required>
+                    </td>
+                    <td th:attr="data-label=#{admin.category.col.order}">
+                        <input type="number"
+                               class="amount-font"
+                               name="displayOrder"
+                               min="0"
+                               th:value="${cat.displayOrder}"
+                               style="width: 110px;"
+                               th:attr="form=|cat-update-${catStat.index}|">
+                    </td>
+                    <td class="amount-font"
+                        th:attr="data-label=#{admin.col.product}"
+                        th:text="${categoryUsage[cat.categoryName] != null ? categoryUsage[cat.categoryName] : 0}">0</td>
+                    <td class="category-action-cell" th:attr="data-label=#{admin.col.action}">
+                        <form th:id="|cat-update-${catStat.index}|"
+                              th:action="@{/admin/categories/update}"
+                              method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="tab" value="products">
+                            <button type="submit" class="btn-update btn-small" th:text="#{admin.btn.update}">Update</button>
+                        </form>
+                        <form th:action="@{/admin/categories/delete}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="tab" value="products">
+                            <input type="hidden" name="categoryName" th:value="${cat.categoryName}">
+                            <button type="submit"
+                                    class="btn-delete btn-small"
+                                    onclick="return confirmCategoryDelete(this)"
+                                    th:attr="data-category-name=${cat.categoryName},data-confirm-template=#{admin.category.delete.confirm}"
+                                    th:text="#{admin.btn.delete}">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="admin-surface">
+        <details class="admin-collapse" open>
+            <summary>
+                <span th:text="#{admin.productList}">Product Management</span>
+            </summary>
+            <div class="admin-collapse-content">
+                <div class="admin-toolbar" data-filter-toolbar="products">
+                    <input type="text"
+                           class="toolbar-input"
+                           data-filter-input="products"
+                           placeholder="Quick filter by product or category">
+                    <select class="toolbar-select" data-filter-stock="products" aria-label="Stock filter">
+                        <option value="all">All stock</option>
+                        <option value="in">In stock</option>
+                        <option value="low">Low stock (&lt; 5)</option>
+                        <option value="out">Sold out</option>
+                    </select>
+                    <button type="button" class="toolbar-reset" data-filter-reset="products">Reset</button>
+                    <span class="toolbar-result amount-font" data-filter-result="products">0 / 0 shown</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="stack-table">
+                        <thead>
+                        <tr>
+                            <th th:text="#{admin.col.image}">Image</th>
+                            <th th:text="#{admin.col.category}">Category</th>
+                            <th th:text="#{admin.col.name}">Product</th>
+                            <th th:text="#{admin.col.price}">Price (JPY)</th>
+                            <th th:text="#{admin.col.stock}">Stock</th>
+                            <th th:text="#{admin.col.action}">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="product-row"
+                            th:each="product : ${products}"
+                            th:classappend="${product.stock == 0} ? ' bg-danger-light' : ''"
+                            th:attr="data-product-name=${product.name},data-product-category=${product.displayCategory()},data-product-stock=${product.stock}">
+                            <td style="text-align: center;" th:attr="data-label=#{admin.col.image}">
+                                <img th:if="${product.hasImage()}"
+                                     th:src="@{/images/{image}(image=${product.image})}"
+                                     width="50"
+                                     style="border-radius:4px;"
+                                     th:alt="#{index.product.imageAlt}">
+                                <span th:unless="${product.hasImage()}" style="font-size:0.8em; color:#ccc;" th:text="#{admin.noImage}">None</span>
+                                <div style="margin-top:8px;">
+                                    <input type="file"
+                                           name="image"
+                                           accept="image/*"
+                                           style="width: 180px;"
+                                           th:attr="form=|update-form-${product.id}|"
+                                           th:title="#{admin.image.replace}">
+                                    <label th:if="${product.hasImage()}" style="display:block; margin-top:4px; font-size:0.8rem;">
+                                        <input type="checkbox"
+                                               name="removeImage"
+                                               value="true"
+                                               th:attr="form=|update-form-${product.id}|">
+                                        <span th:text="#{admin.image.remove}">Remove image</span>
+                                    </label>
+                                </div>
+                            </td>
+                            <td th:attr="data-label=#{admin.col.category}">
+                                <input type="text"
+                                       name="category"
+                                       list="category_list"
+                                       th:value="${product.displayCategory()}"
+                                       style="width: 170px;"
+                                       th:attr="form=|update-form-${product.id}|"
+                                       required>
+                            </td>
+                            <td th:attr="data-label=#{admin.col.name}">
+                                <input type="text"
+                                       name="name"
+                                       th:value="${product.name}"
+                                       style="width: 220px;"
+                                       th:attr="form=|update-form-${product.id}|"
+                                       required>
+                            </td>
+                            <td th:attr="data-label=#{admin.col.price}">
+                                <input type="number"
+                                       name="price"
+                                       class="amount-font"
+                                       th:value="${product.price}"
+                                       style="width: 80px;"
+                                       th:attr="form=|update-form-${product.id}|">
+                            </td>
+                            <td th:attr="data-label=#{admin.col.stock}">
+                                <input type="number"
+                                       name="stock"
+                                       th:value="${product.stock}"
+                                       style="width: 60px;"
+                                       th:attr="form=|update-form-${product.id}|">
+                                <span class="alert-msg text-danger" th:if="${product.stock == 0}" th:text="#{admin.stock.soldOut}">Sold out</span>
+                                <span class="alert-msg text-warning" th:if="${product.stock > 0 and product.stock < 5}" th:text="#{admin.stock.low}">Low stock</span>
+                            </td>
+                            <td class="product-action-cell" th:attr="data-label=#{admin.col.action}">
+                                <form th:id="|update-form-${product.id}|"
+                                      th:action="@{/admin/update/{productId}(productId=${product.id})}"
+                                      method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <input type="hidden" name="tab" value="products">
+                                    <button type="submit" class="btn-update" th:text="#{admin.btn.update}">Update</button>
+                                </form>
+                                <form th:action="@{/admin/delete/{productId}(productId=${product.id})}"
+                                      method="post">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <input type="hidden" name="tab" value="products">
+                                    <button type="submit"
+                                            class="btn-delete"
+                                            onclick="return confirmDelete(this)"
+                                            th:attr="data-product-name=${product.name},data-confirm-template=#{admin.delete.confirm}"
+                                            th:text="#{admin.btn.delete}">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </details>
+    </section>
+    </div>
+
+    <div class="admin-tab-panel" th:if="${activeTab == 'orders'}">
+    <section class="admin-surface">
+        <div class="admin-section-head">
+            <h2 th:text="#{admin.recentOrders}">Recent Orders</h2>
+            <span class="section-badge amount-font"
+                  th:text="|${#lists.size(orders)} orders|">0 orders</span>
+        </div>
+        <form class="order-search-form" method="get" th:action="@{/admin}">
+            <input type="hidden" name="tab" value="orders">
+            <input type="text"
+                   name="orderNumber"
+                   th:value="${orderSearchNumber}"
+                   th:placeholder="#{admin.order.search.orderNumber}">
+            <input type="text"
+                   name="phone"
+                   th:value="${orderSearchPhone}"
+                   inputmode="tel"
+                   pattern="[\d\-\+\s\(\)]{0,20}"
+                   th:placeholder="#{admin.order.search.phone}">
+            <button type="submit" class="btn-update" th:text="#{admin.order.search.btn}">Search</button>
+            <a class="search-clear"
+               th:href="@{/admin(tab='orders',lang=${#locale.language})}"
+               th:text="#{admin.order.search.clear}">Clear</a>
+        </form>
+        <div class="admin-toolbar" data-filter-toolbar="orders">
+            <input type="text"
+                   class="toolbar-input"
+                   data-filter-input="orders"
+                   placeholder="Quick filter by order no / customer / phone">
+            <select class="toolbar-select" data-filter-status="orders" aria-label="Order status filter">
+                <option value="ALL">All status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="READY">Ready</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="CANCELED">Canceled</option>
+            </select>
+            <button type="button" class="toolbar-reset" data-filter-reset="orders">Reset</button>
+            <span class="toolbar-result amount-font" data-filter-result="orders">0 / 0 shown</span>
+        </div>
+        <div class="table-wrap">
+        <table class="stack-table orders-table">
+            <thead>
+            <tr>
+                <th th:text="#{admin.col.orderNumber}">Order No</th>
+                <th th:text="#{admin.col.status}">Status</th>
+                <th th:text="#{admin.col.orderDate}">Order Date</th>
+                <th th:text="#{admin.col.customer}">Customer</th>
+                <th th:text="#{admin.col.address}">Address</th>
+                <th th:text="#{admin.col.product}">Product</th>
+                <th th:text="#{admin.col.total}">Total</th>
+                <th th:text="#{admin.col.delivery}">Delivery</th>
+                <th th:text="#{admin.col.orderAction}">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${orders}"
+                class="order-row"
+                th:attr="data-order-number=${order.orderNumber},data-order-customer=${order.customerName},data-order-phone=${order.phone},data-order-status=${order.orderStatus}">
+                <td class="order-no-cell" th:attr="data-label=#{admin.col.orderNumber}">
+                    <span class="badge badge-blue" th:text="${order.orderNumber}"></span>
+                </td>
+                <td class="status-cell" th:attr="data-label=#{admin.col.status}">
+                    <span class="badge badge-blue"
+                          th:if="${order.orderStatus == 'ACTIVE'}"
+                          th:text="#{order.status.active}">Active</span>
+                    <span class="badge badge-orange"
+                          th:if="${order.orderStatus == 'READY'}"
+                          th:text="#{order.status.ready}">Ready</span>
+                    <span class="badge badge-green"
+                          th:if="${order.orderStatus == 'DELIVERED'}"
+                          th:text="#{order.status.delivered}">Delivered</span>
+                    <span class="badge badge-gray"
+                          th:if="${order.orderStatus == 'CANCELED'}"
+                          th:text="#{order.status.canceled}">Canceled</span>
+                </td>
+                <td class="order-date-cell" style="font-size: 0.85em;" th:text="${order.orderDate}" th:attr="data-label=#{admin.col.orderDate}"></td>
+                <td class="customer-cell" th:attr="data-label=#{admin.col.customer}">
+                    <div class="order-subcard">
+                        <strong th:text="${order.customerName}"></strong><br>
+                        <span style="font-size: 0.85em;">
+                            <span th:text="#{admin.tel}">TEL</span>: <span th:text="${order.phone}"></span>
+                        </span>
+                    </div>
+                </td>
+                <td class="address-cell" style="font-size: 0.85em;" th:attr="data-label=#{admin.col.address}">
+                    <div class="order-subcard">
+                        <span style="display:block;">
+                            <span th:text="#{admin.zip}">ZIP</span>: <span th:text="${order.zipCode}"></span>
+                        </span>
+                        <span style="display:block;" th:text="${order.address}"></span>
+                        <span style="display:block;"
+                              th:if="${not #strings.isEmpty(order.addressDetail)}">
+                            <span th:text="#{admin.address.detail}">丁目・番地・号</span>:
+                            <span th:text="${order.addressDetail}"></span>
+                        </span>
+                        <span style="display:block;"
+                              th:if="${not #strings.isEmpty(order.buildingName)}">
+                            <span th:text="#{admin.address.building}">Building</span>:
+                            <span th:text="${order.buildingName}"></span>
+                        </span>
+                        <span style="display:block;"
+                              th:if="${not #strings.isEmpty(order.roomNumber)}">
+                            <span th:text="#{admin.address.room}">Room</span>:
+                            <span th:text="${order.roomNumber}"></span>
+                        </span>
+                    </div>
+                </td>
+                <td class="products-cell" th:attr="data-label=#{admin.col.product}">
+                    <div class="order-products-panel">
+                        <div th:if="${#lists.isEmpty(order.items)}" style="color:#999;">-</div>
+                        <ul class="order-item-list" th:if="${!#lists.isEmpty(order.items)}">
+                            <li th:each="item : ${order.items}">
+                                <span class="order-item-main" th:text="${item.name}"></span>
+                                <span class="item-qty-actions">
+                                    <span class="item-qty" th:text="|x${item.quantity}|"></span>
+                                    <form class="order-item-reduce-form"
+                                          th:if="${order.orderStatus == 'ACTIVE' and item.productId != null}"
+                                          th:action="@{/admin/orders/{orderNumber}/items/reduce(orderNumber=${order.orderNumber})}"
+                                          method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                        <input type="hidden" name="tab" value="orders">
+                                        <input type="hidden" name="phone" th:value="${order.phone}">
+                                        <input type="hidden" name="productId" th:value="${item.productId}">
+                                        <button type="submit" class="btn-update btn-small" th:text="#{admin.order.btn.reduceOne}">-1</button>
+                                    </form>
+                                </span>
+                            </li>
+                        </ul>
+                        <form class="order-item-add-form"
+                              th:if="${order.orderStatus == 'ACTIVE'}"
+                              th:action="@{/admin/orders/{orderNumber}/items/add(orderNumber=${order.orderNumber})}"
+                              method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <input type="hidden" name="tab" value="orders">
+                            <input type="hidden" name="phone" th:value="${order.phone}">
+                            <select name="productId" required>
+                                <option value="" th:text="#{admin.order.add.select}">Select product to add</option>
+                                <option value=""
+                                        disabled
+                                        th:if="${#lists.isEmpty(orderEditableProducts)}"
+                                        th:text="#{admin.order.add.noStock}">No in-stock products</option>
+                                <option th:each="product : ${orderEditableProducts}"
+                                        th:value="${product.id}"
+                                        th:text="${#messages.msg('admin.order.add.optionFormat', product.name, product.price, product.stock)}">
+                                    Product
+                                </option>
+                            </select>
+                            <button type="submit"
+                                    class="btn-add btn-small"
+                                    th:disabled="${#lists.isEmpty(orderEditableProducts)}"
+                                    th:text="#{admin.order.btn.addItem}">Add Item</button>
+                        </form>
+                    </div>
+                </td>
+                <td class="amount-font total-cell" th:text="|¥${order.totalPrice}|" th:attr="data-label=#{admin.col.total}"></td>
+                <td class="delivery-cell" th:attr="data-label=#{admin.col.delivery}">
+                    <div class="order-subcard">
+                        <span class="badge badge-blue" th:text="${order.deliveryDate}"></span><br>
+                        <span style="font-weight: bold;" th:text="${order.deliveryTime}"></span>
+                    </div>
+                </td>
+                <td class="order-action-cell actions-cell" th:attr="data-label=#{admin.col.orderAction}">
+                    <form th:if="${order.orderStatus == 'ACTIVE'}"
+                          th:action="@{/admin/orders/{orderNumber}/ready(orderNumber=${order.orderNumber})}"
+                          method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="tab" value="orders">
+                        <input type="hidden" name="phone" th:value="${order.phone}">
+                        <button type="submit" class="btn-ready" th:text="#{admin.order.btn.ready}">Ready</button>
+                    </form>
+                    <form th:if="${order.orderStatus == 'READY'}"
+                          th:action="@{/admin/orders/{orderNumber}/delivered(orderNumber=${order.orderNumber})}"
+                          method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="tab" value="orders">
+                        <input type="hidden" name="phone" th:value="${order.phone}">
+                        <button type="submit" class="btn-delivered" th:text="#{admin.order.btn.delivered}">Delivered</button>
+                    </form>
+                    <span th:if="${order.orderStatus == 'DELIVERED'}" class="status-delivered-inline" th:text="#{order.status.delivered}">Delivered</span>
+                    <span th:if="${order.orderStatus == 'CANCELED'}" class="status-canceled-inline" th:text="#{order.status.canceled}">Canceled</span>
+                    <form th:action="@{/admin/orders/{orderNumber}/delete(orderNumber=${order.orderNumber})}"
+                          method="post"
+                          style="display:inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="tab" value="orders">
+                        <input type="hidden" name="phone" th:value="${order.phone}">
+                        <button type="submit"
+                                class="btn-delete"
+                                onclick="return confirmOrderDelete(this)"
+                                th:attr="data-order-number=${order.orderNumber},data-confirm-template=#{admin.order.delete.confirm}"
+                                th:text="#{admin.order.btn.delete}">Delete Order</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </section>
+    </div>
+
+    <div class="admin-tab-panel" th:if="${activeTab == 'requests'}">
+    <section class="admin-surface">
+        <div class="admin-section-head">
+            <h2 th:text="#{admin.requests.title}">Customer Product Requests</h2>
+            <span class="section-badge amount-font"
+                  th:text="|${#lists.size(productRequests)} requests|">0 requests</span>
+        </div>
+        <div class="admin-toolbar" data-filter-toolbar="requests">
+            <input type="text"
+                   class="toolbar-input"
+                   data-filter-input="requests"
+                   placeholder="Quick filter by requester / contact / product">
+            <select class="toolbar-select" data-filter-status="requests" aria-label="Request status filter">
+                <option value="ALL">All status</option>
+                <option value="NEW">New</option>
+                <option value="DONE">Done</option>
+            </select>
+            <button type="button" class="toolbar-reset" data-filter-reset="requests">Reset</button>
+            <span class="toolbar-result amount-font" data-filter-result="requests">0 / 0 shown</span>
+        </div>
+        <div class="table-wrap">
+        <table class="stack-table">
+            <thead>
+            <tr>
+                <th th:text="#{admin.requests.col.date}">Date</th>
+                <th th:text="#{admin.requests.col.requester}">Requester</th>
+                <th th:text="#{admin.requests.col.contact}">Contact</th>
+                <th th:text="#{admin.requests.col.productName}">Product Name</th>
+                <th th:text="#{admin.requests.col.image}">Reference Image</th>
+                <th th:text="#{admin.requests.col.note}">Note</th>
+                <th th:text="#{admin.requests.col.status}">Status</th>
+                <th th:text="#{admin.requests.col.action}">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(productRequests)}">
+                <td colspan="8" style="text-align:center; color:#888;" th:text="#{admin.requests.empty}">No requests yet.</td>
+            </tr>
+            <tr th:each="req : ${productRequests}"
+                class="request-row"
+                th:attr="data-request-requester=${req.requesterName},data-request-contact=${req.contact},data-request-product=${req.productName},data-request-status=${req.requestStatus}">
+                <td style="font-size:0.85em;" th:text="${req.requestDate}" th:attr="data-label=#{admin.requests.col.date}"></td>
+                <td th:text="${req.requesterName}" th:attr="data-label=#{admin.requests.col.requester}"></td>
+                <td th:text="${req.contact}" th:attr="data-label=#{admin.requests.col.contact}"></td>
+                <td th:text="${#strings.isEmpty(req.productName) ? '-' : req.productName}" th:attr="data-label=#{admin.requests.col.productName}"></td>
+                <td th:attr="data-label=#{admin.requests.col.image}">
+                    <img th:if="${req.hasImage()}"
+                         th:src="@{/images/{image}(image=${req.referenceImage})}"
+                         width="60"
+                         style="border-radius:4px;"
+                         th:alt="#{request.imageAlt}">
+                    <span th:unless="${req.hasImage()}" style="color:#999;">-</span>
+                </td>
+                <td th:text="${#strings.isEmpty(req.note) ? '-' : req.note}" th:attr="data-label=#{admin.requests.col.note}"></td>
+                <td th:attr="data-label=#{admin.requests.col.status}">
+                    <span class="badge badge-blue" th:if="${req.isNew()}" th:text="#{admin.requests.status.new}">NEW</span>
+                    <span class="badge badge-gray" th:if="${!req.isNew()}" th:text="#{admin.requests.status.done}">DONE</span>
+                </td>
+                <td class="request-action-cell" th:attr="data-label=#{admin.requests.col.action}">
+                    <form th:if="${req.isNew()}"
+                          th:action="@{/admin/requests/{requestId}/done(requestId=${req.id})}"
+                          method="post"
+                          style="display:inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="tab" value="requests">
+                        <button type="submit" class="btn-update" th:text="#{admin.requests.btn.done}">Mark Done</button>
+                    </form>
+                    <form th:action="@{/admin/requests/{requestId}/delete(requestId=${req.id})}"
+                          method="post"
+                          style="display:inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="tab" value="requests">
+                        <button type="submit" class="btn-delete" th:text="#{admin.requests.btn.delete}">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </section>
+    </div>
+    <p style="margin-top:20px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
+       th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
+</div>
+<script>
+    function confirmDelete(button) {
+        const productName = button.getAttribute("data-product-name") || "item";
+        const template = button.getAttribute("data-confirm-template") || 'Delete "{0}"?';
+        return confirm(template.replace("{0}", productName));
+    }
+
+    function confirmCategoryDelete(button) {
+        const categoryName = button.getAttribute("data-category-name") || "category";
+        const template = button.getAttribute("data-confirm-template") || 'Delete "{0}" category?';
+        return confirm(template.replace("{0}", categoryName));
+    }
+
+    function confirmOrderDelete(button) {
+        const orderNumber = button.getAttribute("data-order-number") || "order";
+        const template = button.getAttribute("data-confirm-template") || 'Delete order "{0}"?';
+        return confirm(template.replace("{0}", orderNumber));
+    }
+
+    (function () {
+        const normalize = (value) => (value || "").toString().toLowerCase().trim();
+
+        const bindToolbarFilter = (config) => {
+            const input = document.querySelector(`[data-filter-input="${config.key}"]`);
+            const statusSelect = document.querySelector(`[data-filter-status="${config.key}"]`) ||
+                document.querySelector(`[data-filter-stock="${config.key}"]`);
+            const resetBtn = document.querySelector(`[data-filter-reset="${config.key}"]`);
+            const result = document.querySelector(`[data-filter-result="${config.key}"]`);
+            const rows = Array.from(document.querySelectorAll(config.rowSelector));
+
+            if (rows.length === 0 || (!input && !statusSelect)) {
+                if (result) {
+                    result.textContent = "0 / 0 shown";
+                }
+                return;
+            }
+
+            const apply = () => {
+                const keyword = normalize(input ? input.value : "");
+                const status = normalize(statusSelect ? statusSelect.value : "all");
+                let visible = 0;
+
+                rows.forEach((row) => {
+                    const haystack = normalize(config.pickSearchText(row));
+                    const keywordMatch = keyword.length === 0 || haystack.includes(keyword);
+                    const statusMatch = config.matchStatus(row, status);
+                    const show = keywordMatch && statusMatch;
+                    row.hidden = !show;
+                    if (show) {
+                        visible += 1;
+                    }
+                });
+
+                if (result) {
+                    result.textContent = `${visible} / ${rows.length} shown`;
+                }
+            };
+
+            if (input) {
+                input.addEventListener("input", apply, { passive: true });
+            }
+            if (statusSelect) {
+                statusSelect.addEventListener("change", apply);
+            }
+            if (resetBtn) {
+                resetBtn.addEventListener("click", () => {
+                    if (input) {
+                        input.value = "";
+                    }
+                    if (statusSelect) {
+                        statusSelect.selectedIndex = 0;
+                    }
+                    apply();
+                });
+            }
+
+            apply();
+        };
+
+        bindToolbarFilter({
+            key: "products",
+            rowSelector: "tr.product-row",
+            pickSearchText: (row) => `${row.dataset.productName || ""} ${row.dataset.productCategory || ""}`,
+            matchStatus: (row, status) => {
+                if (status === "all") {
+                    return true;
+                }
+                const stock = Number(row.dataset.productStock || "0");
+                if (status === "in") {
+                    return stock > 0;
+                }
+                if (status === "low") {
+                    return stock > 0 && stock < 5;
+                }
+                if (status === "out") {
+                    return stock <= 0;
+                }
+                return true;
+            }
+        });
+
+        bindToolbarFilter({
+            key: "orders",
+            rowSelector: "tr.order-row",
+            pickSearchText: (row) => `${row.dataset.orderNumber || ""} ${row.dataset.orderCustomer || ""} ${row.dataset.orderPhone || ""}`,
+            matchStatus: (row, status) => {
+                if (status === "all") {
+                    return true;
+                }
+                return normalize(row.dataset.orderStatus) === status;
+            }
+        });
+
+        bindToolbarFilter({
+            key: "requests",
+            rowSelector: "tr.request-row",
+            pickSearchText: (row) => `${row.dataset.requestRequester || ""} ${row.dataset.requestContact || ""} ${row.dataset.requestProduct || ""}`,
+            matchStatus: (row, status) => {
+                if (status === "all") {
+                    return true;
+                }
+                return normalize(row.dataset.requestStatus) === status;
+            }
+        });
+    })();
+
+    (function () {
+        const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const hoverCapable = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        if (prefersReduced || !hoverCapable) {
+            return;
+        }
+
+        const live3dTargets = Array.from(document.querySelectorAll("[data-live-3d]"));
+        if (live3dTargets.length === 0) {
+            return;
+        }
+
+        const maxTilt = 10;
+        const reset = (element) => {
+            element.style.transform = "perspective(920px) rotateX(0deg) rotateY(0deg) translateZ(0)";
+            element.classList.remove("is-live");
+        };
+
+        live3dTargets.forEach((element) => {
+            let rafId = 0;
+            let hasPointer = false;
+            let pointerX = 0;
+            let pointerY = 0;
+
+            const render = () => {
+                rafId = 0;
+                if (!hasPointer) {
+                    return;
+                }
+                const rect = element.getBoundingClientRect();
+                const px = (pointerX - rect.left) / Math.max(rect.width, 1);
+                const py = (pointerY - rect.top) / Math.max(rect.height, 1);
+                const tiltY = (px - 0.5) * maxTilt * 2;
+                const tiltX = (0.5 - py) * maxTilt * 1.8;
+                element.style.transform =
+                        `perspective(920px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateZ(0)`;
+                element.classList.add("is-live");
+            };
+
+            const resetAndStop = () => {
+                hasPointer = false;
+                if (rafId) {
+                    window.cancelAnimationFrame(rafId);
+                    rafId = 0;
+                }
+                reset(element);
+            };
+
+            reset(element);
+            element.addEventListener("pointermove", (event) => {
+                pointerX = event.clientX;
+                pointerY = event.clientY;
+                hasPointer = true;
+                if (!rafId) {
+                    rafId = window.requestAnimationFrame(render);
+                }
+            }, { passive: true });
+            element.addEventListener("pointerleave", resetAndStop);
+            element.addEventListener("pointercancel", resetAndStop);
+        });
+    })();
+</script>
+</body>
+</html>

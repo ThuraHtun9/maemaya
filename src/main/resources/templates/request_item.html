@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
+    <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
+    <title th:text="#{request.page.title}">Request New Item</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap");
+        :root {
+            --brand-bg: #f4eadb;
+            --brand-bg-soft: #fbf4e9;
+            --brand-surface: #fffaf2;
+            --brand-line: #e4d0b4;
+            --brand-text: #3f281b;
+            --brand-muted: #7f6351;
+            --brand-primary: #5c3320;
+            --brand-primary-hover: #74442b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 18px;
+            font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
+            color: var(--brand-text);
+            background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+        }
+        .page {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+        .topbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .back-link {
+            text-decoration: none;
+            border: 1px solid var(--brand-line);
+            background: var(--brand-surface);
+            color: var(--brand-primary);
+            border-radius: 999px;
+            padding: 8px 13px;
+            font-weight: 700;
+        }
+        .back-link:hover { background: #f6efe4; }
+        .lang-switch {
+            font-size: 0.9rem;
+            color: var(--brand-muted);
+        }
+        .lang-switch a {
+            color: var(--brand-muted);
+            text-decoration: none;
+            margin: 0 4px;
+        }
+        .lang-switch a:hover { text-decoration: underline; }
+
+        .card {
+            background: var(--brand-surface);
+            border: 1px solid var(--brand-line);
+            border-radius: 14px;
+            box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            margin: 0;
+            color: var(--brand-primary);
+        }
+        .desc {
+            margin-top: 8px;
+            color: var(--brand-muted);
+        }
+        .flash {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+        }
+        .flash-success {
+            background: #eff6f1;
+            border: 1px solid #b8deca;
+            color: #2b6f45;
+        }
+        .flash-error {
+            background: #fff1ea;
+            border: 1px solid #e7c0ad;
+            color: #8a3c2f;
+        }
+        .form-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+        .form-grid input,
+        .form-grid textarea,
+        .form-grid button {
+            width: 100%;
+            border: 1px solid var(--brand-line);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: inherit;
+            color: var(--brand-text);
+            background: #fff;
+        }
+        .form-grid textarea {
+            min-height: 96px;
+            resize: vertical;
+            grid-column: 1 / -1;
+        }
+        .submit-wrap {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .submit-btn {
+            max-width: 280px;
+            background: var(--brand-primary);
+            color: #fff;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .submit-btn:hover { background: var(--brand-primary-hover); }
+        @media (max-width: 640px) {
+            body { padding: 10px; }
+            .card { padding: 14px; }
+            .submit-wrap { justify-content: stretch; }
+            .submit-btn { max-width: none; }
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
+    <script defer th:src="@{/js/smooth-ui.js}"></script>
+
+</head>
+<body>
+<div class="page">
+    <div class="topbar">
+        <a class="back-link" th:href="@{/}" th:text="#{request.page.back}">Back to Shop</a>
+        <div class="lang-switch">
+            <a th:href="@{/request-item(lang='my')}" th:text="#{lang.myanmar}">မြန်မာ</a> |
+            <a th:href="@{/request-item(lang='en')}" th:text="#{lang.english}">English</a> |
+            <a th:href="@{/request-item(lang='ja')}" th:text="#{lang.japanese}">日本語</a>
+        </div>
+    </div>
+
+    <section class="card">
+        <h1 th:text="#{request.heading}">Request New Item</h1>
+        <p class="desc" th:text="#{request.page.cardHelp}">
+            Ask admin to add a product by name or upload a reference image.
+        </p>
+
+        <div th:if="${requestSuccess}" class="flash flash-success" th:text="${requestSuccess}"></div>
+        <div th:if="${requestError}" class="flash flash-error" th:text="${requestError}"></div>
+
+        <form th:action="@{/request-product}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-grid">
+                <input type="text" name="requesterName" th:placeholder="#{request.requesterName}" required>
+                <input type="text" name="contact" th:placeholder="#{request.contact}" required>
+                <input type="text" name="productName" th:placeholder="#{request.productName}">
+                <input type="file" name="referenceImage" accept="image/*" th:title="#{request.image}">
+                <textarea name="note" th:placeholder="#{request.note}"></textarea>
+                <div class="submit-wrap">
+                    <button type="submit" class="submit-btn" th:text="#{request.submit}">Send Request</button>
+                </div>
+            </div>
+        </form>
+    </section>
+    <p style="margin-top:16px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
+       th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
+</div>
+</body>
+</html>

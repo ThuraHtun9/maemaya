@@ -1,0 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap");
+
+:root {
+    --brand-bg: #f4eadb;
+    --brand-bg-soft: #fbf4e9;
+    --brand-surface: #fffaf2;
+    --brand-line: #e4d0b4;
+    --brand-text: #3f281b;
+    --brand-muted: #7f6351;
+    --brand-primary: #5c3320;
+    --brand-primary-hover: #74442b;
+}
+
+body {
+    font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
+    margin: 0;
+    color: var(--brand-text);
+    background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+}
+
+input, select, textarea, button { font-family: inherit; }
+
+body.login-page {
+    background: radial-gradient(circle at top, #f9f1e5 0%, #efe1ce 45%, #e5d2b8 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+}
+
+.login-box {
+    background: rgba(255, 250, 242, 0.97);
+    border: 1px solid var(--brand-line);
+    padding: 38px;
+    border-radius: 14px;
+    box-shadow: 0 18px 34px rgba(70, 39, 23, 0.16);
+    width: 380px;
+    text-align: center;
+}
+
+.login-box h2 { color: var(--brand-primary); }
+.login-lang {
+    text-align: right;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.login-logo-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.login-logo {
+    width: 98px;
+    height: 98px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 1px solid var(--brand-line);
+    box-shadow: 0 8px 18px rgba(70, 39, 23, 0.14);
+    background: #fff;
+}
+
+.login-box a {
+    color: var(--brand-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-box a:hover { text-decoration: underline; }
+
+.login-box input[type="text"],
+.login-box input[type="password"] {
+    border: 1px solid var(--brand-line);
+    border-radius: 8px;
+    color: var(--brand-text);
+    background: #fff;
+}
+
+.login-box input[type="text"]:focus,
+.login-box input[type="password"]:focus {
+    outline: 0;
+    border-color: #c58e4e;
+    box-shadow: 0 0 0 3px rgba(197, 142, 78, 0.16);
+}
+
+.login-btn {
+    background-color: var(--brand-primary);
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.login-btn:hover { background-color: var(--brand-primary-hover); }

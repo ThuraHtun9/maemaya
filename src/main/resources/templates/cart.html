@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
+    <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
+    <title th:text="#{cart.title}">Cart</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap");
+        :root {
+            --brand-bg: #f4eadb;
+            --brand-bg-soft: #fbf4e9;
+            --brand-surface: #fffaf2;
+            --brand-line: #e4d0b4;
+            --brand-text: #3f281b;
+            --brand-muted: #7f6351;
+            --brand-primary: #5c3320;
+            --brand-primary-hover: #74442b;
+            --brand-accent: #c99340;
+            --brand-danger: #8f3c2d;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        body {
+            font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
+            padding: 14px;
+            background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+            color: var(--brand-text);
+            margin: 0;
+            overflow-x: hidden;
+        }
+        input, select, textarea, button { font-family: inherit; }
+        .amount-font { font-family: "Helvetica Neue", Arial, sans-serif; }
+        .cart-container {
+            max-width: 800px;
+            margin: 12px auto;
+            background: var(--brand-surface);
+            border: 1px solid var(--brand-line);
+            padding: 24px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
+        }
+        h1 {
+            border-bottom: 2px solid var(--brand-line);
+            padding-bottom: 10px;
+            color: var(--brand-primary);
+            font-size: clamp(1.2rem, 4.6vw, 1.75rem);
+            line-height: 1.25;
+            margin-top: 6px;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border-bottom: 1px solid var(--brand-line); padding: 12px; text-align: left; vertical-align: middle; }
+        th { background: #f7eee1; color: var(--brand-primary); }
+        .cart-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--brand-line);
+            border-radius: 10px;
+            background: #fffdf8;
+        }
+        .cart-table-wrap table {
+            margin-top: 0;
+            min-width: 620px;
+        }
+        .total-area {
+            text-align: right;
+            font-size: clamp(1.1rem, 4.2vw, 1.5rem);
+            font-weight: 700;
+            margin-top: 20px;
+            color: var(--brand-primary);
+        }
+
+        .btn-checkout {
+            display: block; width: 100%; text-align: center; background-color: var(--brand-primary); color: white;
+            padding: 13px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 16px;
+        }
+        .btn-checkout:hover { background-color: var(--brand-primary-hover); }
+
+        .btn-delete {
+            color: var(--brand-danger);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border: 1px solid #d6a58f;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background: #fff7f3;
+        }
+        .btn-delete:hover { background-color: #ffece3; }
+        .back-link { display: block; margin-top: 20px; text-align: center; color: var(--brand-muted); }
+
+        .quantity-badge {
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--brand-text);
+            margin-left: 0;
+        }
+        .product-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .product-thumb {
+            width: 44px;
+            height: 44px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--brand-line);
+            background: #f3f3f3;
+            flex-shrink: 0;
+        }
+        .lang-switch {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 0.85rem;
+        }
+        .lang-switch a { color: var(--brand-muted); text-decoration: none; margin: 0 4px; }
+        .lang-switch a:hover { text-decoration: underline; }
+
+        @media (max-width: 760px) {
+            body { padding: 8px; }
+            .cart-container {
+                margin: 8px auto;
+                padding: 14px;
+            }
+            .lang-switch {
+                position: static;
+                display: flex;
+                justify-content: flex-end;
+                gap: 3px;
+                margin-bottom: 8px;
+                font-size: 0.88rem;
+            }
+            h1 {
+                margin-top: 0;
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-bottom: 8px;
+            }
+            .cart-table-wrap {
+                margin-top: 10px;
+            }
+            .cart-table-wrap table {
+                min-width: 560px;
+            }
+            th, td {
+                padding: 10px 9px;
+                font-size: 0.92rem;
+                border-bottom: 1px solid var(--brand-line);
+            }
+            .product-cell {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                text-align: left;
+            }
+            .product-cell span {
+                min-width: 0;
+                word-break: normal;
+                line-height: 1.35;
+                white-space: nowrap;
+            }
+            .product-thumb {
+                width: 36px;
+                height: 36px;
+            }
+            .cell-unit,
+            .cell-qty,
+            .cell-subtotal,
+            .cell-action {
+                text-align: left;
+            }
+            .btn-delete {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+                white-space: nowrap;
+            }
+            .total-area {
+                margin-top: 14px;
+                text-align: right;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 12px;
+                border: 1px solid var(--brand-line);
+                border-radius: 10px;
+                background: #fffdf8;
+                width: 100%;
+                max-width: 100%;
+            }
+            .btn-checkout {
+                margin-top: 12px;
+                font-size: 1rem;
+                width: 100%;
+                max-width: 100%;
+            }
+            .back-link {
+                margin-top: 14px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
+    <script defer th:src="@{/js/smooth-ui.js}"></script>
+
+</head>
+<body>
+<div class="cart-container">
+    <div class="lang-switch">
+        <a th:href="@{/cart(lang='my')}" th:text="#{lang.myanmar}">မြန်မာ</a>|
+        <a th:href="@{/cart(lang='en')}" th:text="#{lang.english}">English</a>|
+        <a th:href="@{/cart(lang='ja')}" th:text="#{lang.japanese}">日本語</a>
+    </div>
+    <h1 th:text="#{cart.heading}">Shopping Cart</h1>
+
+    <div th:if="${!#lists.isEmpty(cartItems)}">
+        <div class="cart-table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{cart.col.product}">Product</th>
+                <th th:text="#{cart.col.unitPrice}">Unit Price</th>
+                <th th:text="#{cart.col.quantity}">Quantity</th>
+                <th th:text="#{cart.col.subtotal}">Subtotal</th>
+                <th th:text="#{cart.col.action}">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${cartItems}">
+                <td class="cell-product" th:attr="data-label=#{cart.col.product}">
+                    <div class="product-cell">
+                    <img th:if="${item.product.hasImage()}"
+                         th:src="@{/images/{image}(image=${item.product.image})}"
+                         class="product-thumb"
+                         loading="lazy"
+                         decoding="async"
+                         th:alt="#{index.product.imageAlt}">
+                        <span th:text="${item.product.name}"></span>
+                    </div>
+                </td>
+                <td class="cell-unit amount-font" th:attr="data-label=#{cart.col.unitPrice}" th:text="|¥${item.product.price}|"></td>
+                <td class="cell-qty" th:attr="data-label=#{cart.col.quantity}">
+                    <span class="quantity-badge" th:text="|× ${item.quantity}|"></span>
+                </td>
+                <td class="cell-subtotal amount-font" th:attr="data-label=#{cart.col.subtotal}" th:text="|¥${item.subtotal}|"></td>
+                <td class="cell-action" th:attr="data-label=#{cart.col.action}">
+                    <a class="btn-delete"
+                       th:href="@{/cart/delete/{productId}(productId=${item.product.id})}"
+                       th:text="#{cart.removeOne}">Remove 1</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="total-area">
+            <span th:text="#{cart.total}">Total:</span>
+            <span class="amount-font" th:text="|¥${totalPrice}|"></span>
+        </div>
+        <a th:href="@{/checkout}" class="btn-checkout" th:text="#{cart.checkout}">Proceed to Checkout</a>
+    </div>
+
+    <p style="text-align: center; padding: 50px;" th:if="${#lists.isEmpty(cartItems)}" th:text="#{cart.empty}">Your cart is empty.</p>
+
+    <a th:href="@{/}" class="back-link" th:text="#{nav.backShopping}">Continue Shopping</a>
+    <p style="margin-top:18px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
+       th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
+</div>
+</body>
+</html>
