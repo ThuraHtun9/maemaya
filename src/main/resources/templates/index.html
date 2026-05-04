@@ -537,6 +537,59 @@
             grid-auto-rows: 1fr;
             justify-content: start;
         }
+        .pagination-shell {
+            margin-top: 26px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(92, 51, 32, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .pagination-summary {
+            color: var(--brand-muted);
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .pagination-link {
+            min-width: 42px;
+            min-height: 42px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--brand-line);
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--brand-primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            box-shadow: 0 8px 16px rgba(66, 35, 21, 0.08);
+            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+        .pagination-link:hover {
+            background: #fff6e9;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(66, 35, 21, 0.12);
+        }
+        .pagination-link.is-active {
+            background: linear-gradient(145deg, #6c3d27, #4d2a1a);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 12px 22px rgba(72, 39, 24, 0.2);
+        }
+        .pagination-link.is-disabled {
+            pointer-events: none;
+            opacity: 0.45;
+            box-shadow: none;
+        }
         @media (min-width: 390px) {
             .product-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1233,6 +1286,7 @@
                 </a>
                 <div class="lang-switch">
                     <form class="lang-form" th:action="@{/}" method="get">
+                        <input type="hidden" name="page" th:value="${shopPagination.currentPage}">
                         <label class="sr-only" for="langSelect" th:text="#{lang.switch}">Switch Language</label>
                         <select id="langSelect" name="lang" class="lang-select" onchange="this.form.submit()">
                             <option value="my" th:selected="${#locale.language == 'my'}" th:text="#{lang.myanmar}">မြန်မာ</option>
@@ -1262,7 +1316,8 @@
         <div class="category-section" th:each="entry : ${productsByCategory}">
             <div class="category-header">
                 <h3 class="category-title" th:text="${entry.key}">Category</h3>
-                <span class="category-count amount-font" th:text="|${#lists.size(entry.value)} items|">0 items</span>
+                <span class="category-count amount-font"
+                      th:text="${(categoryTotalCounts[entry.key] != null and categoryTotalCounts[entry.key] != #lists.size(entry.value)) ? #lists.size(entry.value) + ' / ' + categoryTotalCounts[entry.key] + ' items' : #lists.size(entry.value) + ' items'}">0 items</span>
             </div>
 
             <div class="product-grid">
@@ -1298,6 +1353,24 @@
                     <span th:unless="${product.stock > 0}" class="sold-out-chip" th:text="#{index.soldOut}">Sold Out</span>
                 </article>
             </div>
+        </div>
+
+        <div class="pagination-shell" th:if="${shopPagination.totalPages > 1}">
+            <p class="pagination-summary amount-font"
+               th:text="|${shopPagination.startItem}-${shopPagination.endItem} of ${shopPagination.totalItems}|">1-12 of 12</p>
+            <nav class="pagination-bar" aria-label="Shop pagination">
+                <a class="pagination-link"
+                   th:classappend="${!shopPagination.hasPrevious()} ? ' is-disabled'"
+                   th:href="@{/(page=${shopPagination.previousPage()},lang=${#locale.language})}">‹</a>
+                <a class="pagination-link"
+                   th:each="pageNumber : ${#numbers.sequence(1, shopPagination.totalPages)}"
+                   th:classappend="${pageNumber == shopPagination.currentPage} ? ' is-active'"
+                   th:href="@{/(page=${pageNumber},lang=${#locale.language})}"
+                   th:text="${pageNumber}">1</a>
+                <a class="pagination-link"
+                   th:classappend="${!shopPagination.hasNext()} ? ' is-disabled'"
+                   th:href="@{/(page=${shopPagination.nextPage()},lang=${#locale.language})}">›</a>
+            </nav>
         </div>
     </section>
 
