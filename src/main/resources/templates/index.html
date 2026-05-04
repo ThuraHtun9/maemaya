@@ -528,6 +528,73 @@
             font-size: 0.82rem;
             font-weight: 700;
         }
+        .shop-category-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            margin: 14px 0 18px 0;
+            padding: 10px 12px;
+            border: 1px solid rgba(92, 51, 32, 0.12);
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(255, 251, 244, 0.96) 0%, rgba(248, 238, 221, 0.96) 100%);
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #d3b282 #f8efe3;
+        }
+        .shop-category-bar::-webkit-scrollbar {
+            height: 8px;
+        }
+        .shop-category-bar::-webkit-scrollbar-track {
+            background: rgba(248, 239, 227, 0.92);
+            border-radius: 999px;
+        }
+        .shop-category-bar::-webkit-scrollbar-thumb {
+            background: rgba(195, 147, 64, 0.72);
+            border-radius: 999px;
+        }
+        .shop-category-label {
+            flex: 0 0 auto;
+            color: var(--brand-muted);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            padding-right: 2px;
+            position: sticky;
+            left: 0;
+            background: linear-gradient(90deg, #fbf2e6 0%, rgba(251, 242, 230, 0.96) 78%, rgba(251, 242, 230, 0) 100%);
+        }
+        .shop-category-link {
+            flex: 0 0 auto;
+            white-space: nowrap;
+            text-decoration: none;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--brand-line);
+            background: rgba(255, 255, 255, 0.92);
+            color: var(--brand-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 7px 14px rgba(66, 35, 21, 0.07);
+            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+        .shop-category-link:hover {
+            background: #fff6e9;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(66, 35, 21, 0.12);
+        }
+        .shop-category-link.is-active {
+            background: linear-gradient(145deg, #7b4b33, #5a3320);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 12px 20px rgba(72, 39, 24, 0.2);
+        }
 
         .product-grid {
             display: grid;
@@ -538,9 +605,12 @@
             justify-content: start;
         }
         .pagination-shell {
-            margin-top: 26px;
-            padding-top: 18px;
-            border-top: 1px solid rgba(92, 51, 32, 0.12);
+            margin-top: 28px;
+            padding: 18px 18px 16px 18px;
+            border: 1px solid rgba(92, 51, 32, 0.12);
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255, 250, 242, 0.96) 0%, rgba(246, 235, 215, 0.96) 100%);
+            box-shadow: 0 10px 22px rgba(66, 35, 21, 0.08);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -549,14 +619,42 @@
         }
         .pagination-summary {
             color: var(--brand-muted);
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             font-weight: 700;
+        }
+        .pagination-summary-strong {
+            color: var(--brand-primary);
+            font-size: 1rem;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 3px;
         }
         .pagination-bar {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
+        }
+        .pagination-nav-link {
+            min-height: 42px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--brand-line);
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--brand-primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+            font-weight: 800;
+            box-shadow: 0 8px 16px rgba(66, 35, 21, 0.08);
+            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+        }
+        .pagination-nav-link:hover {
+            background: #fff6e9;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(66, 35, 21, 0.12);
         }
         .pagination-link {
             min-width: 42px;
@@ -605,6 +703,26 @@
             .product-grid {
                 grid-template-columns: repeat(4, minmax(0, 1fr));
                 gap: 18px;
+            }
+        }
+        @media (max-width: 860px) {
+            .shop-category-bar {
+                padding: 8px 10px 10px 10px;
+                gap: 6px;
+            }
+            .shop-category-label {
+                font-size: 0.78rem;
+            }
+            .shop-category-link {
+                min-height: 34px;
+                padding: 7px 12px;
+                font-size: 0.81rem;
+            }
+            .pagination-shell {
+                padding: 14px;
+            }
+            .pagination-nav-link {
+                padding: 9px 13px;
             }
         }
         .product-card {
@@ -1286,6 +1404,7 @@
                 </a>
                 <div class="lang-switch">
                     <form class="lang-form" th:action="@{/}" method="get">
+                        <input type="hidden" name="category" th:value="${activeCategory}">
                         <input type="hidden" name="page" th:value="${shopPagination.currentPage}">
                         <label class="sr-only" for="langSelect" th:text="#{lang.switch}">Switch Language</label>
                         <select id="langSelect" name="lang" class="lang-select" onchange="this.form.submit()">
@@ -1312,6 +1431,18 @@
         <div id="searchNoResult" class="flash flash-error" style="display:none;" th:text="#{index.search.noResult}">
             No matching products found.
         </div>
+
+        <nav class="shop-category-bar" aria-label="Shop categories">
+            <span class="shop-category-label">Category</span>
+            <a class="shop-category-link"
+               th:classappend="${activeCategory == 'all'} ? ' is-active'"
+               th:href="@{/(category='all',page=1,lang=${#locale.language})}">All</a>
+            <a class="shop-category-link"
+               th:each="shopCategory : ${shopCategories}"
+               th:classappend="${shopCategory == activeCategory} ? ' is-active'"
+               th:href="@{/(category=${shopCategory},page=1,lang=${#locale.language})}"
+               th:text="${shopCategory}">Category</a>
+        </nav>
 
         <div class="category-section" th:each="entry : ${productsByCategory}">
             <div class="category-header">
@@ -1356,20 +1487,24 @@
         </div>
 
         <div class="pagination-shell" th:if="${shopPagination.totalPages > 1}">
-            <p class="pagination-summary amount-font"
-               th:text="|${shopPagination.startItem}-${shopPagination.endItem} of ${shopPagination.totalItems}|">1-12 of 12</p>
+            <div class="pagination-summary">
+                <span class="pagination-summary-strong amount-font"
+                      th:text="|Page ${shopPagination.currentPage} of ${shopPagination.totalPages}|">Page 1 of 1</span>
+                <span class="amount-font"
+                      th:text="|${shopPagination.startItem}-${shopPagination.endItem} of ${shopPagination.totalItems} items|">1-12 of 12 items</span>
+            </div>
             <nav class="pagination-bar" aria-label="Shop pagination">
-                <a class="pagination-link"
+                <a class="pagination-nav-link"
                    th:classappend="${!shopPagination.hasPrevious()} ? ' is-disabled'"
-                   th:href="@{/(page=${shopPagination.previousPage()},lang=${#locale.language})}">‹</a>
+                   th:href="@{/(category=${activeCategory},page=${shopPagination.previousPage()},lang=${#locale.language})}">‹ Prev</a>
                 <a class="pagination-link"
                    th:each="pageNumber : ${#numbers.sequence(1, shopPagination.totalPages)}"
                    th:classappend="${pageNumber == shopPagination.currentPage} ? ' is-active'"
-                   th:href="@{/(page=${pageNumber},lang=${#locale.language})}"
+                   th:href="@{/(category=${activeCategory},page=${pageNumber},lang=${#locale.language})}"
                    th:text="${pageNumber}">1</a>
-                <a class="pagination-link"
+                <a class="pagination-nav-link"
                    th:classappend="${!shopPagination.hasNext()} ? ' is-disabled'"
-                   th:href="@{/(page=${shopPagination.nextPage()},lang=${#locale.language})}">›</a>
+                   th:href="@{/(category=${activeCategory},page=${shopPagination.nextPage()},lang=${#locale.language})}">Next ›</a>
             </nav>
         </div>
     </section>

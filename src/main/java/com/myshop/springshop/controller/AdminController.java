@@ -80,101 +80,19 @@ public class AdminController {
             Model model,
             Locale locale
     ) {
-        String activeTab = normalizeAdminTab(tab);
-        model.addAttribute("activeTab", activeTab);
-        try {
-            List<Product> allProducts = productRepository.findAll();
-            List<Product> orderEditableProducts = allProducts.stream()
-                    .filter(product -> product.stock() > 0)
-                    .toList();
-            List<String> usedCategories = allProducts.stream()
-                    .map(Product::displayCategory)
-                    .distinct()
-                    .sorted(String.CASE_INSENSITIVE_ORDER)
-                    .toList();
-
-            Map<String, Integer> categoryOrderMap = productRepository.findCategoryDisplayOrderMap();
-            LinkedHashSet<String> mergedCategories = new LinkedHashSet<>(categoryOrderMap.keySet());
-            mergedCategories.addAll(usedCategories);
-            List<String> categories = new ArrayList<>(mergedCategories);
-            if (categories.isEmpty()) {
-                categories = List.of("Coffee", "Tea", "Goods", "Other");
-            }
-            List<CategoryDisplaySetting> categorySettings = buildCategorySettings(categories, categoryOrderMap);
-            Map<String, Long> categoryUsage = buildCategoryUsage(allProducts);
-            String activeProductCategory = resolveProductCategoryFilter(productCategory, categories);
-            List<Product> filteredProducts = filterProductsByCategory(allProducts, activeProductCategory);
-
-            List<OrderRecord> orderRows = orderRepository.findAllWithProduct();
-            String orderNumberFilter = normalize(orderNumber);
-            String phoneFilter = normalizePhone(phone);
-            List<AdminOrderView> filteredOrders = filterOrders(
-                    summarizeOrders(orderRows),
-                    orderNumberFilter,
-                    phoneFilter
-            );
-            List<ProductRequestRecord> allRequests = productRequestRepository.findAll();
-
-            PaginationView<Product> productPagination = paginate(filteredProducts, productPage, PRODUCT_PAGE_SIZE);
-            PaginationView<AdminOrderView> orderPagination = paginate(filteredOrders, orderPage, ORDER_PAGE_SIZE);
-            PaginationView<ProductRequestRecord> requestPagination = paginate(allRequests, requestPage, REQUEST_PAGE_SIZE);
-
-            model.addAttribute("products", productPagination.items());
-            model.addAttribute("orders", orderPagination.items());
-            model.addAttribute("productRequests", requestPagination.items());
-            model.addAttribute("productPagination", productPagination);
-            model.addAttribute("orderPagination", orderPagination);
-            model.addAttribute("requestPagination", requestPagination);
-            model.addAttribute("productCount", filteredProducts.size());
-            model.addAttribute("totalProductCount", allProducts.size());
-            model.addAttribute("soldOutProductCount", filteredProducts.stream().filter(product -> product.stock() == 0).count());
-            model.addAttribute("activeOrderCount", filteredOrders.stream().filter(order -> "ACTIVE".equals(order.orderStatus())).count());
-            model.addAttribute("readyOrderCount", filteredOrders.stream().filter(order -> "READY".equals(order.orderStatus())).count());
-            model.addAttribute("deliveredOrderCount", filteredOrders.stream().filter(order -> "DELIVERED".equals(order.orderStatus())).count());
-            model.addAttribute("newRequestCount", allRequests.stream().filter(ProductRequestRecord::isNew).count());
-            model.addAttribute("requestCount", allRequests.size());
-            model.addAttribute("categories", categories);
-            model.addAttribute("categorySettings", categorySettings);
-            model.addAttribute("categoryUsage", categoryUsage);
-            model.addAttribute("activeProductCategory", activeProductCategory);
-            model.addAttribute("orderSearchNumber", orderNumberFilter);
-            model.addAttribute("orderSearchPhone", phoneFilter);
-            model.addAttribute("orderEditableProducts", orderEditableProducts);
-
-            if ((StringUtils.hasText(orderNumberFilter) || StringUtils.hasText(phoneFilter))
-                    && filteredOrders.isEmpty()
-                    && !model.containsAttribute("adminNotice")) {
-                model.addAttribute(
-                        "adminNotice",
-                        messageSource.getMessage("admin.order.search.notFound", null, locale)
-                );
-            }
-        } catch (Exception ex) {
-            model.addAttribute("products", List.of());
-            model.addAttribute("orders", List.of());
-            model.addAttribute("productRequests", List.of());
-            model.addAttribute("productPagination", new PaginationView<>(List.of(), 1, 1, PRODUCT_PAGE_SIZE, 0, 0, 0));
-            model.addAttribute("orderPagination", new PaginationView<>(List.of(), 1, 1, ORDER_PAGE_SIZE, 0, 0, 0));
-            model.addAttribute("requestPagination", new PaginationView<>(List.of(), 1, 1, REQUEST_PAGE_SIZE, 0, 0, 0));
-            model.addAttribute("productCount", 0);
-            model.addAttribute("totalProductCount", 0);
-            model.addAttribute("soldOutProductCount", 0L);
-            model.addAttribute("activeOrderCount", 0L);
-            model.addAttribute("readyOrderCount", 0L);
-            model.addAttribute("deliveredOrderCount", 0L);
-            model.addAttribute("newRequestCount", 0L);
-            model.addAttribute("requestCount", 0);
-            model.addAttribute("categories", List.of("Coffee", "Tea", "Goods", "Other"));
-            model.addAttribute("categorySettings", List.of());
-            model.addAttribute("categoryUsage", Map.of());
-            model.addAttribute("activeProductCategory", "all");
-            model.addAttribute("orderSearchNumber", normalize(orderNumber));
-            model.addAttribute("orderSearchPhone", normalizePhone(phone));
-            model.addAttribute("orderEditableProducts", List.of());
-            model.addAttribute("adminError", messageSource.getMessage("admin.error.db", null, locale));
-        }
-
+        populateAdminModel(model, normalizeAdminTab(tab), orderNumber, phone, productCategory, productPage, orderPage, requestPage, locale);
         return "admin";
+    }
+
+    @GetMapping("/admin/products")
+    public String adminProducts(
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
+            Model model,
+            Locale locale
+    ) {
+        populateAdminModel(model, TAB_PRODUCTS, "", "", productCategory, productPage, 1, 1, locale);
+        return "admin_products";
     }
 
     @PostMapping("/admin/add")
@@ -598,6 +516,111 @@ public class AdminController {
         return redirectAdminWithPage(tab, requestPage, productCategory);
     }
 
+    private void populateAdminModel(
+            Model model,
+            String activeTab,
+            String orderNumber,
+            String phone,
+            String productCategory,
+            Integer productPage,
+            Integer orderPage,
+            Integer requestPage,
+            Locale locale
+    ) {
+        model.addAttribute("activeTab", activeTab);
+        try {
+            List<Product> allProducts = productRepository.findAll();
+            List<Product> orderEditableProducts = allProducts.stream()
+                    .filter(product -> product.stock() > 0)
+                    .toList();
+            List<String> usedCategories = allProducts.stream()
+                    .map(Product::displayCategory)
+                    .distinct()
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .toList();
+
+            Map<String, Integer> categoryOrderMap = productRepository.findCategoryDisplayOrderMap();
+            LinkedHashSet<String> mergedCategories = new LinkedHashSet<>(categoryOrderMap.keySet());
+            mergedCategories.addAll(usedCategories);
+            List<String> categories = new ArrayList<>(mergedCategories);
+            if (categories.isEmpty()) {
+                categories = List.of("Coffee", "Tea", "Goods", "Other");
+            }
+            List<CategoryDisplaySetting> categorySettings = buildCategorySettings(categories, categoryOrderMap);
+            Map<String, Long> categoryUsage = buildCategoryUsage(allProducts);
+            String activeProductCategory = resolveProductCategoryFilter(productCategory, categories);
+            List<Product> filteredProducts = filterProductsByCategory(allProducts, activeProductCategory);
+
+            List<OrderRecord> orderRows = orderRepository.findAllWithProduct();
+            String orderNumberFilter = normalize(orderNumber);
+            String phoneFilter = normalizePhone(phone);
+            List<AdminOrderView> filteredOrders = filterOrders(
+                    summarizeOrders(orderRows),
+                    orderNumberFilter,
+                    phoneFilter
+            );
+            List<ProductRequestRecord> allRequests = productRequestRepository.findAll();
+
+            PaginationView<Product> productPagination = paginate(filteredProducts, productPage, PRODUCT_PAGE_SIZE);
+            PaginationView<AdminOrderView> orderPagination = paginate(filteredOrders, orderPage, ORDER_PAGE_SIZE);
+            PaginationView<ProductRequestRecord> requestPagination = paginate(allRequests, requestPage, REQUEST_PAGE_SIZE);
+
+            model.addAttribute("products", productPagination.items());
+            model.addAttribute("orders", orderPagination.items());
+            model.addAttribute("productRequests", requestPagination.items());
+            model.addAttribute("productPagination", productPagination);
+            model.addAttribute("orderPagination", orderPagination);
+            model.addAttribute("requestPagination", requestPagination);
+            model.addAttribute("productCount", filteredProducts.size());
+            model.addAttribute("totalProductCount", allProducts.size());
+            model.addAttribute("soldOutProductCount", filteredProducts.stream().filter(product -> product.stock() == 0).count());
+            model.addAttribute("activeOrderCount", filteredOrders.stream().filter(order -> "ACTIVE".equals(order.orderStatus())).count());
+            model.addAttribute("readyOrderCount", filteredOrders.stream().filter(order -> "READY".equals(order.orderStatus())).count());
+            model.addAttribute("deliveredOrderCount", filteredOrders.stream().filter(order -> "DELIVERED".equals(order.orderStatus())).count());
+            model.addAttribute("newRequestCount", allRequests.stream().filter(ProductRequestRecord::isNew).count());
+            model.addAttribute("requestCount", allRequests.size());
+            model.addAttribute("categories", categories);
+            model.addAttribute("categorySettings", categorySettings);
+            model.addAttribute("categoryUsage", categoryUsage);
+            model.addAttribute("activeProductCategory", activeProductCategory);
+            model.addAttribute("orderSearchNumber", orderNumberFilter);
+            model.addAttribute("orderSearchPhone", phoneFilter);
+            model.addAttribute("orderEditableProducts", orderEditableProducts);
+
+            if ((StringUtils.hasText(orderNumberFilter) || StringUtils.hasText(phoneFilter))
+                    && filteredOrders.isEmpty()
+                    && !model.containsAttribute("adminNotice")) {
+                model.addAttribute(
+                        "adminNotice",
+                        messageSource.getMessage("admin.order.search.notFound", null, locale)
+                );
+            }
+        } catch (Exception ex) {
+            model.addAttribute("products", List.of());
+            model.addAttribute("orders", List.of());
+            model.addAttribute("productRequests", List.of());
+            model.addAttribute("productPagination", new PaginationView<>(List.of(), 1, 1, PRODUCT_PAGE_SIZE, 0, 0, 0));
+            model.addAttribute("orderPagination", new PaginationView<>(List.of(), 1, 1, ORDER_PAGE_SIZE, 0, 0, 0));
+            model.addAttribute("requestPagination", new PaginationView<>(List.of(), 1, 1, REQUEST_PAGE_SIZE, 0, 0, 0));
+            model.addAttribute("productCount", 0);
+            model.addAttribute("totalProductCount", 0);
+            model.addAttribute("soldOutProductCount", 0L);
+            model.addAttribute("activeOrderCount", 0L);
+            model.addAttribute("readyOrderCount", 0L);
+            model.addAttribute("deliveredOrderCount", 0L);
+            model.addAttribute("newRequestCount", 0L);
+            model.addAttribute("requestCount", 0);
+            model.addAttribute("categories", List.of("Coffee", "Tea", "Goods", "Other"));
+            model.addAttribute("categorySettings", List.of());
+            model.addAttribute("categoryUsage", Map.of());
+            model.addAttribute("activeProductCategory", "all");
+            model.addAttribute("orderSearchNumber", normalize(orderNumber));
+            model.addAttribute("orderSearchPhone", normalizePhone(phone));
+            model.addAttribute("orderEditableProducts", List.of());
+            model.addAttribute("adminError", messageSource.getMessage("admin.error.db", null, locale));
+        }
+    }
+
     private List<AdminOrderView> summarizeOrders(List<OrderRecord> orderRows) {
         Map<String, MutableOrderSummary> grouped = new LinkedHashMap<>();
 
@@ -694,6 +717,11 @@ public class AdminController {
         String safeCategory = normalize(productCategory);
         if (StringUtils.hasText(safeCategory)) {
             redirect.append("&productCategory=").append(UriUtils.encode(safeCategory, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        if (TAB_PRODUCTS.equals(safeTab)) {
+            String target = redirect.toString()
+                    .replace("redirect:/admin?", "redirect:/admin/products?");
+            return target;
         }
         return redirect.toString();
     }

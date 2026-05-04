@@ -73,6 +73,7 @@ public class ShopController {
 
     @GetMapping("/")
     public String index(
+            @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "page", required = false) Integer page,
             Model model,
             HttpSession session,
@@ -95,19 +96,22 @@ public class ShopController {
         Map<String, Integer> categoryDisplayOrderMap = productRepository.findCategoryDisplayOrderMap();
         List<String> sortedCategories = new ArrayList<>(grouped.keySet());
         sortedCategories.sort(
-                Comparator.comparingInt((String category) -> categoryDisplayOrderMap.getOrDefault(category, 9999))
+                Comparator.comparingInt((String categoryName) -> categoryDisplayOrderMap.getOrDefault(categoryName, 9999))
                         .thenComparing(String.CASE_INSENSITIVE_ORDER)
         );
 
+        String activeCategory = resolveActiveCategory(category, sortedCategories);
         List<Product> orderedProducts = new ArrayList<>();
-        for (String category : sortedCategories) {
-            orderedProducts.addAll(grouped.get(category));
+        for (String categoryName : sortedCategories) {
+            if ("all".equals(activeCategory) || activeCategory.equals(categoryName)) {
+                orderedProducts.addAll(grouped.get(categoryName));
+            }
         }
 
         PaginationView<Product> shopPagination = paginate(orderedProducts, page, SHOP_PAGE_SIZE);
         Map<String, Integer> totalCategoryCounts = new LinkedHashMap<>();
-        for (String category : sortedCategories) {
-            totalCategoryCounts.put(category, grouped.get(category).size());
+        for (String categoryName : sortedCategories) {
+            totalCategoryCounts.put(categoryName, grouped.get(categoryName).size());
         }
 
         Map<String, List<Product>> productsByCategory = new LinkedHashMap<>();
@@ -119,6 +123,8 @@ public class ShopController {
 
         model.addAttribute("productsByCategory", productsByCategory);
         model.addAttribute("categoryTotalCounts", totalCategoryCounts);
+        model.addAttribute("shopCategories", sortedCategories);
+        model.addAttribute("activeCategory", activeCategory);
         model.addAttribute("shopPagination", shopPagination);
         model.addAttribute("cartCount", cartService.count(session));
         model.addAttribute("cartItemCounts", cartItemCounts);
@@ -710,6 +716,17 @@ public class ShopController {
                 fromIndex + 1,
                 toIndex
         );
+    }
+
+    private String resolveActiveCategory(String requestedCategory, List<String> categories) {
+        String normalized = normalize(requestedCategory);
+        if (!StringUtils.hasText(normalized) || "all".equalsIgnoreCase(normalized)) {
+            return "all";
+        }
+        return categories.stream()
+                .filter(category -> category.equalsIgnoreCase(normalized))
+                .findFirst()
+                .orElse("all");
     }
 
     private OrderRequest normalizeOrderRequest(OrderRequest request) {
