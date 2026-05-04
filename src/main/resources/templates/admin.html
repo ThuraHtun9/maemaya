@@ -607,6 +607,63 @@
             font-size: 0.75rem;
             line-height: 1.2;
         }
+        .admin-product-portal {
+            margin: 0 0 18px 0;
+            padding: 18px 20px;
+            border: 1px solid var(--brand-line);
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fffaf2 0%, #f6ebd9 48%, #f2e1c6 100%);
+            box-shadow: 0 12px 26px rgba(70, 39, 23, 0.09);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .admin-product-portal-copy {
+            max-width: 640px;
+        }
+        .admin-product-portal-copy h2 {
+            margin: 0 0 6px 0;
+        }
+        .admin-product-portal-copy p {
+            margin: 0;
+            color: var(--brand-muted);
+            line-height: 1.5;
+        }
+        .portal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+            padding: 6px 11px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(92, 51, 32, 0.12);
+            color: var(--brand-primary);
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .admin-product-portal-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 46px;
+            padding: 0 18px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 800;
+            background: linear-gradient(145deg, #6f412a, #4d2b1c);
+            box-shadow: 0 12px 22px rgba(72, 39, 24, 0.18);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+        }
+        .admin-product-portal-action:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.02);
+            box-shadow: 0 14px 24px rgba(72, 39, 24, 0.24);
+        }
         .admin-surface {
             border: 1px solid var(--brand-line);
             border-radius: 14px;
@@ -1216,11 +1273,20 @@
         </article>
     </section>
 
+    <section class="admin-product-portal" aria-label="Product Management Portal">
+        <div class="admin-product-portal-copy">
+            <span class="portal-badge">Product Studio</span>
+            <h2>Open The Dedicated Product Workspace</h2>
+            <p>Use the separate product page for category sorting, inventory updates, filtering, image changes, and product pagination without crowding the main dashboard.</p>
+        </div>
+        <a class="admin-product-portal-action"
+           th:href="@{/admin/products(lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage})}">
+            <span aria-hidden="true">▣</span>
+            <span>Go To Product Management</span>
+        </a>
+    </section>
+
     <nav class="admin-tabs" aria-label="Admin Sections">
-        <a th:href="@{/admin(tab='products',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
-           class="admin-tab-btn"
-           th:classappend="${activeTab == 'products'} ? ' is-active'"
-           th:text="#{admin.tab.products}">Products</a>
         <a th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
            class="admin-tab-btn"
            th:classappend="${activeTab == 'orders'} ? ' is-active'"
@@ -1231,7 +1297,7 @@
            th:text="#{admin.tab.requests}">Requests</a>
     </nav>
 
-    <div class="admin-tab-panel" th:if="${activeTab == 'products'}">
+    <div class="admin-tab-panel" th:if="${false}">
     <section class="admin-surface">
         <div class="admin-section-head">
             <h2 th:text="#{admin.addProduct}">Add Product</h2>
