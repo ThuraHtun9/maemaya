@@ -9,7 +9,11 @@ public record Product(
         String image
 ) {
     public String displayCategory() {
-        return (category == null || category.isBlank()) ? "Other" : category;
+        if (category == null) {
+            return "Other";
+        }
+        String normalizedCategory = category.trim();
+        return normalizedCategory.isBlank() ? "Other" : normalizedCategory;
     }
 
     public boolean hasImage() {

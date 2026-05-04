@@ -102,101 +102,113 @@ public class ProductRepository {
             if (categoryName == null || displayOrder == null) {
                 continue;
             }
-            categoryOrderMap.put(
-                    String.valueOf(categoryName),
-                    ((Number) displayOrder).intValue()
-            );
+            String normalizedCategoryName = String.valueOf(categoryName).trim();
+            if (normalizedCategoryName.isEmpty()) {
+                continue;
+            }
+            categoryOrderMap.put(normalizedCategoryName, ((Number) displayOrder).intValue());
         }
         return categoryOrderMap;
     }
 
     public void saveCategoryDisplayOrder(String categoryName, int displayOrder) {
+        String normalizedCategoryName = normalizeCategoryName(categoryName);
         int updated = jdbcTemplate.update(
                 "UPDATE category_settings SET display_order = ? WHERE category_name = ?",
                 displayOrder,
-                categoryName
+                normalizedCategoryName
         );
 
         if (updated == 0) {
             jdbcTemplate.update(
-                    "INSERT INTO category_settings (category_name, display_order) VALUES (?, ?)",
-                    categoryName,
+                "INSERT INTO category_settings (category_name, display_order) VALUES (?, ?)",
+                    normalizedCategoryName,
                     displayOrder
             );
         }
     }
 
     public void addCategory(String categoryName) {
+        String normalizedCategoryName = normalizeCategoryName(categoryName);
         Integer nextOrder = jdbcTemplate.queryForObject(
                 "SELECT COALESCE(MAX(display_order), 0) + 10 FROM category_settings",
                 Integer.class
         );
-        saveCategoryDisplayOrder(categoryName, nextOrder == null ? 10 : nextOrder);
+        saveCategoryDisplayOrder(normalizedCategoryName, nextOrder == null ? 10 : nextOrder);
     }
 
     public void ensureCategoryExists(String categoryName) {
-        if (countCategorySetting(categoryName) > 0) {
+        String normalizedCategoryName = normalizeCategoryName(categoryName);
+        if (countCategorySetting(normalizedCategoryName) > 0) {
             return;
         }
-        addCategory(categoryName);
+        addCategory(normalizedCategoryName);
     }
 
     public void updateCategory(String originalName, String newName, int displayOrder) {
-        boolean sameName = originalName.equals(newName);
+        String normalizedOriginalName = normalizeCategoryName(originalName);
+        String normalizedNewName = normalizeCategoryName(newName);
+        boolean sameName = normalizedOriginalName.equals(normalizedNewName);
 
         if (!sameName) {
             jdbcTemplate.update(
                     "UPDATE products SET category = ? WHERE category = ?",
-                    newName,
-                    originalName
+                    normalizedNewName,
+                    normalizedOriginalName
             );
         }
 
-        if (!sameName && countCategorySetting(newName) > 0) {
-            saveCategoryDisplayOrder(newName, displayOrder);
+        if (!sameName && countCategorySetting(normalizedNewName) > 0) {
+            saveCategoryDisplayOrder(normalizedNewName, displayOrder);
             jdbcTemplate.update(
                     "DELETE FROM category_settings WHERE category_name = ?",
-                    originalName
+                    normalizedOriginalName
             );
             return;
         }
 
         int updated = jdbcTemplate.update(
                 "UPDATE category_settings SET category_name = ?, display_order = ? WHERE category_name = ?",
-                newName,
+                normalizedNewName,
                 displayOrder,
-                originalName
+                normalizedOriginalName
         );
 
         if (updated == 0) {
-            saveCategoryDisplayOrder(newName, displayOrder);
+            saveCategoryDisplayOrder(normalizedNewName, displayOrder);
         }
 
-        if (!sameName && countCategorySetting(originalName) > 0) {
+        if (!sameName && countCategorySetting(normalizedOriginalName) > 0) {
             jdbcTemplate.update(
                     "DELETE FROM category_settings WHERE category_name = ?",
-                    originalName
+                    normalizedOriginalName
             );
         }
     }
 
     public void deleteCategory(String categoryName) {
+        String normalizedCategoryName = normalizeCategoryName(categoryName);
         jdbcTemplate.update(
                 "UPDATE products SET category = NULL WHERE category = ?",
-                categoryName
+                normalizedCategoryName
         );
         jdbcTemplate.update(
                 "DELETE FROM category_settings WHERE category_name = ?",
-                categoryName
+                normalizedCategoryName
         );
     }
 
     private int countCategorySetting(String categoryName) {
+        String normalizedCategoryName = normalizeCategoryName(categoryName);
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM category_settings WHERE category_name = ?",
                 Integer.class,
-                categoryName
+                normalizedCategoryName
         );
         return count == null ? 0 : count;
+    }
+
+    private String normalizeCategoryName(String categoryName) {
+        return categoryName == null ? "" : categoryName.trim();
     }
 }

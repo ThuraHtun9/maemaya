@@ -4,7 +4,9 @@ import com.myshop.springshop.model.AdminOrderView;
 import com.myshop.springshop.model.AdminOrderItemView;
 import com.myshop.springshop.model.CategoryDisplaySetting;
 import com.myshop.springshop.model.OrderRecord;
+import com.myshop.springshop.model.PaginationView;
 import com.myshop.springshop.model.Product;
+import com.myshop.springshop.model.ProductRequestRecord;
 import com.myshop.springshop.repository.OrderRepository;
 import com.myshop.springshop.repository.ProductRequestRepository;
 import com.myshop.springshop.repository.ProductRepository;
@@ -16,6 +18,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.ui.Model;
+import org.springframework.web.util.UriUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +41,9 @@ public class AdminController {
     private static final String TAB_PRODUCTS = "products";
     private static final String TAB_ORDERS = "orders";
     private static final String TAB_REQUESTS = "requests";
+    private static final int PRODUCT_PAGE_SIZE = 10;
+    private static final int ORDER_PAGE_SIZE = 8;
+    private static final int REQUEST_PAGE_SIZE = 10;
 
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
@@ -66,18 +72,22 @@ public class AdminController {
     public String admin(
             @RequestParam(value = "orderNumber", required = false) String orderNumber,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
+            @RequestParam(value = "orderPage", required = false) Integer orderPage,
+            @RequestParam(value = "requestPage", required = false) Integer requestPage,
             Model model,
             Locale locale
     ) {
         String activeTab = normalizeAdminTab(tab);
         model.addAttribute("activeTab", activeTab);
         try {
-            List<Product> products = productRepository.findAll();
-            List<Product> orderEditableProducts = products.stream()
+            List<Product> allProducts = productRepository.findAll();
+            List<Product> orderEditableProducts = allProducts.stream()
                     .filter(product -> product.stock() > 0)
                     .toList();
-            List<String> usedCategories = products.stream()
+            List<String> usedCategories = allProducts.stream()
                     .map(Product::displayCategory)
                     .distinct()
                     .sorted(String.CASE_INSENSITIVE_ORDER)
@@ -91,29 +101,48 @@ public class AdminController {
                 categories = List.of("Coffee", "Tea", "Goods", "Other");
             }
             List<CategoryDisplaySetting> categorySettings = buildCategorySettings(categories, categoryOrderMap);
-            Map<String, Long> categoryUsage = buildCategoryUsage(products);
+            Map<String, Long> categoryUsage = buildCategoryUsage(allProducts);
+            String activeProductCategory = resolveProductCategoryFilter(productCategory, categories);
+            List<Product> filteredProducts = filterProductsByCategory(allProducts, activeProductCategory);
 
             List<OrderRecord> orderRows = orderRepository.findAllWithProduct();
             String orderNumberFilter = normalize(orderNumber);
             String phoneFilter = normalizePhone(phone);
-            List<AdminOrderView> orders = filterOrders(
+            List<AdminOrderView> filteredOrders = filterOrders(
                     summarizeOrders(orderRows),
                     orderNumberFilter,
                     phoneFilter
             );
+            List<ProductRequestRecord> allRequests = productRequestRepository.findAll();
 
-            model.addAttribute("products", products);
-            model.addAttribute("orders", orders);
-            model.addAttribute("productRequests", productRequestRepository.findAll());
+            PaginationView<Product> productPagination = paginate(filteredProducts, productPage, PRODUCT_PAGE_SIZE);
+            PaginationView<AdminOrderView> orderPagination = paginate(filteredOrders, orderPage, ORDER_PAGE_SIZE);
+            PaginationView<ProductRequestRecord> requestPagination = paginate(allRequests, requestPage, REQUEST_PAGE_SIZE);
+
+            model.addAttribute("products", productPagination.items());
+            model.addAttribute("orders", orderPagination.items());
+            model.addAttribute("productRequests", requestPagination.items());
+            model.addAttribute("productPagination", productPagination);
+            model.addAttribute("orderPagination", orderPagination);
+            model.addAttribute("requestPagination", requestPagination);
+            model.addAttribute("productCount", filteredProducts.size());
+            model.addAttribute("totalProductCount", allProducts.size());
+            model.addAttribute("soldOutProductCount", filteredProducts.stream().filter(product -> product.stock() == 0).count());
+            model.addAttribute("activeOrderCount", filteredOrders.stream().filter(order -> "ACTIVE".equals(order.orderStatus())).count());
+            model.addAttribute("readyOrderCount", filteredOrders.stream().filter(order -> "READY".equals(order.orderStatus())).count());
+            model.addAttribute("deliveredOrderCount", filteredOrders.stream().filter(order -> "DELIVERED".equals(order.orderStatus())).count());
+            model.addAttribute("newRequestCount", allRequests.stream().filter(ProductRequestRecord::isNew).count());
+            model.addAttribute("requestCount", allRequests.size());
             model.addAttribute("categories", categories);
             model.addAttribute("categorySettings", categorySettings);
             model.addAttribute("categoryUsage", categoryUsage);
+            model.addAttribute("activeProductCategory", activeProductCategory);
             model.addAttribute("orderSearchNumber", orderNumberFilter);
             model.addAttribute("orderSearchPhone", phoneFilter);
             model.addAttribute("orderEditableProducts", orderEditableProducts);
 
             if ((StringUtils.hasText(orderNumberFilter) || StringUtils.hasText(phoneFilter))
-                    && orders.isEmpty()
+                    && filteredOrders.isEmpty()
                     && !model.containsAttribute("adminNotice")) {
                 model.addAttribute(
                         "adminNotice",
@@ -124,9 +153,21 @@ public class AdminController {
             model.addAttribute("products", List.of());
             model.addAttribute("orders", List.of());
             model.addAttribute("productRequests", List.of());
+            model.addAttribute("productPagination", new PaginationView<>(List.of(), 1, 1, PRODUCT_PAGE_SIZE, 0, 0, 0));
+            model.addAttribute("orderPagination", new PaginationView<>(List.of(), 1, 1, ORDER_PAGE_SIZE, 0, 0, 0));
+            model.addAttribute("requestPagination", new PaginationView<>(List.of(), 1, 1, REQUEST_PAGE_SIZE, 0, 0, 0));
+            model.addAttribute("productCount", 0);
+            model.addAttribute("totalProductCount", 0);
+            model.addAttribute("soldOutProductCount", 0L);
+            model.addAttribute("activeOrderCount", 0L);
+            model.addAttribute("readyOrderCount", 0L);
+            model.addAttribute("deliveredOrderCount", 0L);
+            model.addAttribute("newRequestCount", 0L);
+            model.addAttribute("requestCount", 0);
             model.addAttribute("categories", List.of("Coffee", "Tea", "Goods", "Other"));
             model.addAttribute("categorySettings", List.of());
             model.addAttribute("categoryUsage", Map.of());
+            model.addAttribute("activeProductCategory", "all");
             model.addAttribute("orderSearchNumber", normalize(orderNumber));
             model.addAttribute("orderSearchPhone", normalizePhone(phone));
             model.addAttribute("orderEditableProducts", List.of());
@@ -144,6 +185,8 @@ public class AdminController {
             @RequestParam("stock") int stock,
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -154,14 +197,14 @@ public class AdminController {
                     "adminError",
                     messageSource.getMessage("admin.product.nameRequired", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
         if (!StringUtils.hasText(safeCategory)) {
             redirectAttributes.addFlashAttribute(
                     "adminError",
                     messageSource.getMessage("admin.category.nameRequired", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
         String imageName = "";
@@ -184,7 +227,7 @@ public class AdminController {
                     "adminError",
                     messageSource.getMessage("admin.product.addFailed", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
         try {
@@ -203,7 +246,7 @@ public class AdminController {
                     messageSource.getMessage("admin.image.uploadFailed", null, locale)
             );
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, productPage, productCategory);
     }
 
     @PostMapping("/admin/update/{productId}")
@@ -216,6 +259,8 @@ public class AdminController {
             @RequestParam(value = "image", required = false) MultipartFile image,
             @RequestParam(value = "removeImage", required = false, defaultValue = "false") boolean removeImage,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -225,7 +270,7 @@ public class AdminController {
                     "adminError",
                     messageSource.getMessage("admin.product.notFound", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
         String safeName = name == null ? "" : name.trim();
@@ -235,14 +280,14 @@ public class AdminController {
                     "adminError",
                     messageSource.getMessage("admin.product.nameRequired", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
         if (!StringUtils.hasText(safeCategory)) {
             redirectAttributes.addFlashAttribute(
                     "adminError",
                     messageSource.getMessage("admin.category.nameRequired", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
         String finalImage = existing.image();
@@ -258,7 +303,7 @@ public class AdminController {
                         "adminError",
                         messageSource.getMessage("admin.image.uploadFailed", null, locale)
                 );
-                return redirectAdminWithTab(tab);
+                return redirectAdminWithPage(tab, productPage, productCategory);
             }
             if (existing.hasImage()) {
                 fileStorageService.delete(existing.image());
@@ -270,17 +315,24 @@ public class AdminController {
         }
 
         productRepository.updateProduct(productId, safeName, safeCategory, price, stock, finalImage);
+        try {
+            productRepository.ensureCategoryExists(safeCategory);
+        } catch (RuntimeException ex) {
+            log.warn("Failed to ensure category setting while updating product. productId={}, category={}", productId, safeCategory, ex);
+        }
         redirectAttributes.addFlashAttribute(
                 "adminNotice",
                 messageSource.getMessage("admin.product.updated", null, locale)
         );
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, productPage, productCategory);
     }
 
     @PostMapping("/admin/delete/{productId}")
     public String deleteProduct(
             @PathVariable long productId,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -294,13 +346,15 @@ public class AdminController {
                 "adminNotice",
                 messageSource.getMessage("admin.product.deleted", null, locale)
         );
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, productPage, productCategory);
     }
 
     @PostMapping("/admin/categories/add")
     public String addCategory(
             @RequestParam("categoryName") String categoryName,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -310,7 +364,7 @@ public class AdminController {
                     "adminError",
                     messageSource.getMessage("admin.category.nameRequired", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
         try {
@@ -325,7 +379,7 @@ public class AdminController {
                     messageSource.getMessage("admin.category.invalid", null, locale)
             );
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, productPage, productCategory);
     }
 
     @PostMapping("/admin/categories/update")
@@ -334,6 +388,8 @@ public class AdminController {
             @RequestParam("categoryName") String categoryName,
             @RequestParam("displayOrder") int displayOrder,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -346,7 +402,7 @@ public class AdminController {
                     "adminError",
                     messageSource.getMessage("admin.category.nameRequired", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
         productRepository.updateCategory(safeOriginalName, safeCategoryName, safeDisplayOrder);
@@ -354,13 +410,15 @@ public class AdminController {
                 "adminNotice",
                 messageSource.getMessage("admin.category.updated", null, locale)
         );
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, productPage, productCategory);
     }
 
     @PostMapping("/admin/categories/delete")
     public String deleteCategory(
             @RequestParam("categoryName") String categoryName,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "productPage", required = false) Integer productPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -370,7 +428,7 @@ public class AdminController {
                     "adminError",
                     messageSource.getMessage("admin.category.nameRequired", null, locale)
             );
-            return redirectAdminWithTab(tab);
+            return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
         productRepository.deleteCategory(safeCategoryName);
@@ -378,7 +436,7 @@ public class AdminController {
                 "adminNotice",
                 messageSource.getMessage("admin.category.deleted", null, locale)
         );
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, productPage, productCategory);
     }
 
     @PostMapping("/admin/orders/{orderNumber}/ready")
@@ -386,6 +444,8 @@ public class AdminController {
             @PathVariable String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "orderPage", required = false) Integer orderPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -401,7 +461,7 @@ public class AdminController {
                     messageSource.getMessage("admin.order.transitionFailed", null, locale)
             );
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, orderPage, productCategory);
     }
 
     @PostMapping("/admin/orders/{orderNumber}/delivered")
@@ -409,6 +469,8 @@ public class AdminController {
             @PathVariable String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "orderPage", required = false) Integer orderPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -424,7 +486,7 @@ public class AdminController {
                     messageSource.getMessage("admin.order.transitionFailed", null, locale)
             );
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, orderPage, productCategory);
     }
 
     @PostMapping("/admin/orders/{orderNumber}/delete")
@@ -432,6 +494,8 @@ public class AdminController {
             @PathVariable String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "orderPage", required = false) Integer orderPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -447,7 +511,7 @@ public class AdminController {
                     messageSource.getMessage("admin.order.deleteFailed", null, locale)
             );
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, orderPage, productCategory);
     }
 
     @PostMapping("/admin/orders/{orderNumber}/items/add")
@@ -456,6 +520,8 @@ public class AdminController {
             @RequestParam("phone") String phone,
             @RequestParam("productId") long productId,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "orderPage", required = false) Integer orderPage,
             RedirectAttributes redirectAttributes
     ) {
         OrderService.CancelResult result = orderService.adminAddOneItem(
@@ -468,7 +534,7 @@ public class AdminController {
         } else {
             redirectAttributes.addFlashAttribute("adminError", result.message());
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, orderPage, productCategory);
     }
 
     @PostMapping("/admin/orders/{orderNumber}/items/reduce")
@@ -477,6 +543,8 @@ public class AdminController {
             @RequestParam("phone") String phone,
             @RequestParam("productId") long productId,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "orderPage", required = false) Integer orderPage,
             RedirectAttributes redirectAttributes
     ) {
         OrderService.CancelResult result = orderService.adminReduceOneItem(
@@ -489,13 +557,15 @@ public class AdminController {
         } else {
             redirectAttributes.addFlashAttribute("adminError", result.message());
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, orderPage, productCategory);
     }
 
     @PostMapping("/admin/requests/{requestId}/done")
     public String markRequestDone(
             @PathVariable long requestId,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "requestPage", required = false) Integer requestPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -506,13 +576,15 @@ public class AdminController {
                     messageSource.getMessage("admin.requests.doneSuccess", null, locale)
             );
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, requestPage, productCategory);
     }
 
     @PostMapping("/admin/requests/{requestId}/delete")
     public String deleteRequest(
             @PathVariable long requestId,
             @RequestParam(value = "tab", required = false) String tab,
+            @RequestParam(value = "productCategory", required = false) String productCategory,
+            @RequestParam(value = "requestPage", required = false) Integer requestPage,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
@@ -523,7 +595,7 @@ public class AdminController {
                     messageSource.getMessage("admin.requests.deleteSuccess", null, locale)
             );
         }
-        return redirectAdminWithTab(tab);
+        return redirectAdminWithPage(tab, requestPage, productCategory);
     }
 
     private List<AdminOrderView> summarizeOrders(List<OrderRecord> orderRows) {
@@ -554,6 +626,15 @@ public class AdminController {
                 .toList();
     }
 
+    private List<Product> filterProductsByCategory(List<Product> products, String activeProductCategory) {
+        if (!StringUtils.hasText(activeProductCategory) || "all".equalsIgnoreCase(activeProductCategory)) {
+            return products;
+        }
+        return products.stream()
+                .filter(product -> activeProductCategory.equalsIgnoreCase(product.displayCategory()))
+                .toList();
+    }
+
     private String normalize(String value) {
         return value == null ? "" : value.trim();
     }
@@ -577,8 +658,68 @@ public class AdminController {
         };
     }
 
+    private String resolveProductCategoryFilter(String productCategory, List<String> categories) {
+        String normalized = normalize(productCategory);
+        if (!StringUtils.hasText(normalized) || "all".equalsIgnoreCase(normalized)) {
+            return "all";
+        }
+        return categories.stream()
+                .filter(category -> category.equalsIgnoreCase(normalized))
+                .findFirst()
+                .orElse("all");
+    }
+
     private String redirectAdminWithTab(String tab) {
         return "redirect:/admin?tab=" + normalizeAdminTab(tab);
+    }
+
+    private String redirectAdminWithPage(String tab, Integer page) {
+        return redirectAdminWithPage(tab, page, null);
+    }
+
+    private String redirectAdminWithPage(String tab, Integer page, String productCategory) {
+        String safeTab = normalizeAdminTab(tab);
+        String pageParam = switch (safeTab) {
+            case TAB_ORDERS -> "orderPage";
+            case TAB_REQUESTS -> "requestPage";
+            default -> "productPage";
+        };
+        int safePage = page == null ? 1 : Math.max(1, page);
+        StringBuilder redirect = new StringBuilder("redirect:/admin?tab=")
+                .append(safeTab)
+                .append("&")
+                .append(pageParam)
+                .append("=")
+                .append(safePage);
+        String safeCategory = normalize(productCategory);
+        if (StringUtils.hasText(safeCategory)) {
+            redirect.append("&productCategory=").append(UriUtils.encode(safeCategory, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        return redirect.toString();
+    }
+
+    private <T> PaginationView<T> paginate(List<T> items, Integer requestedPage, int pageSize) {
+        int safePageSize = Math.max(1, pageSize);
+        int totalItems = items.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / safePageSize));
+        int currentPage = requestedPage == null ? 1 : requestedPage;
+        currentPage = Math.max(1, Math.min(currentPage, totalPages));
+
+        if (totalItems == 0) {
+            return new PaginationView<>(List.of(), 1, 1, safePageSize, 0, 0, 0);
+        }
+
+        int fromIndex = (currentPage - 1) * safePageSize;
+        int toIndex = Math.min(fromIndex + safePageSize, totalItems);
+        return new PaginationView<>(
+                items.subList(fromIndex, toIndex),
+                currentPage,
+                totalPages,
+                safePageSize,
+                totalItems,
+                fromIndex + 1,
+                toIndex
+        );
     }
 
     private Map<String, Long> buildCategoryUsage(List<Product> products) {

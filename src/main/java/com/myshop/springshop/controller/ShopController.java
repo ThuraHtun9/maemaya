@@ -2,6 +2,7 @@ package com.myshop.springshop.controller;
 
 import com.myshop.springshop.model.CartItem;
 import com.myshop.springshop.model.OrderRequest;
+import com.myshop.springshop.model.PaginationView;
 import com.myshop.springshop.model.Product;
 import com.myshop.springshop.repository.ProductRequestRepository;
 import com.myshop.springshop.repository.ProductRepository;
@@ -42,6 +43,7 @@ public class ShopController {
 
     private static final Logger log = LoggerFactory.getLogger(ShopController.class);
     private static final ZoneId ORDER_TIME_ZONE = ZoneId.of("Asia/Tokyo");
+    private static final int SHOP_PAGE_SIZE = 12;
 
     private final ProductRepository productRepository;
     private final ProductRequestRepository productRequestRepository;
@@ -70,7 +72,12 @@ public class ShopController {
     }
 
     @GetMapping("/")
-    public String index(Model model, HttpSession session, Authentication authentication) {
+    public String index(
+            @RequestParam(value = "page", required = false) Integer page,
+            Model model,
+            HttpSession session,
+            Authentication authentication
+    ) {
         List<Product> products = productRepository.findAll();
         Map<String, List<Product>> grouped = new LinkedHashMap<>();
         Map<Long, Integer> cartItemCounts = new LinkedHashMap<>();
@@ -92,12 +99,27 @@ public class ShopController {
                         .thenComparing(String.CASE_INSENSITIVE_ORDER)
         );
 
-        Map<String, List<Product>> productsByCategory = new LinkedHashMap<>();
+        List<Product> orderedProducts = new ArrayList<>();
         for (String category : sortedCategories) {
-            productsByCategory.put(category, grouped.get(category));
+            orderedProducts.addAll(grouped.get(category));
+        }
+
+        PaginationView<Product> shopPagination = paginate(orderedProducts, page, SHOP_PAGE_SIZE);
+        Map<String, Integer> totalCategoryCounts = new LinkedHashMap<>();
+        for (String category : sortedCategories) {
+            totalCategoryCounts.put(category, grouped.get(category).size());
+        }
+
+        Map<String, List<Product>> productsByCategory = new LinkedHashMap<>();
+        for (Product product : shopPagination.items()) {
+            productsByCategory
+                    .computeIfAbsent(product.displayCategory(), key -> new ArrayList<>())
+                    .add(product);
         }
 
         model.addAttribute("productsByCategory", productsByCategory);
+        model.addAttribute("categoryTotalCounts", totalCategoryCounts);
+        model.addAttribute("shopPagination", shopPagination);
         model.addAttribute("cartCount", cartService.count(session));
         model.addAttribute("cartItemCounts", cartItemCounts);
         boolean isAdmin = authentication != null
@@ -664,6 +686,30 @@ public class ShopController {
 
     private LocalDate earliestDeliveryDate() {
         return LocalDate.now(ORDER_TIME_ZONE).plusDays(1);
+    }
+
+    private <T> PaginationView<T> paginate(List<T> items, Integer requestedPage, int pageSize) {
+        int safePageSize = Math.max(1, pageSize);
+        int totalItems = items.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / safePageSize));
+        int currentPage = requestedPage == null ? 1 : requestedPage;
+        currentPage = Math.max(1, Math.min(currentPage, totalPages));
+
+        if (totalItems == 0) {
+            return new PaginationView<>(List.of(), 1, 1, safePageSize, 0, 0, 0);
+        }
+
+        int fromIndex = (currentPage - 1) * safePageSize;
+        int toIndex = Math.min(fromIndex + safePageSize, totalItems);
+        return new PaginationView<>(
+                items.subList(fromIndex, toIndex),
+                currentPage,
+                totalPages,
+                safePageSize,
+                totalItems,
+                fromIndex + 1,
+                toIndex
+        );
     }
 
     private OrderRequest normalizeOrderRequest(OrderRequest request) {
