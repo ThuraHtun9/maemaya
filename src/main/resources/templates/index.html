@@ -895,6 +895,7 @@
             overflow: hidden;
         }
         .happy-shoppers-caption {
+            text-align: center;
             margin: 0 0 10px;
             color: var(--brand-primary);
             font-weight: 700;
@@ -1486,31 +1487,38 @@
             </div>
         </div>
 
-        <div class="pagination-shell" th:if="${shopPagination.totalPages > 1}">
+        <div class="pagination-shell" th:if="${shopPagination.totalPages > 1}"
+                th:with="start=${T(java.lang.Math).max(1, shopPagination.currentPage - 2)},
+              end=${T(java.lang.Math).min(shopPagination.totalPages, start + 4)},
+              finalStart=${T(java.lang.Math).max(1, end - 4)}">
+    
             <div class="pagination-summary">
                 <span class="pagination-summary-strong amount-font"
-                      th:text="|Page ${shopPagination.currentPage} of ${shopPagination.totalPages}|">Page 1 of 1</span>
+              th:text="|Page ${shopPagination.currentPage} of ${shopPagination.totalPages}|">Page 1 of 1</span>
                 <span class="amount-font"
-                      th:text="|${shopPagination.startItem}-${shopPagination.endItem} of ${shopPagination.totalItems} items|">1-12 of 12 items</span>
+              th:text="|${shopPagination.startItem}-${shopPagination.endItem} of ${shopPagination.totalItems} items|">1-12 of 12 items</span>
             </div>
+    
             <nav class="pagination-bar" aria-label="Shop pagination">
                 <a class="pagination-nav-link"
-                   th:classappend="${!shopPagination.hasPrevious()} ? ' is-disabled'"
-                   th:href="@{/(category=${activeCategory},page=${shopPagination.previousPage()},lang=${#locale.language})}">‹ Prev</a>
+                    th:classappend="${shopPagination.currentPage <= 1} ? ' is-disabled' : ''"
+                    th:href="@{/(category=${activeCategory},page=${shopPagination.currentPage > 1 ? shopPagination.currentPage - 1 : 1},lang=${#locale.language})}">‹ Prev</a>
+        
                 <a class="pagination-link"
-                   th:each="pageNumber : ${#numbers.sequence(1, shopPagination.totalPages)}"
-                   th:classappend="${pageNumber == shopPagination.currentPage} ? ' is-active'"
-                   th:href="@{/(category=${activeCategory},page=${pageNumber},lang=${#locale.language})}"
-                   th:text="${pageNumber}">1</a>
+                    th:each="pageNumber : ${#numbers.sequence(finalStart, end)}"
+                    th:classappend="${pageNumber == shopPagination.currentPage} ? ' is-active' : ''"
+                    th:href="@{/(category=${activeCategory},page=${pageNumber},lang=${#locale.language})}"
+                    th:text="${pageNumber}">1</a>
+        
                 <a class="pagination-nav-link"
-                   th:classappend="${!shopPagination.hasNext()} ? ' is-disabled'"
-                   th:href="@{/(category=${activeCategory},page=${shopPagination.nextPage()},lang=${#locale.language})}">Next ›</a>
+                    th:classappend="${shopPagination.currentPage >= shopPagination.totalPages} ? ' is-disabled' : ''"
+                    th:href="@{/(category=${activeCategory},page=${shopPagination.currentPage < shopPagination.totalPages ? shopPagination.currentPage + 1 : shopPagination.totalPages},lang=${#locale.language})}">Next ›</a>
             </nav>
         </div>
     </section>
 
     <section class="happy-shoppers" aria-label="Happy shoppers scene">
-        <p class="happy-shoppers-caption">မေ့မရစတိုးမှာ ဝယ်ပြီး ပျော်ပျော်ရွှင်ရွှင် အထုပ်အပြည့်နဲ့ ပြန်သွားနေကြတဲ့ customers</p>
+        <p class="happy-shoppers-caption">မေ့မရစတိုးမှာ ယုံကြည်စိတ်ချစွာ ဝယ်ယူအားပေးခြင်းကို ကျေးဇူးတင်ပါသည်</p>
         <div class="shopper-scene" aria-hidden="true">
             <div class="shop-front">
                 <span class="shop-front-sign">မေ့မရ</span>
