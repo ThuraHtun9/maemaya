@@ -6,1198 +6,7 @@
     <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
     <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
     <title th:text="#{admin.title}">Admin</title>
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap");
-        :root {
-            --brand-bg: #f4eadb;
-            --brand-bg-soft: #fbf4e9;
-            --brand-surface: #fffaf2;
-            --brand-line: #e4d0b4;
-            --brand-text: #3f281b;
-            --brand-muted: #7f6351;
-            --brand-primary: #5c3320;
-            --brand-primary-hover: #74442b;
-            --brand-accent: #c99340;
-            --brand-danger: #8f3c2d;
-        }
-
-        body {
-            font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
-            padding: 20px;
-            background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
-            color: var(--brand-text);
-        }
-        input, select, textarea, button { font-family: inherit; }
-        .amount-font { font-family: "Helvetica Neue", Arial, sans-serif; }
-        .admin-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: var(--brand-surface);
-            border: 1px solid var(--brand-line);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
-        }
-        h1 {
-            border-bottom: 2px solid var(--brand-line);
-            padding-bottom: 10px;
-            color: var(--brand-primary);
-            margin-top: 0;
-        }
-        h2 {
-            color: var(--brand-primary);
-            margin-bottom: 12px;
-        }
-        section { margin-bottom: 40px; }
-        .admin-collapse {
-            border: 1px solid var(--brand-line);
-            border-radius: 10px;
-            background: #fffdf8;
-        }
-        .admin-collapse > summary {
-            list-style: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: var(--brand-primary);
-            font-weight: 700;
-            font-size: 1.25rem;
-            padding: 12px 14px;
-            user-select: none;
-            border-bottom: 1px solid var(--brand-line);
-        }
-        .admin-collapse > summary::-webkit-details-marker { display: none; }
-        .admin-collapse > summary::after {
-            content: "▾";
-            font-size: 1rem;
-            color: var(--brand-muted);
-            transition: transform 0.18s ease;
-        }
-        .admin-collapse:not([open]) > summary {
-            border-bottom: none;
-        }
-        .admin-collapse:not([open]) > summary::after {
-            transform: rotate(-90deg);
-        }
-        .admin-collapse-content {
-            padding: 0 0 8px 0;
-        }
-        .table-wrap {
-            overflow-x: auto;
-        }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
-        th, td {
-            border: 1px solid var(--brand-line);
-            padding: 10px;
-            text-align: left;
-            vertical-align: middle;
-        }
-        th {
-            background: #f7eee1;
-            color: var(--brand-primary);
-            font-weight: 700;
-        }
-
-        input[type="text"], input[type="number"], select, input[type="file"] {
-            padding: 8px;
-            margin-right: 5px;
-            border: 1px solid var(--brand-line);
-            border-radius: 6px;
-            color: var(--brand-text);
-            background: #fff;
-        }
-        input[type="text"]:focus, input[type="number"]:focus, select:focus {
-            outline: 0;
-            border-color: #c58e4e;
-            box-shadow: 0 0 0 3px rgba(197, 142, 78, 0.16);
-        }
-        button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            color: white;
-            font-weight: 700;
-        }
-
-        .btn-add { background: var(--brand-primary); }
-        .btn-add:hover { background: var(--brand-primary-hover); }
-        .btn-update { background: #8a5538; }
-        .btn-update:hover { background: #75462f; }
-        .btn-delete { background: #b5493d; margin-left: 5px; }
-        .btn-delete:hover { background: #993b30; }
-
-        .admin-topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            flex-wrap: nowrap;
-            margin-bottom: 10px;
-        }
-        .admin-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            min-width: 0;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .admin-brand.live-3d {
-            transform-style: preserve-3d;
-            transform-origin: left center;
-            transition: transform 0.22s ease, filter 0.22s ease;
-            will-change: transform;
-        }
-        .admin-brand.live-3d.is-live {
-            filter: drop-shadow(0 10px 16px rgba(54, 30, 18, 0.2));
-        }
-        .admin-brand.live-3d::after {
-            content: "";
-            position: absolute;
-            inset: -4px;
-            border-radius: 14px;
-            pointer-events: none;
-            background: linear-gradient(118deg, rgba(255,255,255,0) 18%, rgba(255,255,255,0.38) 49%, rgba(255,255,255,0) 80%);
-            opacity: 0;
-            transform: translateZ(38px);
-            transition: opacity 0.22s ease;
-        }
-        .admin-brand.live-3d.is-live::after {
-            opacity: 0.34;
-        }
-        .admin-brand-logo {
-            width: 44px;
-            height: 44px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 1px solid var(--brand-line);
-            box-shadow: 0 6px 14px rgba(68, 39, 22, 0.16);
-            background: #f6eada;
-            transform: translateZ(24px);
-            transition: transform 0.22s ease;
-        }
-        .admin-brand-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.1;
-            transform: translateZ(34px);
-            transition: transform 0.22s ease;
-        }
-        .admin-brand-name {
-            color: var(--brand-primary);
-            font-size: 1.5rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .admin-brand-sub {
-            color: var(--brand-muted);
-            font-size: 0.78rem;
-            font-weight: 700;
-        }
-        .admin-top-right {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
-            flex-wrap: nowrap;
-            margin-left: auto;
-        }
-        .lang-picker-form {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid var(--brand-line);
-            border-radius: 999px;
-            background: #fff;
-            padding: 6px 10px;
-            min-height: 36px;
-            flex: 0 0 auto;
-        }
-        .lang-icon {
-            font-size: 0.85rem;
-            line-height: 1;
-            color: var(--brand-muted);
-            user-select: none;
-        }
-        .lang-select {
-            -webkit-appearance: none;
-            appearance: none;
-            border: 0 !important;
-            outline: 0;
-            background-color: transparent;
-            color: var(--brand-primary);
-            font-weight: 700;
-            font-size: 0.88rem;
-            padding: 2px 18px 2px 0;
-            margin-right: 0 !important;
-            cursor: pointer;
-            min-width: 56px;
-            line-height: 1.1;
-            white-space: nowrap;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%237f6351' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 2px center;
-            background-size: 10px 6px;
-        }
-        .lang-select:focus {
-            box-shadow: none;
-        }
-        .top-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: nowrap;
-        }
-        .logout-form { margin: 0; }
-        .top-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 38px;
-            padding: 9px 16px;
-            border-radius: 999px;
-            border: 1px solid transparent;
-            font-size: 0.95rem;
-            font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-            transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
-            box-shadow: 0 5px 10px rgba(66, 35, 21, 0.15);
-        }
-        .top-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(66, 35, 21, 0.2);
-        }
-        .top-btn-ghost {
-            color: var(--brand-primary);
-            background: #fff;
-            border-color: var(--brand-line);
-        }
-        .top-btn-ghost:hover {
-            background: #f8efe3;
-        }
-        .top-btn-danger {
-            color: #fff;
-            background: linear-gradient(145deg, #7b4b33, #5a3320);
-        }
-        .top-btn-danger:hover {
-            background: linear-gradient(145deg, #8a5639, #6a3f2a);
-        }
-        .logout-btn {
-            border: 0;
-        }
-        .top-btn-glyph {
-            font-size: 0.84rem;
-            line-height: 1;
-        }
-        .top-btn-text {
-            display: inline;
-            white-space: nowrap;
-        }
-        .admin-inline-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .admin-inline-form > * {
-            margin-right: 0;
-        }
-
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; }
-        .badge-gray { background: #efe6d8; color: var(--brand-muted); }
-        .badge-blue { background: #f3e7d6; color: var(--brand-primary); border: 1px solid #d9b98b; }
-        .badge-green { background: #eaf8ef; color: #1d6f42; border: 1px solid #77c69a; }
-        .badge-orange { background: #fff3e6; color: #9b5b1d; border: 1px solid #dfb178; }
-
-        .alert-msg { display: block; font-size: 0.8rem; font-weight: bold; margin-top: 5px; }
-        .text-danger { color: var(--brand-danger); }
-        .text-warning { color: #b45a00; }
-        .bg-danger-light { background-color: #fff0eb; }
-        .order-item-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-        .order-item-list li {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 3px 0;
-            border-bottom: 1px dashed #e5d7c4;
-        }
-        .order-item-list li:last-child { border-bottom: none; }
-        .item-qty {
-            display: inline-block;
-            min-width: 36px;
-            text-align: center;
-            font-weight: 700;
-            color: var(--brand-text);
-            background: #f4ecdf;
-            border-radius: 999px;
-            padding: 2px 8px;
-        }
-        .item-qty-actions {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .order-item-main {
-            flex: 1 1 auto;
-            min-width: 0;
-            word-break: break-word;
-        }
-        .order-item-reduce-form {
-            display: inline-flex !important;
-            margin: 0 !important;
-        }
-        .order-item-add-form {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .order-item-add-form select {
-            flex: 1 1 auto;
-            min-width: 160px;
-            margin-right: 0;
-        }
-        .order-item-add-form button {
-            white-space: nowrap;
-        }
-        .orders-table .order-row td {
-            vertical-align: top;
-            background: #fffefb;
-        }
-        .orders-table .order-subcard {
-            border: 1px solid #ead8bd;
-            background: #fcf5e9;
-            border-radius: 10px;
-            padding: 10px 12px;
-        }
-        .orders-table .products-cell {
-            background: #fff8ee;
-            min-width: 220px;
-        }
-        .orders-table .order-products-panel {
-            border: 1px solid #e7d3b2;
-            background: #fffdf8;
-            border-radius: 12px;
-            padding: 10px;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-        }
-        .orders-table .order-item-list li {
-            padding: 7px 0;
-        }
-        .orders-table .order-item-add-form {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #e7d8c2;
-        }
-        .orders-table .total-cell {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--brand-primary);
-        }
-        .orders-table .actions-cell {
-            background: #fff4ea;
-            min-width: 150px;
-        }
-        .orders-table .actions-cell form {
-            display: block;
-            width: 100%;
-            margin: 0 0 8px 0;
-        }
-        .orders-table .actions-cell button {
-            width: 100%;
-            margin-left: 0;
-        }
-        .orders-table .actions-cell .status-delivered-inline,
-        .orders-table .actions-cell .status-canceled-inline {
-            display: inline-block;
-            margin-bottom: 8px;
-        }
-        .orders-table .order-row + .order-row td {
-            border-top-width: 2px;
-            border-top-color: #dec49f;
-        }
-        .order-action-cell form { display: inline-block; margin-right: 6px; }
-        .request-action-cell form { display: inline-block; margin-right: 6px; margin-top: 4px; }
-        .product-action-cell {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        .product-action-cell form {
-            display: block !important;
-            margin: 0 !important;
-        }
-        .btn-ready { background: #b1742d; }
-        .btn-delivered { background: #2f7d4b; }
-        .btn-ready:hover { background: #985f22; }
-        .btn-delivered:hover { background: #25643c; }
-        .order-search-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-            margin-top: 8px;
-            margin-bottom: 10px;
-        }
-        .order-search-form input {
-            width: 180px;
-            margin-right: 0;
-        }
-        .search-clear {
-            color: var(--brand-muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            margin-left: 4px;
-        }
-        .search-clear:hover { text-decoration: underline; }
-        .category-order-form {
-            background: #fcf5e9;
-            border: 1px solid var(--brand-line);
-            border-radius: 8px;
-            padding: 12px;
-            overflow: hidden;
-        }
-        .category-add-form {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 10px;
-            align-items: stretch;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid var(--brand-line);
-            border-radius: 10px;
-            background: #fffdf8;
-        }
-        .category-add-form input[type="text"] {
-            min-width: 0;
-            width: 100%;
-            margin-right: 0;
-            height: 38px;
-        }
-        .category-add-form .btn-add {
-            margin: 0;
-            min-width: 96px;
-            height: 38px;
-            padding: 8px 14px;
-            white-space: nowrap;
-        }
-        .category-order-help {
-            margin: 4px 0 12px 0;
-            color: var(--brand-muted);
-            font-size: 0.92rem;
-        }
-        .category-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 12px;
-        }
-        .category-table th,
-        .category-table td {
-            border: 1px solid var(--brand-line);
-            padding: 8px;
-            text-align: left;
-        }
-        .category-table th {
-            background: #f7eee1;
-            color: var(--brand-primary);
-        }
-        .category-action-cell form {
-            display: inline-block;
-            margin-right: 6px;
-        }
-        .btn-small {
-            padding: 6px 10px;
-            font-size: 0.82rem;
-        }
-        .flash-notice {
-            background: #f3e7d6;
-            color: var(--brand-primary);
-            border: 1px solid #d9b98b;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 12px 0 20px 0;
-        }
-        .flash-error {
-            background: #fff0eb;
-            color: var(--brand-danger);
-            border: 1px solid #f0c5ba;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 12px 0 20px 0;
-        }
-        .admin-tabs {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 8px 0 18px 0;
-        }
-        .admin-tab-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 36px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            text-decoration: none;
-            border: 1px solid var(--brand-line);
-            background: #fff;
-            color: var(--brand-muted);
-            font-weight: 700;
-            font-size: 0.9rem;
-            transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
-        }
-        .admin-tab-btn:hover {
-            background: #f8efe3;
-            color: var(--brand-primary);
-        }
-        .admin-tab-btn.is-active {
-            background: linear-gradient(145deg, #7b4b33, #5a3320);
-            border-color: transparent;
-            color: #fff;
-        }
-        .admin-tab-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-        .admin-overview {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 10px;
-            margin: 10px 0 18px 0;
-        }
-        .kpi-card {
-            border: 1px solid var(--brand-line);
-            border-radius: 12px;
-            background: linear-gradient(165deg, #fffdf8 0%, #f8ecda 100%);
-            padding: 10px 12px;
-            box-shadow: 0 5px 12px rgba(70, 39, 23, 0.08);
-            min-height: 78px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 4px;
-        }
-        .kpi-label {
-            font-size: 0.75rem;
-            color: var(--brand-muted);
-            font-weight: 700;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-        }
-        .kpi-value {
-            color: var(--brand-primary);
-            font-size: 1.3rem;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-        .kpi-note {
-            color: #875f45;
-            font-size: 0.75rem;
-            line-height: 1.2;
-        }
-        .admin-product-portal {
-            margin: 0 0 18px 0;
-            padding: 18px 20px;
-            border: 1px solid var(--brand-line);
-            border-radius: 16px;
-            background: linear-gradient(135deg, #fffaf2 0%, #f6ebd9 48%, #f2e1c6 100%);
-            box-shadow: 0 12px 26px rgba(70, 39, 23, 0.09);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .admin-product-portal-copy {
-            max-width: 640px;
-        }
-        .admin-product-portal-copy h2 {
-            margin: 0 0 6px 0;
-        }
-        .admin-product-portal-copy p {
-            margin: 0;
-            color: var(--brand-muted);
-            line-height: 1.5;
-        }
-        .portal-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 10px;
-            padding: 6px 11px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.78);
-            border: 1px solid rgba(92, 51, 32, 0.12);
-            color: var(--brand-primary);
-            font-weight: 700;
-            font-size: 0.8rem;
-        }
-        .admin-product-portal-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            min-height: 46px;
-            padding: 0 18px;
-            border-radius: 999px;
-            text-decoration: none;
-            color: #fff;
-            font-weight: 800;
-            background: linear-gradient(145deg, #6f412a, #4d2b1c);
-            box-shadow: 0 12px 22px rgba(72, 39, 24, 0.18);
-            transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
-        }
-        .admin-product-portal-action:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.02);
-            box-shadow: 0 14px 24px rgba(72, 39, 24, 0.24);
-        }
-        .admin-surface {
-            border: 1px solid var(--brand-line);
-            border-radius: 14px;
-            background: linear-gradient(180deg, #fffdf9 0%, #fff7ea 100%);
-            padding: 14px;
-            box-shadow: 0 8px 18px rgba(70, 39, 23, 0.08);
-        }
-        .admin-section-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        .admin-section-head h2 {
-            margin: 0;
-        }
-        .section-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--brand-line);
-            border-radius: 999px;
-            padding: 4px 10px;
-            font-size: 0.8rem;
-            color: var(--brand-muted);
-            background: #fff;
-            white-space: nowrap;
-        }
-        .admin-toolbar {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto auto auto;
-            gap: 8px;
-            align-items: center;
-            margin: 0 0 12px 0;
-            padding: 10px;
-            border: 1px solid var(--brand-line);
-            border-radius: 10px;
-            background: #fffdf8;
-        }
-        .admin-toolbar .toolbar-input,
-        .admin-toolbar .toolbar-select {
-            height: 36px;
-            margin-right: 0;
-            width: 100%;
-        }
-        .toolbar-reset {
-            height: 36px;
-            border: 1px solid var(--brand-line);
-            border-radius: 8px;
-            background: #fff;
-            color: var(--brand-primary);
-            font-weight: 700;
-            padding: 0 10px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .toolbar-reset:hover {
-            background: #f8efe3;
-        }
-        .toolbar-result {
-            font-size: 0.82rem;
-            color: var(--brand-muted);
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .category-filter-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: nowrap;
-            margin: 0 0 12px 0;
-            padding: 10px 12px;
-            border: 1px solid var(--brand-line);
-            border-radius: 12px;
-            background: linear-gradient(180deg, #fffdf8 0%, #fbf2e6 100%);
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-            scrollbar-color: #d3b282 #f8efe3;
-        }
-        .category-filter-label {
-            color: var(--brand-muted);
-            font-size: 0.82rem;
-            font-weight: 700;
-            margin-right: 4px;
-            flex: 0 0 auto;
-            position: sticky;
-            left: 0;
-            padding-right: 4px;
-            background: linear-gradient(90deg, #fbf2e6 0%, rgba(251, 242, 230, 0.96) 78%, rgba(251, 242, 230, 0) 100%);
-        }
-        .category-filter-chip {
-            border: 1px solid var(--brand-line);
-            background: #fff;
-            color: var(--brand-primary);
-            border-radius: 999px;
-            padding: 7px 12px;
-            font-size: 0.84rem;
-            font-weight: 700;
-            cursor: pointer;
-            flex: 0 0 auto;
-            white-space: nowrap;
-            text-decoration: none;
-            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
-            box-shadow: 0 6px 12px rgba(66, 35, 21, 0.06);
-        }
-        .category-filter-chip:hover {
-            background: #f8efe3;
-            transform: translateY(-1px);
-        }
-        .category-filter-chip.is-active {
-            background: linear-gradient(145deg, #6c3d27, #4d2a1a);
-            color: #fff;
-            border-color: transparent;
-            box-shadow: 0 10px 18px rgba(72, 39, 24, 0.18);
-        }
-        .category-filter-bar::-webkit-scrollbar {
-            height: 8px;
-        }
-        .category-filter-bar::-webkit-scrollbar-track {
-            background: rgba(248, 239, 227, 0.9);
-            border-radius: 999px;
-        }
-        .category-filter-bar::-webkit-scrollbar-thumb {
-            background: rgba(195, 147, 64, 0.72);
-            border-radius: 999px;
-        }
-        .pagination-shell {
-            margin-top: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .pagination-summary {
-            color: var(--brand-muted);
-            font-size: 0.88rem;
-            font-weight: 700;
-        }
-        .pagination-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .pagination-link {
-            min-width: 40px;
-            min-height: 40px;
-            padding: 9px 13px;
-            border-radius: 999px;
-            border: 1px solid var(--brand-line);
-            background: #fff;
-            color: var(--brand-primary);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            box-shadow: 0 8px 14px rgba(66, 35, 21, 0.08);
-            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
-        }
-        .pagination-link:hover {
-            background: #fbf2e5;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 18px rgba(66, 35, 21, 0.12);
-        }
-        .pagination-link.is-active {
-            color: #fff;
-            border-color: transparent;
-            background: linear-gradient(145deg, #6c3d27, #4d2a1a);
-            box-shadow: 0 12px 20px rgba(72, 39, 24, 0.18);
-        }
-        .pagination-link.is-disabled {
-            pointer-events: none;
-            opacity: 0.45;
-            box-shadow: none;
-        }
-        .status-delivered-inline { color: #1f6d42; font-weight: 700; }
-        .status-canceled-inline { color: var(--brand-muted); }
-        @media (max-width: 1100px) {
-            .admin-overview {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-            .admin-topbar {
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: nowrap;
-                gap: 8px;
-            }
-            .admin-brand {
-                width: auto;
-                flex: 0 0 auto;
-                gap: 8px;
-            }
-            .admin-brand-logo {
-                width: 34px;
-                height: 34px;
-            }
-            .admin-brand-text {
-                display: none;
-            }
-            .admin-top-right {
-                width: auto;
-                justify-content: flex-end;
-                flex-direction: row;
-                align-items: center;
-                gap: 8px;
-                flex-wrap: nowrap;
-                flex: 0 0 auto;
-                margin-left: auto;
-            }
-            .lang-picker-form {
-                min-height: 34px;
-                padding: 4px 8px;
-                border-radius: 999px;
-                flex: 0 0 auto;
-            }
-            .lang-select {
-                min-width: 50px;
-                font-size: 0.8rem;
-                padding-right: 16px;
-            }
-            .top-actions {
-                width: auto;
-                display: flex;
-                gap: 6px;
-                flex-wrap: nowrap;
-            }
-            .top-btn {
-                padding: 0;
-                min-height: 32px;
-                min-width: 32px;
-                border-radius: 999px;
-                font-size: 0.78rem;
-                width: auto;
-                white-space: nowrap;
-                justify-content: center;
-                box-shadow: 0 3px 8px rgba(66, 35, 21, 0.12);
-            }
-            .top-btn-text {
-                display: none;
-            }
-            .top-btn-glyph {
-                font-size: 0.84rem;
-            }
-        }
-        @media (max-width: 900px) {
-            body { padding: 8px; }
-            .admin-container { padding: 14px; }
-            h1 { font-size: 1.55rem; line-height: 1.25; }
-            h2 { font-size: 1.15rem; line-height: 1.3; }
-            .admin-overview {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 8px;
-            }
-            .kpi-card {
-                min-height: 72px;
-            }
-            .kpi-value {
-                font-size: 1.15rem;
-            }
-            .admin-topbar {
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: nowrap;
-                gap: 8px;
-            }
-            .admin-brand {
-                width: auto;
-                flex: 0 0 auto;
-                gap: 8px;
-            }
-            .admin-brand-logo {
-                width: 34px;
-                height: 34px;
-            }
-            .admin-brand-text {
-                display: none;
-            }
-            .admin-top-right {
-                width: auto;
-                justify-content: flex-end;
-                flex-direction: row;
-                align-items: center;
-                gap: 8px;
-                flex-wrap: nowrap;
-                flex: 0 0 auto;
-                margin-left: auto;
-            }
-            .lang-picker-form {
-                min-height: 34px;
-                padding: 4px 8px;
-                border-radius: 999px;
-                flex: 0 0 auto;
-            }
-            .lang-select {
-                min-width: 50px;
-                font-size: 0.8rem;
-                padding-right: 16px;
-            }
-            .top-actions {
-                width: auto;
-                display: flex;
-                gap: 6px;
-                flex-wrap: nowrap;
-            }
-            .top-btn {
-                padding: 0;
-                min-height: 32px;
-                width: 32px;
-                min-width: 32px;
-                border-radius: 999px;
-                font-size: 0.78rem;
-                width: auto;
-                white-space: nowrap;
-                justify-content: center;
-                box-shadow: 0 3px 8px rgba(66, 35, 21, 0.12);
-            }
-            .top-btn-text {
-                display: none;
-            }
-            .top-btn-glyph {
-                font-size: 0.84rem;
-            }
-            .admin-tabs {
-                flex-wrap: nowrap;
-                gap: 8px;
-                overflow-x: auto;
-                padding-bottom: 4px;
-                margin-bottom: 14px;
-                -webkit-overflow-scrolling: touch;
-            }
-            .admin-tab-btn {
-                flex: 0 0 auto;
-                min-height: 34px;
-                padding: 7px 12px;
-                font-size: 0.84rem;
-            }
-            .admin-inline-form,
-            .category-add-form,
-            .order-search-form {
-                display: grid;
-                grid-template-columns: 1fr;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .admin-toolbar {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            .category-filter-bar {
-                padding: 8px 10px 10px 10px;
-                gap: 6px;
-            }
-            .category-filter-label {
-                font-size: 0.78rem;
-            }
-            .category-filter-chip {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-            .toolbar-result {
-                white-space: normal;
-            }
-            .search-clear {
-                margin-left: 0;
-                text-align: center;
-                padding: 4px 0;
-            }
-            .admin-inline-form input[type="text"],
-            .admin-inline-form input[type="number"],
-            .admin-inline-form input[type="file"],
-            .admin-inline-form select,
-            .category-add-form input[type="text"],
-            .category-add-form button,
-            .order-search-form input[type="text"],
-            .order-search-form button {
-                width: 100% !important;
-                margin-right: 0;
-            }
-            .category-add-form {
-                padding: 8px;
-            }
-            .category-add-form .btn-add {
-                min-width: 0;
-                height: 36px;
-            }
-            .stack-table {
-                width: 100%;
-                border-collapse: separate;
-                border-spacing: 0 10px;
-            }
-            .stack-table thead {
-                display: none;
-            }
-            .stack-table tbody {
-                display: block;
-            }
-            .stack-table tr {
-                display: block;
-                border: 1px solid var(--brand-line);
-                border-radius: 10px;
-                overflow: hidden;
-                background: #fff;
-                box-shadow: 0 4px 10px rgba(70, 39, 23, 0.08);
-            }
-            .stack-table td {
-                display: grid;
-                grid-template-columns: minmax(92px, 36%) 1fr;
-                gap: 10px;
-                align-items: flex-start;
-                border: none;
-                border-bottom: 1px dashed #e7d8c2;
-                padding: 10px 12px;
-                text-align: left;
-                font-size: 0.9rem;
-            }
-            .stack-table td:last-child {
-                border-bottom: none;
-            }
-            .stack-table td::before {
-                content: attr(data-label);
-                color: var(--brand-muted);
-                font-size: 0.8rem;
-                font-weight: 700;
-                line-height: 1.3;
-            }
-            .stack-table td > * {
-                max-width: 100%;
-                min-width: 0;
-            }
-            .stack-table input[type="text"],
-            .stack-table input[type="number"],
-            .stack-table input[type="file"],
-            .stack-table select {
-                width: 100% !important;
-                margin-right: 0;
-            }
-            .stack-table .product-action-cell,
-            .stack-table .order-action-cell,
-            .stack-table .category-action-cell,
-            .stack-table .request-action-cell {
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .stack-table .product-action-cell form,
-            .stack-table .order-action-cell form,
-            .stack-table .category-action-cell form,
-            .stack-table .request-action-cell form {
-                display: block !important;
-                width: 100%;
-                margin: 0 !important;
-            }
-            .stack-table .product-action-cell button,
-            .stack-table .order-action-cell button,
-            .stack-table .category-action-cell button,
-            .stack-table .request-action-cell button {
-                width: 100%;
-                margin-left: 0;
-            }
-            .order-item-list li {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 6px;
-            }
-            .order-item-main {
-                width: 100%;
-            }
-            .item-qty-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-            .order-item-add-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .order-item-add-form button {
-                width: 100%;
-            }
-            .orders-table.stack-table tr.order-row {
-                border: 1px solid #d9ba8d;
-                border-radius: 12px;
-                background: linear-gradient(180deg, #fffdf8 0%, #fff8ee 100%);
-            }
-            .orders-table.stack-table tr.order-row + tr.order-row {
-                margin-top: 14px;
-            }
-            .orders-table.stack-table td {
-                background: transparent;
-            }
-            .orders-table.stack-table td::before {
-                color: #6f533f;
-                letter-spacing: 0.01em;
-            }
-            .orders-table.stack-table td.products-cell {
-                border-top: 2px solid #ead5b4;
-                border-bottom: 2px solid #ead5b4;
-                background: #fff9f0;
-            }
-            .orders-table.stack-table td.actions-cell {
-                background: #fff2e6;
-                border-top: 2px solid #e5c79a;
-            }
-            .orders-table.stack-table .order-subcard {
-                border-radius: 8px;
-                padding: 8px 10px;
-            }
-            .orders-table.stack-table .order-products-panel {
-                border-radius: 10px;
-                padding: 8px;
-            }
-            .orders-table.stack-table .actions-cell form {
-                margin: 0 0 10px 0 !important;
-            }
-            .orders-table.stack-table .actions-cell form:last-of-type {
-                margin-bottom: 0 !important;
-            }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .admin-brand.live-3d,
-            .admin-brand-logo,
-            .admin-brand-text {
-                animation: none !important;
-                transition: none !important;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
     <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
     <script defer th:src="@{/js/smooth-ui.js}"></script>
 
@@ -1214,7 +23,7 @@
         </a>
         <div class="admin-top-right">
             <form class="lang-picker-form" th:action="@{/admin}" method="get">
-                <label for="adminLangSelect" class="lang-icon" aria-hidden="true">🌐</label>
+                <label for="adminLangSelect" class="lang-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><ellipse cx="12" cy="12" rx="4" ry="9"></ellipse><line x1="3" y1="12" x2="21" y2="12"></line></svg></label>
                 <input type="hidden" name="tab" th:value="${activeTab}">
                 <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
                 <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
@@ -1230,13 +39,13 @@
             </form>
             <div class="top-actions">
                 <a href="/" class="top-btn top-btn-ghost" th:title="#{nav.shop.view}" th:aria-label="#{nav.shop.view}">
-                    <span class="top-btn-glyph" aria-hidden="true">🏪</span>
+                    <span class="top-btn-glyph" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5 5.3 4h13.4l1.3 5.5"></path><path d="M4 9.5a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"></path><path d="M5 10.2V20h14v-9.8"></path><path d="M9.5 20v-5.5h5V20"></path></svg></span>
                     <span class="top-btn-text" th:text="#{nav.shop.view}">View Shop</span>
                 </a>
                 <form th:action="@{/logout}" method="post" class="logout-form">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <button type="submit" class="logout-btn top-btn top-btn-danger" th:title="#{nav.logout}" th:aria-label="#{nav.logout}">
-                        <span class="top-btn-glyph" aria-hidden="true">⎋</span>
+                        <span class="top-btn-glyph" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"></path><line x1="10" y1="12" x2="21" y2="12"></line><polyline points="17 8 21 12 17 16"></polyline></svg></span>
                         <span class="top-btn-text" th:text="#{nav.logout}">Logout</span>
                     </button>
                 </form>
@@ -1285,11 +94,12 @@
         </div>
         <a class="admin-product-portal-action"
            th:href="@{/admin/products(lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage})}">
-            <span aria-hidden="true">▣</span>
+            <span aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.3"></rect><rect x="13" y="4" width="7" height="7" rx="1.3"></rect><rect x="4" y="13" width="7" height="7" rx="1.3"></rect><rect x="13" y="13" width="7" height="7" rx="1.3"></rect></svg></span>
             <span>Go To Product Management</span>
         </a>
     </section>
 
+    <div id="adminTabResults" th:fragment="adminTabResults">
     <nav class="admin-tabs" aria-label="Admin Sections">
         <a th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
            class="admin-tab-btn"
@@ -1301,286 +111,6 @@
            th:text="#{admin.tab.requests}">Requests</a>
     </nav>
 
-    <div class="admin-tab-panel" th:if="${false}">
-    <section class="admin-surface">
-        <div class="admin-section-head">
-            <h2 th:text="#{admin.addProduct}">Add Product</h2>
-            <span class="section-badge amount-font"
-                  th:text="${activeProductCategory != 'all'} ? ${productCount + ' filtered'} : ${productCount + ' items'}">0 items</span>
-        </div>
-        <form th:action="@{/admin/add}" method="post" enctype="multipart/form-data" class="admin-inline-form">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <input type="hidden" name="tab" value="products">
-            <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-            <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-            <input type="text" name="name" th:placeholder="#{admin.placeholder.name}" required>
-
-            <input type="text" name="category" list="category_list" th:placeholder="#{admin.placeholder.category}" required style="width: 180px;">
-            <datalist id="category_list">
-                <option th:each="cat : ${categories}" th:value="${cat}"></option>
-            </datalist>
-
-            <input type="number" name="price" class="amount-font" th:placeholder="#{admin.placeholder.price}" required style="width: 100px;">
-            <input type="number" name="stock" th:placeholder="#{admin.placeholder.stock}" required style="width: 80px;">
-            <input type="file" name="image" accept="image/*">
-            <button type="submit" class="btn-add" th:text="#{admin.btn.add}">Add</button>
-        </form>
-    </section>
-
-    <section class="admin-surface">
-        <div class="admin-section-head">
-            <h2 th:text="#{admin.category.manage}">Category Display Order</h2>
-            <span class="section-badge amount-font"
-                  th:text="|${#lists.size(categorySettings)} categories|">0 categories</span>
-        </div>
-        <p class="category-order-help" th:text="#{admin.category.description}">
-            Set smaller numbers first. This order is used on the customer website.
-        </p>
-        <form th:action="@{/admin/categories/add}" method="post" class="category-add-form">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <input type="hidden" name="tab" value="products">
-            <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-            <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-            <input type="text" name="categoryName" th:placeholder="#{admin.placeholder.category}" required>
-            <button type="submit" class="btn-add btn-small" th:text="#{admin.btn.add}">Add</button>
-        </form>
-        <div class="category-order-form">
-            <table class="category-table stack-table">
-                <thead>
-                <tr>
-                    <th th:text="#{admin.category.col.name}">Category</th>
-                    <th th:text="#{admin.category.col.nameEn}">English Name</th>
-                    <th th:text="#{admin.category.col.nameJa}">Japanese Name</th>
-                    <th th:text="#{admin.category.col.order}">Display Order</th>
-                    <th th:text="#{admin.col.product}">Product</th>
-                    <th th:text="#{admin.col.action}">Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:if="${#lists.isEmpty(categorySettings)}">
-                    <td colspan="6" style="text-align:center; color:#7f6351;">-</td>
-                </tr>
-                <tr th:each="cat, catStat : ${categorySettings}">
-                    <td th:attr="data-label=#{admin.category.col.name}">
-                        <input type="hidden"
-                               name="originalCategoryName"
-                               th:value="${cat.categoryName}"
-                               th:attr="form=|cat-update-${catStat.index}|">
-                        <input type="text"
-                               name="categoryName"
-                               th:value="${cat.categoryName}"
-                               th:attr="form=|cat-update-${catStat.index}|"
-                               required>
-                    </td>
-                    <td th:attr="data-label=#{admin.category.col.nameEn}">
-                        <input type="text"
-                               name="categoryNameEn"
-                               th:value="${cat.categoryNameEn}"
-                               th:attr="form=|cat-update-${catStat.index}|"
-                               placeholder="English">
-                    </td>
-                    <td th:attr="data-label=#{admin.category.col.nameJa}">
-                        <input type="text"
-                               name="categoryNameJa"
-                               th:value="${cat.categoryNameJa}"
-                               th:attr="form=|cat-update-${catStat.index}|"
-                               placeholder="&#26085;&#26412;&#35486;">
-                    </td>
-                    <td th:attr="data-label=#{admin.category.col.order}">
-                        <input type="number"
-                               class="amount-font"
-                               name="displayOrder"
-                               min="0"
-                               th:value="${cat.displayOrder}"
-                               style="width: 110px;"
-                               th:attr="form=|cat-update-${catStat.index}|">
-                    </td>
-                    <td class="amount-font"
-                        th:attr="data-label=#{admin.col.product}"
-                        th:text="${categoryUsage[cat.categoryName] != null ? categoryUsage[cat.categoryName] : 0}">0</td>
-                    <td class="category-action-cell" th:attr="data-label=#{admin.col.action}">
-                        <form th:id="|cat-update-${catStat.index}|"
-                              th:action="@{/admin/categories/update}"
-                              method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <input type="hidden" name="tab" value="products">
-                            <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                            <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-                            <button type="submit" class="btn-update btn-small" th:text="#{admin.btn.update}">Update</button>
-                        </form>
-                        <form th:action="@{/admin/categories/delete}" method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <input type="hidden" name="tab" value="products">
-                            <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                            <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-                            <input type="hidden" name="categoryName" th:value="${cat.categoryName}">
-                            <button type="submit"
-                                    class="btn-delete btn-small"
-                                    onclick="return confirmCategoryDelete(this)"
-                                    th:attr="data-category-name=${cat.categoryName},data-confirm-template=#{admin.category.delete.confirm}"
-                                    th:text="#{admin.btn.delete}">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section class="admin-surface">
-        <details class="admin-collapse" open>
-            <summary>
-                <span th:text="#{admin.productList}">Product Management</span>
-            </summary>
-            <div class="admin-collapse-content">
-                <div class="admin-toolbar" data-filter-toolbar="products">
-                    <input type="text"
-                           class="toolbar-input"
-                           data-filter-input="products"
-                           placeholder="Quick filter by product or category">
-                    <select class="toolbar-select" data-filter-stock="products" aria-label="Stock filter">
-                        <option value="all">All stock</option>
-                        <option value="in">In stock</option>
-                        <option value="low">Low stock (&lt; 5)</option>
-                        <option value="out">Sold out</option>
-                    </select>
-                    <button type="button" class="toolbar-reset" data-filter-reset="products">Reset</button>
-                    <span class="toolbar-result amount-font" data-filter-result="products">0 / 0 shown</span>
-                </div>
-                <div class="category-filter-bar" aria-label="Product categories">
-                    <span class="category-filter-label">Category</span>
-                    <a class="category-filter-chip"
-                       th:classappend="${activeProductCategory == 'all'} ? ' is-active'"
-                       th:href="@{/admin(tab='products',lang=${#locale.language},productCategory='all',productPage=1,orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}">All</a>
-                    <a class="category-filter-chip"
-                       th:each="cat : ${categories}"
-                       th:classappend="${cat == activeProductCategory} ? ' is-active'"
-                       th:href="@{/admin(tab='products',lang=${#locale.language},productCategory=${cat},productPage=1,orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
-                       th:text="${cat}">Category</a>
-                </div>
-                <div class="table-wrap">
-                    <table class="stack-table">
-                        <thead>
-                        <tr>
-                            <th th:text="#{admin.col.image}">Image</th>
-                            <th th:text="#{admin.col.category}">Category</th>
-                            <th th:text="#{admin.col.name}">Product</th>
-                            <th th:text="#{admin.col.price}">Price (JPY)</th>
-                            <th th:text="#{admin.col.stock}">Stock</th>
-                            <th th:text="#{admin.col.action}">Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr class="product-row"
-                            th:each="product : ${products}"
-                            th:classappend="${product.stock == 0} ? ' bg-danger-light' : ''"
-                            th:attr="data-product-name=${product.name},data-product-category=${product.displayCategory()},data-product-stock=${product.stock}">
-                            <td style="text-align: center;" th:attr="data-label=#{admin.col.image}">
-                                <img th:if="${product.hasImage()}"
-                                     th:src="@{/images/{image}(image=${product.image})}"
-                                     width="50"
-                                     style="border-radius:4px;"
-                                     th:alt="#{index.product.imageAlt}">
-                                <span th:unless="${product.hasImage()}" style="font-size:0.8em; color:#ccc;" th:text="#{admin.noImage}">None</span>
-                                <div style="margin-top:8px;">
-                                    <input type="file"
-                                           name="image"
-                                           accept="image/*"
-                                           style="width: 180px;"
-                                           th:attr="form=|update-form-${product.id}|"
-                                           th:title="#{admin.image.replace}">
-                                    <label th:if="${product.hasImage()}" style="display:block; margin-top:4px; font-size:0.8rem;">
-                                        <input type="checkbox"
-                                               name="removeImage"
-                                               value="true"
-                                               th:attr="form=|update-form-${product.id}|">
-                                        <span th:text="#{admin.image.remove}">Remove image</span>
-                                    </label>
-                                </div>
-                            </td>
-                            <td th:attr="data-label=#{admin.col.category}">
-                                <input type="text"
-                                       name="category"
-                                       list="category_list"
-                                       th:value="${product.displayCategory()}"
-                                       style="width: 170px;"
-                                       th:attr="form=|update-form-${product.id}|"
-                                       required>
-                            </td>
-                            <td th:attr="data-label=#{admin.col.name}">
-                                <input type="text"
-                                       name="name"
-                                       th:value="${product.name}"
-                                       style="width: 220px;"
-                                       th:attr="form=|update-form-${product.id}|"
-                                       required>
-                            </td>
-                            <td th:attr="data-label=#{admin.col.price}">
-                                <input type="number"
-                                       name="price"
-                                       class="amount-font"
-                                       th:value="${product.price}"
-                                       style="width: 80px;"
-                                       th:attr="form=|update-form-${product.id}|">
-                            </td>
-                            <td th:attr="data-label=#{admin.col.stock}">
-                                <input type="number"
-                                       name="stock"
-                                       th:value="${product.stock}"
-                                       style="width: 60px;"
-                                       th:attr="form=|update-form-${product.id}|">
-                                <span class="alert-msg text-danger" th:if="${product.stock == 0}" th:text="#{admin.stock.soldOut}">Sold out</span>
-                                <span class="alert-msg text-warning" th:if="${product.stock > 0 and product.stock < 5}" th:text="#{admin.stock.low}">Low stock</span>
-                            </td>
-                            <td class="product-action-cell" th:attr="data-label=#{admin.col.action}">
-                                <form th:id="|update-form-${product.id}|"
-                                      th:action="@{/admin/update/{productId}(productId=${product.id})}"
-                                      method="post"
-                                      enctype="multipart/form-data">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <input type="hidden" name="tab" value="products">
-                                    <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                                    <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-                                    <button type="submit" class="btn-update" th:text="#{admin.btn.update}">Update</button>
-                                </form>
-                                <form th:action="@{/admin/delete/{productId}(productId=${product.id})}"
-                                      method="post">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <input type="hidden" name="tab" value="products">
-                                    <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                                    <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-                                    <button type="submit"
-                                            class="btn-delete"
-                                            onclick="return confirmDelete(this)"
-                                            th:attr="data-product-name=${product.name},data-confirm-template=#{admin.delete.confirm}"
-                                            th:text="#{admin.btn.delete}">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="pagination-shell" th:if="${productPagination.totalPages > 1}">
-                    <p class="pagination-summary amount-font"
-                       th:text="|${productPagination.startItem}-${productPagination.endItem} of ${productPagination.totalItems}|">1-10 of 10</p>
-                    <nav class="pagination-bar" aria-label="Product pagination">
-                        <a class="pagination-link"
-                           th:classappend="${!productPagination.hasPrevious()} ? ' is-disabled'"
-                           th:href="@{/admin(tab='products',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.previousPage()},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}">‹</a>
-                        <a class="pagination-link"
-                           th:each="pageNumber : ${#numbers.sequence(1, productPagination.totalPages)}"
-                           th:classappend="${pageNumber == productPagination.currentPage} ? ' is-active'"
-                           th:href="@{/admin(tab='products',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${pageNumber},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
-                           th:text="${pageNumber}">1</a>
-                        <a class="pagination-link"
-                           th:classappend="${!productPagination.hasNext()} ? ' is-disabled'"
-                           th:href="@{/admin(tab='products',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.nextPage()},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}">›</a>
-                    </nav>
-                </div>
-            </div>
-        </details>
-    </section>
-    </div>
 
     <div class="admin-tab-panel" th:if="${activeTab == 'orders'}">
     <section class="admin-surface">
@@ -1914,6 +444,7 @@
         </div>
     </section>
     </div>
+    </div>
     <p style="margin-top:20px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
        th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
 </div>
@@ -1939,108 +470,193 @@
     (function () {
         const normalize = (value) => (value || "").toString().toLowerCase().trim();
 
-        const bindToolbarFilter = (config) => {
-            const input = document.querySelector(`[data-filter-input="${config.key}"]`);
-            const statusSelect = document.querySelector(`[data-filter-status="${config.key}"]`) ||
-                document.querySelector(`[data-filter-stock="${config.key}"]`);
-            const resetBtn = document.querySelector(`[data-filter-reset="${config.key}"]`);
-            const result = document.querySelector(`[data-filter-result="${config.key}"]`);
-            const rows = Array.from(document.querySelectorAll(config.rowSelector));
+        // Quick-filter toolbars (order/request tables). Re-invoked after every AJAX
+        // tab/pagination swap so freshly-inserted rows keep filtering correctly.
+        function wireAdminToolbarFilters(root) {
+            const scope = root || document;
 
-            if (rows.length === 0 || (!input && !statusSelect)) {
-                if (result) {
-                    result.textContent = "0 / 0 shown";
+            const bindToolbarFilter = (config) => {
+                const input = scope.querySelector(`[data-filter-input="${config.key}"]`);
+                const statusSelect = scope.querySelector(`[data-filter-status="${config.key}"]`) ||
+                    scope.querySelector(`[data-filter-stock="${config.key}"]`);
+                const resetBtn = scope.querySelector(`[data-filter-reset="${config.key}"]`);
+                const result = scope.querySelector(`[data-filter-result="${config.key}"]`);
+                const rows = Array.from(scope.querySelectorAll(config.rowSelector));
+
+                if (rows.length === 0 || (!input && !statusSelect)) {
+                    if (result) {
+                        result.textContent = "0 / 0 shown";
+                    }
+                    return;
                 }
+
+                const apply = () => {
+                    const keyword = normalize(input ? input.value : "");
+                    const status = normalize(statusSelect ? statusSelect.value : "all");
+                    let visible = 0;
+
+                    rows.forEach((row) => {
+                        const haystack = normalize(config.pickSearchText(row));
+                        const keywordMatch = keyword.length === 0 || haystack.includes(keyword);
+                        const statusMatch = config.matchStatus(row, status);
+                        const show = keywordMatch && statusMatch;
+                        row.hidden = !show;
+                        if (show) {
+                            visible += 1;
+                        }
+                    });
+
+                    if (result) {
+                        result.textContent = `${visible} / ${rows.length} shown`;
+                    }
+                };
+
+                if (input) {
+                    input.addEventListener("input", apply, { passive: true });
+                }
+                if (statusSelect) {
+                    statusSelect.addEventListener("change", apply);
+                }
+                if (resetBtn) {
+                    resetBtn.addEventListener("click", () => {
+                        if (input) {
+                            input.value = "";
+                        }
+                        if (statusSelect) {
+                            statusSelect.selectedIndex = 0;
+                        }
+                        apply();
+                    });
+                }
+
+                apply();
+            };
+
+            bindToolbarFilter({
+                key: "orders",
+                rowSelector: "tr.order-row",
+                pickSearchText: (row) => `${row.dataset.orderNumber || ""} ${row.dataset.orderCustomer || ""} ${row.dataset.orderPhone || ""}`,
+                matchStatus: (row, status) => {
+                    if (status === "all") {
+                        return true;
+                    }
+                    return normalize(row.dataset.orderStatus) === status;
+                }
+            });
+
+            bindToolbarFilter({
+                key: "requests",
+                rowSelector: "tr.request-row",
+                pickSearchText: (row) => `${row.dataset.requestRequester || ""} ${row.dataset.requestContact || ""} ${row.dataset.requestProduct || ""}`,
+                matchStatus: (row, status) => {
+                    if (status === "all") {
+                        return true;
+                    }
+                    return normalize(row.dataset.requestStatus) === status;
+                }
+            });
+        }
+
+        // ---- AJAX admin tab navigation (tab switch / pagination / order search) ----
+        const adminContainer = document.querySelector(".admin-container");
+        const langPickerForm = document.querySelector(".lang-picker-form");
+        let activeAbortController = null;
+
+        function syncAdminFormState(url) {
+            if (!langPickerForm) {
+                return;
+            }
+            try {
+                const parsed = new URL(url, window.location.origin);
+                langPickerForm.querySelectorAll("input[type=\"hidden\"]").forEach((input) => {
+                    if (parsed.searchParams.has(input.name)) {
+                        input.value = parsed.searchParams.get(input.name);
+                    }
+                });
+            } catch (error) {
+                // malformed url - nothing to sync
+            }
+        }
+
+        async function loadAdminResults(url, options) {
+            const pushState = !options || options.pushState !== false;
+
+            if (!adminContainer || !document.getElementById("adminTabResults")) {
+                window.location.href = url;
                 return;
             }
 
-            const apply = () => {
-                const keyword = normalize(input ? input.value : "");
-                const status = normalize(statusSelect ? statusSelect.value : "all");
-                let visible = 0;
+            if (activeAbortController) {
+                activeAbortController.abort();
+            }
+            const controller = new AbortController();
+            activeAbortController = controller;
 
-                rows.forEach((row) => {
-                    const haystack = normalize(config.pickSearchText(row));
-                    const keywordMatch = keyword.length === 0 || haystack.includes(keyword);
-                    const statusMatch = config.matchStatus(row, status);
-                    const show = keywordMatch && statusMatch;
-                    row.hidden = !show;
-                    if (show) {
-                        visible += 1;
-                    }
+            let response;
+            try {
+                response = await fetch(url, {
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    signal: controller.signal
                 });
-
-                if (result) {
-                    result.textContent = `${visible} / ${rows.length} shown`;
+            } catch (error) {
+                if (error.name === "AbortError") {
+                    return;
                 }
-            };
-
-            if (input) {
-                input.addEventListener("input", apply, { passive: true });
-            }
-            if (statusSelect) {
-                statusSelect.addEventListener("change", apply);
-            }
-            if (resetBtn) {
-                resetBtn.addEventListener("click", () => {
-                    if (input) {
-                        input.value = "";
-                    }
-                    if (statusSelect) {
-                        statusSelect.selectedIndex = 0;
-                    }
-                    apply();
-                });
+                window.location.href = url;
+                return;
             }
 
-            apply();
-        };
-
-        bindToolbarFilter({
-            key: "products",
-            rowSelector: "tr.product-row",
-            pickSearchText: (row) => `${row.dataset.productName || ""} ${row.dataset.productCategory || ""}`,
-            matchStatus: (row, status) => {
-                if (status === "all") {
-                    return true;
-                }
-                const stock = Number(row.dataset.productStock || "0");
-                if (status === "in") {
-                    return stock > 0;
-                }
-                if (status === "low") {
-                    return stock > 0 && stock < 5;
-                }
-                if (status === "out") {
-                    return stock <= 0;
-                }
-                return true;
+            if (!response.ok) {
+                window.location.href = url;
+                return;
             }
+
+            const html = await response.text();
+            const currentResults = document.getElementById("adminTabResults");
+            if (!currentResults) {
+                window.location.href = url;
+                return;
+            }
+            currentResults.outerHTML = html;
+
+            wireAdminToolbarFilters(document);
+            syncAdminFormState(url);
+
+            if (pushState) {
+                history.pushState({ adminUrl: url }, "", url);
+            }
+        }
+
+        if (adminContainer) {
+            adminContainer.addEventListener("click", (event) => {
+                const link = event.target.closest(".admin-tab-btn, .pagination-link, .search-clear");
+                if (!link) {
+                    return;
+                }
+                if (link.classList.contains("is-disabled")) {
+                    event.preventDefault();
+                    return;
+                }
+                event.preventDefault();
+                loadAdminResults(link.href);
+            });
+
+            adminContainer.addEventListener("submit", (event) => {
+                const form = event.target.closest(".order-search-form");
+                if (!form) {
+                    return;
+                }
+                event.preventDefault();
+                const params = new URLSearchParams(new FormData(form));
+                loadAdminResults(`${form.action}?${params.toString()}`);
+            });
+        }
+
+        window.addEventListener("popstate", () => {
+            loadAdminResults(window.location.href, { pushState: false });
         });
 
-        bindToolbarFilter({
-            key: "orders",
-            rowSelector: "tr.order-row",
-            pickSearchText: (row) => `${row.dataset.orderNumber || ""} ${row.dataset.orderCustomer || ""} ${row.dataset.orderPhone || ""}`,
-            matchStatus: (row, status) => {
-                if (status === "all") {
-                    return true;
-                }
-                return normalize(row.dataset.orderStatus) === status;
-            }
-        });
-
-        bindToolbarFilter({
-            key: "requests",
-            rowSelector: "tr.request-row",
-            pickSearchText: (row) => `${row.dataset.requestRequester || ""} ${row.dataset.requestContact || ""} ${row.dataset.requestProduct || ""}`,
-            matchStatus: (row, status) => {
-                if (status === "all") {
-                    return true;
-                }
-                return normalize(row.dataset.requestStatus) === status;
-            }
-        });
+        wireAdminToolbarFilters(document);
     })();
 
     (function () {

@@ -12,6 +12,7 @@ import com.myshop.springshop.repository.ProductRequestRepository;
 import com.myshop.springshop.repository.ProductRepository;
 import com.myshop.springshop.service.FileStorageService;
 import com.myshop.springshop.service.OrderService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -79,9 +80,13 @@ public class AdminController {
             @RequestParam(value = "orderPage", required = false) Integer orderPage,
             @RequestParam(value = "requestPage", required = false) Integer requestPage,
             Model model,
-            Locale locale
+            Locale locale,
+            HttpServletRequest request
     ) {
         populateAdminModel(model, normalizeAdminTab(tab), orderNumber, phone, productCategory, productPage, orderPage, requestPage, locale);
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            return "admin :: adminTabResults";
+        }
         return "admin";
     }
 

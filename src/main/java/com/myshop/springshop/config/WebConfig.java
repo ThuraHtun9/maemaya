@@ -2,6 +2,7 @@ package com.myshop.springshop.config;
 
 import com.myshop.springshop.service.FileStorageService;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.CacheControl;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -40,11 +41,14 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Uploaded product images get a fresh UUID-prefixed filename per upload,
+        // so a long cache lifetime is safe: a changed image is always a new URL.
         registry.addResourceHandler("/images/**")
                 .addResourceLocations(
                         fileStorageService.getUploadPath().toUri().toString(),
                         "classpath:/static/images/"
-                );
+                )
+                .setCacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic());
     }
 
     @Override

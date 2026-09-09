@@ -11,6 +11,7 @@ import com.myshop.springshop.service.CartService;
 import com.myshop.springshop.service.FileStorageService;
 import com.myshop.springshop.service.OrderService;
 import com.myshop.springshop.service.PostalCodeLookupService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,8 @@ public class ShopController {
             Model model,
             HttpSession session,
             Authentication authentication,
-            Locale locale
+            Locale locale,
+            HttpServletRequest request
     ) {
         String searchQuery = q == null ? "" : q.trim();
         List<Product> products = productRepository.findAll();
@@ -156,6 +158,10 @@ public class ShopController {
                 && authentication.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
         model.addAttribute("isAdmin", isAdmin);
+
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            return "index :: shopResults";
+        }
         return "index";
     }
 

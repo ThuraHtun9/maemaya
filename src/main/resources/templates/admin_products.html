@@ -433,7 +433,7 @@
             <form class="lang-picker-form" th:action="@{/admin/products}" method="get">
                 <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
                 <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-                <label for="adminProductLang" aria-hidden="true">🌐</label>
+                <label for="adminProductLang" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><ellipse cx="12" cy="12" rx="4" ry="9"></ellipse><line x1="3" y1="12" x2="21" y2="12"></line></svg></label>
                 <select id="adminProductLang" name="lang" class="lang-select" onchange="this.form.submit()">
                     <option value="my" th:selected="${#locale.language == 'my'}">MY</option>
                     <option value="en" th:selected="${#locale.language == 'en'}">EN</option>
