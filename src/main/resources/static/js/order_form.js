@@ -1,4 +1,4 @@
-(() => {
+(function() {
     const lookupUrl =
         document.querySelector('meta[name="postal-lookup-url"]')?.getAttribute("content") ||
         "/api/postal-lookup";
