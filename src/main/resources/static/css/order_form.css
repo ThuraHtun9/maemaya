@@ -1,0 +1,111 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;700&display=swap");
+:root {
+    --brand-bg: #f4eadb;
+    --brand-bg-soft: #fbf4e9;
+    --brand-surface: #fffaf2;
+    --brand-line: #e4d0b4;
+    --brand-text: #3f281b;
+    --brand-muted: #7f6351;
+    --brand-primary: #5c3320;
+    --brand-primary-hover: #74442b;
+    --brand-accent: #c99340;
+    --brand-danger: #8f3c2d;
+}
+body {
+    font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
+    padding: 20px;
+    background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+    color: var(--brand-text);
+}
+.amount-font { font-family: "Helvetica Neue", Arial, sans-serif; }
+.order-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-line);
+    padding: 30px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
+}
+h1 {
+    text-align: center;
+    border-bottom: 2px solid var(--brand-line);
+    padding-bottom: 10px;
+    color: var(--brand-primary);
+}
+
+.summary {
+    background: #f8efdf;
+    border: 1px solid var(--brand-line);
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+.total-price { font-size: 1.5rem; color: var(--brand-primary); font-weight: bold; text-align: right; }
+
+input, select, textarea, button { font-family: inherit; }
+label { display: block; margin-top: 15px; font-weight: bold; font-size: 0.9rem; }
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid var(--brand-line);
+    border-radius: 4px;
+    box-sizing: border-box;
+    background: #fffdf8;
+    color: var(--brand-text);
+}
+.zip-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+.zip-search-row input { flex: 1; }
+.zip-search-btn {
+    width: auto;
+    margin-top: 0;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    background-color: var(--brand-primary);
+    white-space: nowrap;
+}
+.zip-search-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.zip-lookup-message {
+    min-height: 1.2em;
+    margin-top: 6px;
+    font-size: 0.85rem;
+}
+.field-help {
+    margin-top: 6px;
+    font-size: 0.82rem;
+    color: var(--brand-muted);
+}
+.flash {
+    margin: 14px 0;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-size: 0.9rem;
+}
+.flash-error {
+    background: #fff1ea;
+    border-color: #e7c0ad;
+    color: var(--brand-danger);
+}
+button {
+    width: 100%; padding: 12px; background-color: var(--brand-primary); color: white; border: none;
+    border-radius: 4px; font-size: 1.1rem; font-weight: bold; margin-top: 25px; cursor: pointer;
+}
+button:hover { background: var(--brand-primary-hover); }
+.lang-switch {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 0.85rem;
+}
+.lang-switch a { color: var(--brand-muted); text-decoration: none; margin: 0 4px; }
+.lang-switch a:hover { text-decoration: underline; }

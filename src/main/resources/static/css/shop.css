@@ -872,9 +872,7 @@
             margin-top: auto;
             padding-top: 8px;
             border-top: 1px dashed #e3d2b8;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            position: relative;
             min-height: 40px;
         }
 
@@ -888,14 +886,23 @@
             font-family: inherit;
             cursor: pointer;
             box-shadow: 0 6px 12px rgba(66, 36, 22, 0.24);
-            transition: filter 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+            transition: filter 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease, opacity 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 38px;
             height: 38px;
             min-height: 38px;
-            align-self: flex-end;
+            position: absolute;
+            top: 8px;
+            right: 0;
+        }
+
+        .add-cart-btn.is-hidden {
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+            box-shadow: none;
         }
 
         .add-cart-btn-icon {
@@ -939,18 +946,18 @@
             justify-content: flex-end;
             gap: 8px;
             flex-wrap: nowrap;
-            max-height: 0;
+            position: absolute;
+            top: 8px;
+            right: 0;
             opacity: 0;
-            overflow: hidden;
-            transform: translateY(-4px);
-            transition: max-height 220ms ease, opacity 180ms ease, transform 180ms ease;
+            transform: scale(0.82);
+            transition: opacity 200ms ease, transform 220ms cubic-bezier(.34, 1.45, .64, 1);
             pointer-events: none;
         }
 
         .qty-control.is-visible {
-            max-height: 56px;
             opacity: 1;
-            transform: translateY(0);
+            transform: scale(1);
             pointer-events: auto;
         }
 
@@ -1028,9 +1035,9 @@
         }
 
         .shopper-scene {
-            --travel: calc(100% - 190px);
+            --travel: calc(100% - 178px);
             position: relative;
-            height: 120px;
+            height: 152px;
             border: 1px solid #e8d2b0;
             border-radius: 12px;
             overflow: hidden;
@@ -1039,43 +1046,114 @@
                 linear-gradient(180deg, #fffdf8 0%, #f6ead8 68%, #e7d0ab 68%, #e2c79f 100%);
         }
 
-        .shop-front {
-            position: absolute;
-            left: 10px;
-            bottom: 20px;
-            width: 96px;
-            height: 68px;
-            border: 2px solid #d3b287;
-            border-radius: 10px 10px 8px 8px;
-            background: linear-gradient(180deg, #fffaf2 0%, #f5e4c8 100%);
-            box-shadow: 0 6px 10px rgba(74, 41, 24, 0.12);
-        }
-
-        .shop-front::before {
+        /* subtle sidewalk seams drifting by, reinforcing the walk direction */
+        .shopper-scene::after {
             content: "";
             position: absolute;
-            left: -6px;
-            right: -6px;
-            top: -16px;
-            height: 16px;
-            border-radius: 6px 6px 0 0;
-            background: repeating-linear-gradient(90deg, #8d5336 0 9px, #dca76f 9px 18px);
-            border: 1px solid #b78150;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 26%;
+            background-image: repeating-linear-gradient(90deg, transparent 0 46px, rgba(139, 96, 55, 0.16) 46px 48px);
+            animation: sidewalk-drift 3.2s linear infinite;
         }
 
-        .shop-front-sign {
+        @keyframes sidewalk-drift {
+            from {
+                background-position-x: 0;
+            }
+
+            to {
+                background-position-x: -96px;
+            }
+        }
+
+        .shop-front {
             position: absolute;
-            left: 9px;
-            right: 9px;
-            top: 8px;
-            padding: 2px 5px;
-            border-radius: 5px;
-            text-align: center;
-            font-size: 0.64rem;
+            left: 12px;
+            bottom: 18px;
+            width: 110px;
+            height: 119px;
+            overflow: visible;
+        }
+
+        .shop-front-svg {
+            position: absolute;
+            inset: 0;
+            overflow: visible;
+        }
+
+        .sf-ground-shadow {
+            fill: rgba(59, 33, 18, 0.16);
+        }
+
+        .sf-wall {
+            fill: #fbeed9;
+            stroke: var(--brand-cta);
+            stroke-width: 3;
+        }
+
+        .sf-roof {
+            fill: var(--brand-primary);
+            stroke: var(--brand-cta);
+            stroke-width: 3;
+            stroke-linejoin: round;
+        }
+
+        .sf-roof-cap {
+            fill: var(--brand-cta);
+        }
+
+        .sf-awning-stripe-a {
+            fill: var(--brand-accent);
+        }
+
+        .sf-awning-stripe-b {
+            fill: var(--brand-cta);
+        }
+
+        .sf-awning-outline {
+            fill: none;
+            stroke: var(--brand-cta);
+            stroke-width: 2.4;
+            stroke-linejoin: round;
+        }
+
+        .sf-window-glass {
+            fill: url(#happyShoppersWindowGlow);
+            stroke: var(--brand-cta);
+            stroke-width: 3;
+        }
+
+        .sf-window-mullion {
+            stroke: var(--brand-cta);
+            stroke-width: 1.6;
+            opacity: 0.55;
+        }
+
+        .sf-door {
+            fill: var(--brand-accent);
+            stroke: var(--brand-cta);
+            stroke-width: 2.6;
+        }
+
+        .sf-door-knob {
+            fill: #fff6e4;
+        }
+
+        .sf-sign {
+            fill: #fffaf2;
+            stroke: var(--brand-cta);
+            stroke-width: 2.2;
+        }
+
+        .sf-sign-text {
+            fill: var(--brand-primary);
+            font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
             font-weight: 700;
-            color: #fff;
-            background: #6a3d27;
-            letter-spacing: 0.01em;
+            font-size: 11px;
+            text-anchor: middle;
+            dominant-baseline: middle;
         }
 
         .shopper-lane {
@@ -1085,107 +1163,151 @@
 
         .shopper {
             position: absolute;
-            left: 102px;
-            bottom: 18px;
-            width: 28px;
-            height: 64px;
+            left: 134px;
+            bottom: 16px;
+            width: 40px;
+            height: 78px;
             opacity: 0;
             animation: shopper-walk var(--dur, 10s) linear infinite;
             animation-delay: var(--delay, 0s);
         }
 
-        .shopper-head {
+        .shopper-svg {
             position: absolute;
-            left: 7px;
-            top: 0;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #f3c598;
-            border: 1px solid #d6a878;
+            inset: 0;
+            overflow: visible;
+        }
+
+        .shopper-shadow {
+            fill: rgba(58, 33, 18, 0.32);
+            transform-origin: 20px 76px;
+            animation: shopper-shadow-pulse 0.68s cubic-bezier(.45, 0, .55, 1) infinite;
+        }
+
+        .shopper-bob {
+            animation: shopper-bob 0.68s cubic-bezier(.45, 0, .55, 1) infinite;
+        }
+
+        .shopper-leg line {
+            stroke: #4a2f21;
+            stroke-width: 6;
+            stroke-linecap: round;
+        }
+
+        .shopper-leg-back {
+            transform-origin: 17px 52px;
+            animation: shopper-leg-back-swing 0.68s cubic-bezier(.45, 0, .55, 1) infinite;
+        }
+
+        .shopper-leg-front {
+            transform-origin: 23px 52px;
+            animation: shopper-leg-front-swing 0.68s cubic-bezier(.45, 0, .55, 1) infinite;
+        }
+
+        .shopper-arm line {
+            stroke: var(--shirt-dark, #4a2a1a);
+            stroke-width: 5.5;
+            stroke-linecap: round;
+        }
+
+        .shopper-arm-back {
+            transform-origin: 12px 34px;
+            animation: shopper-arm-back-swing 0.68s cubic-bezier(.45, 0, .55, 1) infinite;
+        }
+
+        .shopper-arm-front {
+            transform-origin: 28px 34px;
+            animation: shopper-arm-front-swing 0.68s cubic-bezier(.45, 0, .55, 1) infinite;
         }
 
         .shopper-body {
+            fill: var(--shirt, #6d3f28);
+            stroke: var(--shirt-dark, #4a2a1a);
+            stroke-width: 2;
+        }
+
+        .shopper-bag-group {
+            transform-origin: 30px 40px;
+            animation: shopper-bag-swing 0.68s cubic-bezier(.45, 0, .55, 1) infinite;
+        }
+
+        .shopper-bag-strap {
+            fill: none;
+            stroke: var(--bag-dark, #a56a25);
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .shopper-bag-body {
+            fill: var(--bag, #d89a3b);
+            stroke: var(--bag-dark, #a56a25);
+            stroke-width: 2;
+        }
+
+        .shopper-hair {
+            fill: #3b2518;
+        }
+
+        .shopper-head {
+            fill: #f6c896;
+            stroke: #8a5a34;
+            stroke-width: 2.2;
+        }
+
+        .shopper-eye {
+            fill: #3b2518;
+        }
+
+        .shopper-eye-shine {
+            fill: #fff;
+        }
+
+        .shopper-blush {
+            fill: #d9784a;
+            opacity: 0.55;
+        }
+
+        .shopper-mouth {
+            fill: #6b3a22;
+        }
+
+        .shopper-mouth-highlight {
+            fill: none;
+            stroke: #fdeee0;
+            stroke-width: 1.3;
+            stroke-linecap: round;
+            opacity: 0.85;
+        }
+
+        .shopper-sparkle {
             position: absolute;
-            left: 5px;
-            top: 13px;
-            width: 18px;
-            height: 24px;
-            border-radius: 8px 8px 6px 6px;
-            background: var(--shirt, #6d3f28);
-            animation: shopper-bob 0.9s ease-in-out infinite;
-        }
-
-        .shopper-leg {
-            position: absolute;
-            bottom: 6px;
-            width: 4px;
-            height: 19px;
-            border-radius: 3px;
-            background: #5b3c2b;
-            transform-origin: top center;
-            animation: leg-swing 0.7s ease-in-out infinite;
-        }
-
-        .shopper-leg-left {
-            left: 8px;
-            animation-delay: 0s;
-        }
-
-        .shopper-leg-right {
-            right: 8px;
-            animation-delay: 0.35s;
-        }
-
-        .shopper-bag {
-            position: absolute;
-            bottom: 18px;
-            width: 8px;
-            height: 11px;
-            border-radius: 2px;
-            background: var(--bag, #d89a3b);
-            border: 1px solid #b67f2f;
-            transform-origin: top center;
-            animation: bag-swing 0.9s ease-in-out infinite;
-        }
-
-        .shopper-bag-left {
-            left: -2px;
-            animation-delay: 0s;
-        }
-
-        .shopper-bag-right {
-            right: -2px;
-            animation-delay: 0.45s;
-        }
-
-        .shopper-smile {
-            position: absolute;
-            top: -14px;
-            left: 20px;
-            font-size: 0.9rem;
-            color: #8a5a26;
+            top: -8px;
+            left: 28px;
+            width: 9px;
+            height: 9px;
+            background: radial-gradient(circle at 35% 30%, #ffe9c2, var(--brand-accent) 70%);
+            clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
             opacity: 0;
-            animation: smile-pop var(--dur, 10s) ease-in-out infinite;
-            animation-delay: calc(var(--delay, 0s) + 0.9s);
+            animation: shopper-sparkle-pop var(--dur, 10s) ease-in-out infinite;
+            animation-delay: calc(var(--delay, 0s) + 0.85s);
         }
 
         @keyframes shopper-walk {
             0% {
-                transform: translateX(0) scale(0.88);
+                transform: translateX(0) scale(0.86);
                 opacity: 0;
             }
 
-            8% {
+            7% {
                 opacity: 1;
             }
 
-            90% {
+            92% {
                 opacity: 1;
             }
 
             100% {
-                transform: translateX(var(--travel)) scale(1);
+                transform: translateX(var(--travel)) scale(1.02);
                 opacity: 0;
             }
         }
@@ -1198,52 +1320,101 @@
             }
 
             50% {
-                transform: translateY(-2px);
+                transform: translateY(-2.8px);
             }
         }
 
-        @keyframes leg-swing {
+        @keyframes shopper-shadow-pulse {
 
             0%,
             100% {
-                transform: rotate(8deg);
+                transform: scaleX(1);
+                opacity: 0.9;
             }
 
             50% {
-                transform: rotate(-8deg);
+                transform: scaleX(0.72);
+                opacity: 0.55;
             }
         }
 
-        @keyframes bag-swing {
+        @keyframes shopper-leg-back-swing {
 
             0%,
             100% {
-                transform: rotate(10deg);
+                transform: rotate(-16deg);
             }
 
             50% {
-                transform: rotate(-10deg);
+                transform: rotate(16deg);
             }
         }
 
-        @keyframes smile-pop {
+        @keyframes shopper-leg-front-swing {
 
             0%,
-            14%,
+            100% {
+                transform: rotate(16deg);
+            }
+
+            50% {
+                transform: rotate(-16deg);
+            }
+        }
+
+        @keyframes shopper-arm-back-swing {
+
+            0%,
+            100% {
+                transform: rotate(17deg);
+            }
+
+            50% {
+                transform: rotate(-17deg);
+            }
+        }
+
+        @keyframes shopper-arm-front-swing {
+
+            0%,
+            100% {
+                transform: rotate(-17deg);
+            }
+
+            50% {
+                transform: rotate(17deg);
+            }
+        }
+
+        @keyframes shopper-bag-swing {
+
+            0%,
+            100% {
+                transform: rotate(11deg);
+            }
+
+            50% {
+                transform: rotate(-9deg);
+            }
+        }
+
+        @keyframes shopper-sparkle-pop {
+
+            0%,
+            12%,
             100% {
                 opacity: 0;
-                transform: translateY(0) scale(0.8);
+                transform: translateY(2px) scale(0.6) rotate(0deg);
             }
 
-            20%,
-            35% {
+            18%,
+            32% {
                 opacity: 1;
-                transform: translateY(-5px) scale(1);
+                transform: translateY(-6px) scale(1) rotate(14deg);
             }
 
-            45% {
+            42% {
                 opacity: 0;
-                transform: translateY(-9px) scale(0.9);
             }
         }
 
@@ -1451,58 +1622,29 @@
             }
 
             .shopper-scene {
-                --travel: calc(100% - 132px);
-                height: 96px;
+                --travel: calc(100% - 128px);
+                height: 110px;
             }
 
             .shop-front {
-                width: 72px;
-                height: 50px;
-                left: 7px;
-                bottom: 15px;
-            }
-
-            .shop-front::before {
-                top: -12px;
-                height: 12px;
-            }
-
-            .shop-front-sign {
-                font-size: 0.52rem;
-                left: 5px;
-                right: 5px;
-                top: 6px;
+                left: 9px;
+                bottom: 13px;
+                width: 79px;
+                height: 86px;
             }
 
             .shopper {
-                left: 76px;
-                bottom: 13px;
-                width: 22px;
-                height: 50px;
+                left: 95px;
+                bottom: 12px;
+                width: 29px;
+                height: 56px;
             }
 
-            .shopper-head {
-                left: 6px;
-                width: 11px;
-                height: 11px;
-            }
-
-            .shopper-body {
-                left: 4px;
-                top: 10px;
-                width: 14px;
-                height: 20px;
-            }
-
-            .shopper-leg {
-                height: 15px;
-                width: 3px;
-                bottom: 4px;
-            }
-
-            .shopper-smile {
-                font-size: 0.74rem;
-                left: 14px;
+            .shopper-sparkle {
+                top: -6px;
+                left: 20px;
+                width: 7px;
+                height: 7px;
             }
 
             .category-title {
@@ -1620,15 +1762,25 @@
             .cart-btn,
             .lang-select,
             .add-cart-btn,
+            .qty-control,
             .brand-title-logo.live-3d,
             .brand-logo-mark,
             .brand-wordmark,
             .shopper,
-            .shopper-body,
-            .shopper-leg,
-            .shopper-bag,
-            .shopper-smile {
+            .shopper-shadow,
+            .shopper-bob,
+            .shopper-leg-back,
+            .shopper-leg-front,
+            .shopper-arm-back,
+            .shopper-arm-front,
+            .shopper-bag-group,
+            .shopper-sparkle,
+            .shopper-scene::after {
                 animation: none !important;
                 transition: none !important;
+            }
+
+            .shopper {
+                opacity: 1;
             }
         }
