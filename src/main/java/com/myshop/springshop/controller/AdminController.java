@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.stream.Collectors;
 
 @Controller
 public class AdminController {
@@ -305,6 +306,8 @@ public class AdminController {
             @RequestParam("originalCategoryName") String originalCategoryName,
             @RequestParam("categoryName") String categoryName,
             @RequestParam("displayOrder") int displayOrder,
+            @RequestParam(value = "categoryNameEn", required = false) String categoryNameEn,
+            @RequestParam(value = "categoryNameJa", required = false) String categoryNameJa,
             @RequestParam(value = "tab", required = false) String tab,
             @RequestParam(value = "productCategory", required = false) String productCategory,
             @RequestParam(value = "productPage", required = false) Integer productPage,
@@ -323,7 +326,7 @@ public class AdminController {
             return redirectAdminWithPage(tab, productPage, productCategory);
         }
 
-        productRepository.updateCategory(safeOriginalName, safeCategoryName, safeDisplayOrder);
+        productRepository.updateCategory(safeOriginalName, safeCategoryName, safeDisplayOrder, categoryNameEn, categoryNameJa);
         redirectAttributes.addFlashAttribute(
                 "adminNotice",
                 messageSource.getMessage("admin.category.updated", null, locale)
@@ -539,14 +542,16 @@ public class AdminController {
                     .sorted(String.CASE_INSENSITIVE_ORDER)
                     .toList();
 
-            Map<String, Integer> categoryOrderMap = productRepository.findCategoryDisplayOrderMap();
-            LinkedHashSet<String> mergedCategories = new LinkedHashSet<>(categoryOrderMap.keySet());
+            List<CategoryDisplaySetting> categorySettingsFromDb = productRepository.findCategorySettings();
+            Map<String, CategoryDisplaySetting> categorySettingsByName = categorySettingsFromDb.stream()
+                    .collect(Collectors.toMap(CategoryDisplaySetting::categoryName, setting -> setting, (a, b) -> a));
+            LinkedHashSet<String> mergedCategories = new LinkedHashSet<>(categorySettingsByName.keySet());
             mergedCategories.addAll(usedCategories);
             List<String> categories = new ArrayList<>(mergedCategories);
             if (categories.isEmpty()) {
                 categories = List.of("Coffee", "Tea", "Goods", "Other");
             }
-            List<CategoryDisplaySetting> categorySettings = buildCategorySettings(categories, categoryOrderMap);
+            List<CategoryDisplaySetting> categorySettings = buildCategorySettings(categories, categorySettingsByName);
             Map<String, Long> categoryUsage = buildCategoryUsage(allProducts);
             String activeProductCategory = resolveProductCategoryFilter(productCategory, categories);
             List<Product> filteredProducts = filterProductsByCategory(allProducts, activeProductCategory);
@@ -760,14 +765,18 @@ public class AdminController {
 
     private List<CategoryDisplaySetting> buildCategorySettings(
             List<String> categories,
-            Map<String, Integer> categoryOrderMap
+            Map<String, CategoryDisplaySetting> categorySettingsByName
     ) {
         List<CategoryDisplaySetting> settings = new ArrayList<>();
         int fallbackOrder = 1000;
 
         for (String category : categories) {
-            int order = categoryOrderMap.getOrDefault(category, fallbackOrder++);
-            settings.add(new CategoryDisplaySetting(category, order));
+            CategoryDisplaySetting existing = categorySettingsByName.get(category);
+            if (existing != null) {
+                settings.add(existing);
+            } else {
+                settings.add(new CategoryDisplaySetting(category, fallbackOrder++, null, null));
+            }
         }
 
         settings.sort(

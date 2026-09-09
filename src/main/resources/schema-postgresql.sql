@@ -63,6 +63,8 @@ ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS request_status VARCHAR(20)
 ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS handled_at TIMESTAMP NULL;
 ALTER TABLE category_settings ADD COLUMN IF NOT EXISTS display_order INTEGER NOT NULL DEFAULT 100;
+ALTER TABLE category_settings ADD COLUMN IF NOT EXISTS category_name_en VARCHAR(255);
+ALTER TABLE category_settings ADD COLUMN IF NOT EXISTS category_name_ja VARCHAR(255);
 
 CREATE INDEX IF NOT EXISTS idx_orders_order_date ON orders(order_date);
 CREATE INDEX IF NOT EXISTS idx_orders_product_id ON orders(product_id);

@@ -382,6 +382,7 @@
         }
         .orders-table .products-cell {
             background: #fff8ee;
+            min-width: 220px;
         }
         .orders-table .order-products-panel {
             border: 1px solid #e7d3b2;
@@ -1135,6 +1136,9 @@
                 align-items: flex-start;
                 gap: 6px;
             }
+            .order-item-main {
+                width: 100%;
+            }
             .item-qty-actions {
                 width: 100%;
                 justify-content: space-between;
@@ -1345,6 +1349,8 @@
                 <thead>
                 <tr>
                     <th th:text="#{admin.category.col.name}">Category</th>
+                    <th th:text="#{admin.category.col.nameEn}">English Name</th>
+                    <th th:text="#{admin.category.col.nameJa}">Japanese Name</th>
                     <th th:text="#{admin.category.col.order}">Display Order</th>
                     <th th:text="#{admin.col.product}">Product</th>
                     <th th:text="#{admin.col.action}">Action</th>
@@ -1352,7 +1358,7 @@
                 </thead>
                 <tbody>
                 <tr th:if="${#lists.isEmpty(categorySettings)}">
-                    <td colspan="4" style="text-align:center; color:#7f6351;">-</td>
+                    <td colspan="6" style="text-align:center; color:#7f6351;">-</td>
                 </tr>
                 <tr th:each="cat, catStat : ${categorySettings}">
                     <td th:attr="data-label=#{admin.category.col.name}">
@@ -1365,6 +1371,20 @@
                                th:value="${cat.categoryName}"
                                th:attr="form=|cat-update-${catStat.index}|"
                                required>
+                    </td>
+                    <td th:attr="data-label=#{admin.category.col.nameEn}">
+                        <input type="text"
+                               name="categoryNameEn"
+                               th:value="${cat.categoryNameEn}"
+                               th:attr="form=|cat-update-${catStat.index}|"
+                               placeholder="English">
+                    </td>
+                    <td th:attr="data-label=#{admin.category.col.nameJa}">
+                        <input type="text"
+                               name="categoryNameJa"
+                               th:value="${cat.categoryNameJa}"
+                               th:attr="form=|cat-update-${catStat.index}|"
+                               placeholder="&#26085;&#26412;&#35486;">
                     </td>
                     <td th:attr="data-label=#{admin.category.col.order}">
                         <input type="number"

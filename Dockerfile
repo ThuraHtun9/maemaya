@@ -18,7 +18,6 @@ ENV SPRING_PROFILES_ACTIVE=prod \
     SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/springshop \
     SPRING_DATASOURCE_USERNAME=springshop \
     SPRING_DATASOURCE_PASSWORD=springshop \
-    DB_PLATFORM=postgresql \
     APP_UPLOAD_DIR=/app/uploads \
     ADMIN_USERNAME=admin \
     ADMIN_PASSWORD=change-me

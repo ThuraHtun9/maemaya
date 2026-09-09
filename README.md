@@ -6,8 +6,7 @@ Java + Spring Boot shop site with production deployment support.
 - Java 17
 - Spring Boot 3
 - Thymeleaf
-- PostgreSQL (default production database)
-- MySQL (alternative supported)
+- PostgreSQL
 - Docker + Docker Compose
 - Caddy reverse proxy (automatic HTTPS)
 
@@ -21,13 +20,8 @@ Java + Spring Boot shop site with production deployment support.
 ## Database
 This app no longer uses SQLite for production.
 
-Supported DB options:
-- PostgreSQL via `docker-compose.prod.yml` (recommended)
-- MySQL via `docker-compose.mysql.yml`
-
 Schema is initialized/updated by Spring SQL scripts:
-- PostgreSQL: `/src/main/resources/schema-postgresql.sql`
-- MySQL: `/src/main/resources/schema-mysql.sql`
+- `/src/main/resources/schema-postgresql.sql`
 
 ## Production Publish
 
@@ -50,20 +44,13 @@ Edit `.env`:
 - `ADMIN_USERNAME=admin` (or custom)
 - `ADMIN_PASSWORD=<strong password>`
 - `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-- If using MySQL: set `MYSQL_ROOT_PASSWORD`
 
 You can also set a BCrypt hash directly:
 - `ADMIN_PASSWORD={bcrypt}<bcrypt_hash_here>`
 
 ### 4) Deploy
-PostgreSQL stack (recommended):
 ```bash
-./deploy.sh postgres
-```
-
-MySQL stack:
-```bash
-./deploy.sh mysql
+./deploy.sh
 ```
 
 Equivalent manual command:
@@ -95,7 +82,7 @@ docker compose -f docker-compose.prod.yml --env-file .env up -d --build
    - `DB_PASSWORD`
 6. Start:
    ```bash
-   ./deploy.sh postgres
+   ./deploy.sh
    ```
 7. Check:
    ```bash
@@ -106,19 +93,12 @@ docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 `deploy.sh` validates missing/unsafe placeholder values before deploy.
 
 ## Update Deployment
-PostgreSQL:
 ```bash
-./deploy.sh postgres
-```
-
-MySQL:
-```bash
-./deploy.sh mysql
+./deploy.sh
 ```
 
 ## Persistent Data
 - PostgreSQL data: `./data/postgres`
-- MySQL data: `./data/mysql`
 - Uploaded images: `./uploads`
 
 Keep these folders when deploying updates so menu/image data stays.

@@ -8,17 +8,7 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-STACK="${1:-postgres}"
-
-if [[ "$STACK" == "postgres" ]]; then
-  COMPOSE_FILE="docker-compose.prod.yml"
-elif [[ "$STACK" == "mysql" ]]; then
-  COMPOSE_FILE="docker-compose.mysql.yml"
-else
-  echo "Unknown stack: $STACK"
-  echo "Usage: ./deploy.sh [postgres|mysql]"
-  exit 1
-fi
+COMPOSE_FILE="docker-compose.prod.yml"
 
 set -a
 source .env
@@ -53,23 +43,13 @@ reject_placeholder DOMAIN
 reject_placeholder ADMIN_PASSWORD
 reject_placeholder DB_PASSWORD
 
-if [[ "$STACK" == "mysql" ]]; then
-  require_var MYSQL_ROOT_PASSWORD
-  reject_placeholder MYSQL_ROOT_PASSWORD
-fi
-
 if [[ "$ADMIN_PASSWORD" == "admin" ]]; then
   echo "ADMIN_PASSWORD must not be 'admin' in production."
   exit 1
 fi
 
 # Keep data in project-local persistent folders.
-mkdir -p ./uploads ./data
-if [[ "$STACK" == "postgres" ]]; then
-  mkdir -p ./data/postgres
-else
-  mkdir -p ./data/mysql
-fi
+mkdir -p ./uploads ./data ./data/postgres
 
 # Ensure uploads path is writable by app user inside container (uid 10001).
 chown -R 10001:10001 ./uploads 2>/dev/null || true

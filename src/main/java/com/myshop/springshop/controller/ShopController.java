@@ -1,6 +1,7 @@
 package com.myshop.springshop.controller;
 
 import com.myshop.springshop.model.CartItem;
+import com.myshop.springshop.model.CategoryDisplaySetting;
 import com.myshop.springshop.model.OrderRequest;
 import com.myshop.springshop.model.PaginationView;
 import com.myshop.springshop.model.Product;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
@@ -75,11 +77,21 @@ public class ShopController {
     public String index(
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "q", required = false) String q,
             Model model,
             HttpSession session,
-            Authentication authentication
+            Authentication authentication,
+            Locale locale
     ) {
+        String searchQuery = q == null ? "" : q.trim();
         List<Product> products = productRepository.findAll();
+        if(!searchQuery.isEmpty()) {
+            String needle = searchQuery.toLowerCase(Locale.ROOT);
+            products = products.stream()
+                    .filter(product -> product.name().toLowerCase(Locale.ROOT).contains(needle)
+                            || product.displayCategory().toLowerCase(Locale.ROOT).contains(needle))
+                    .toList();
+        }
         Map<String, List<Product>> grouped = new LinkedHashMap<>();
         Map<Long, Integer> cartItemCounts = new LinkedHashMap<>();
 
@@ -93,12 +105,22 @@ public class ShopController {
                     .add(product);
         }
 
-        Map<String, Integer> categoryDisplayOrderMap = productRepository.findCategoryDisplayOrderMap();
+        List<CategoryDisplaySetting> categorySettingsFromDb = productRepository.findCategorySettings();
+        Map<String, CategoryDisplaySetting> categorySettingsByName = categorySettingsFromDb.stream()
+                .collect(Collectors.toMap(CategoryDisplaySetting::categoryName, setting -> setting, (a, b) -> a));
         List<String> sortedCategories = new ArrayList<>(grouped.keySet());
         sortedCategories.sort(
-                Comparator.comparingInt((String categoryName) -> categoryDisplayOrderMap.getOrDefault(categoryName, 9999))
+                Comparator.comparingInt((String categoryName) -> {
+                            CategoryDisplaySetting setting = categorySettingsByName.get(categoryName);
+                            return setting == null ? 9999 : setting.displayOrder();
+                        })
                         .thenComparing(String.CASE_INSENSITIVE_ORDER)
         );
+        Map<String, String> categoryDisplayNames = new LinkedHashMap<>();
+        for (String categoryName : sortedCategories) {
+            CategoryDisplaySetting setting = categorySettingsByName.get(categoryName);
+            categoryDisplayNames.put(categoryName, setting == null ? categoryName : setting.displayNameFor(locale));
+        }
 
         String activeCategory = resolveActiveCategory(category, sortedCategories);
         List<Product> orderedProducts = new ArrayList<>();
@@ -124,8 +146,10 @@ public class ShopController {
         model.addAttribute("productsByCategory", productsByCategory);
         model.addAttribute("categoryTotalCounts", totalCategoryCounts);
         model.addAttribute("shopCategories", sortedCategories);
+        model.addAttribute("categoryDisplayNames", categoryDisplayNames);
         model.addAttribute("activeCategory", activeCategory);
         model.addAttribute("shopPagination", shopPagination);
+        model.addAttribute("searchQuery", searchQuery);
         model.addAttribute("cartCount", cartService.count(session));
         model.addAttribute("cartItemCounts", cartItemCounts);
         boolean isAdmin = authentication != null

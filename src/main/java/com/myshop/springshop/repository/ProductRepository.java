@@ -1,10 +1,12 @@
 package com.myshop.springshop.repository;
 
+import com.myshop.springshop.model.CategoryDisplaySetting;
 import com.myshop.springshop.model.Product;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,19 +113,52 @@ public class ProductRepository {
         return categoryOrderMap;
     }
 
-    public void saveCategoryDisplayOrder(String categoryName, int displayOrder) {
+    public List<CategoryDisplaySetting> findCategorySettings() {
+        List<CategoryDisplaySetting> settings = new ArrayList<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT category_name, display_order, category_name_en, category_name_ja FROM category_settings"
+        );
+        for (Map<String, Object> row : rows) {
+            Object categoryName = row.get("category_name");
+            Object displayOrder = row.get("display_order");
+            if (categoryName == null || displayOrder == null) {
+                continue;
+            }
+            String normalizedCategoryName = String.valueOf(categoryName).trim();
+            if (normalizedCategoryName.isEmpty()) {
+                continue;
+            }
+            Object nameEn = row.get("category_name_en");
+            Object nameJa = row.get("category_name_ja");
+            settings.add(new CategoryDisplaySetting(
+                    normalizedCategoryName,
+                    ((Number) displayOrder).intValue(),
+                    nameEn == null ? null : String.valueOf(nameEn),
+                    nameJa == null ? null : String.valueOf(nameJa)
+            ));
+        }
+        return settings;
+    }
+
+    public void saveCategoryDisplayOrder(String categoryName, int displayOrder, String nameEn, String nameJa) {
         String normalizedCategoryName = normalizeCategoryName(categoryName);
+        String safeNameEn = normalizeTranslation(nameEn);
+        String safeNameJa = normalizeTranslation(nameJa);
         int updated = jdbcTemplate.update(
-                "UPDATE category_settings SET display_order = ? WHERE category_name = ?",
+                "UPDATE category_settings SET display_order = ?, category_name_en = ?, category_name_ja = ? WHERE category_name = ?",
                 displayOrder,
+                safeNameEn,
+                safeNameJa,
                 normalizedCategoryName
         );
 
         if (updated == 0) {
             jdbcTemplate.update(
-                "INSERT INTO category_settings (category_name, display_order) VALUES (?, ?)",
+                "INSERT INTO category_settings (category_name, display_order, category_name_en, category_name_ja) VALUES (?, ?, ?, ?)",
                     normalizedCategoryName,
-                    displayOrder
+                    displayOrder,
+                    safeNameEn,
+                    safeNameJa
             );
         }
     }
@@ -134,7 +169,7 @@ public class ProductRepository {
                 "SELECT COALESCE(MAX(display_order), 0) + 10 FROM category_settings",
                 Integer.class
         );
-        saveCategoryDisplayOrder(normalizedCategoryName, nextOrder == null ? 10 : nextOrder);
+        saveCategoryDisplayOrder(normalizedCategoryName, nextOrder == null ? 10 : nextOrder, null, null);
     }
 
     public void ensureCategoryExists(String categoryName) {
@@ -145,9 +180,11 @@ public class ProductRepository {
         addCategory(normalizedCategoryName);
     }
 
-    public void updateCategory(String originalName, String newName, int displayOrder) {
+    public void updateCategory(String originalName, String newName, int displayOrder, String nameEn, String nameJa) {
         String normalizedOriginalName = normalizeCategoryName(originalName);
         String normalizedNewName = normalizeCategoryName(newName);
+        String safeNameEn = normalizeTranslation(nameEn);
+        String safeNameJa = normalizeTranslation(nameJa);
         boolean sameName = normalizedOriginalName.equals(normalizedNewName);
 
         if (!sameName) {
@@ -159,7 +196,7 @@ public class ProductRepository {
         }
 
         if (!sameName && countCategorySetting(normalizedNewName) > 0) {
-            saveCategoryDisplayOrder(normalizedNewName, displayOrder);
+            saveCategoryDisplayOrder(normalizedNewName, displayOrder, safeNameEn, safeNameJa);
             jdbcTemplate.update(
                     "DELETE FROM category_settings WHERE category_name = ?",
                     normalizedOriginalName
@@ -168,14 +205,16 @@ public class ProductRepository {
         }
 
         int updated = jdbcTemplate.update(
-                "UPDATE category_settings SET category_name = ?, display_order = ? WHERE category_name = ?",
+                "UPDATE category_settings SET category_name = ?, display_order = ?, category_name_en = ?, category_name_ja = ? WHERE category_name = ?",
                 normalizedNewName,
                 displayOrder,
+                safeNameEn,
+                safeNameJa,
                 normalizedOriginalName
         );
 
         if (updated == 0) {
-            saveCategoryDisplayOrder(normalizedNewName, displayOrder);
+            saveCategoryDisplayOrder(normalizedNewName, displayOrder, safeNameEn, safeNameJa);
         }
 
         if (!sameName && countCategorySetting(normalizedOriginalName) > 0) {
@@ -210,5 +249,13 @@ public class ProductRepository {
 
     private String normalizeCategoryName(String categoryName) {
         return categoryName == null ? "" : categoryName.trim();
+    }
+
+    private String normalizeTranslation(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }
