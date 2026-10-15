@@ -169,7 +169,7 @@ public class ShopController {
         model.addAttribute("searchQuery", searchQuery);
         model.addAttribute("cartCount", cartService.count(session));
         model.addAttribute("cartItemCounts", cartItemCounts);
-        model.addAttribute("isOutOfStockView", activeCategory);
+        model.addAttribute("isOutOfStockView", OUT_OF_STOCK_FILTER.equals(activeCategory));
         boolean isAdmin = authentication != null
                 && authentication.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
