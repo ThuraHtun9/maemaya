@@ -2,336 +2,393 @@
 <html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>document.documentElement.classList.add("js-motion"); window.setTimeout(function () { if (document.body) { document.body.classList.add("page-ready"); } }, 400);</script>
-    <meta name="_csrf" th:content="${_csrf.token}">
-    <meta name="_csrf_header" th:content="${_csrf.headerName}">
-    <meta name="cart-request-failed-message" th:content="#{index.cart.requestFailed}">
-    <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
-    <title>မေ့မရ</title>
-    <meta name="description"
-        content="Mae-Maya online shop for Myanmar products in Japan. Browse products, add to cart, and place delivery orders easily.">
-    <meta name="robots" content="index,follow,max-image-preview:large">
-    <link rel="canonical" href="https://www.mae-maya.com/">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="မေ့မရ | Mae-Maya">
-    <meta property="og:description" content="Mae-Maya online shop for Myanmar products in Japan.">
-    <meta property="og:url" content="https://www.mae-maya.com/">
-    <meta property="og:site_name" content="Mae-Maya">
-    <meta property="og:image" content="https://www.mae-maya.com/images/maemaya.jpg">
-    <meta name="google-site-verification" content="nqEkIgbyx7hXR0X6M_izybW7iMxRN0MfpmpI1UQR9Us" />
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="မေ့မရ | Mae-Maya">
-    <meta name="twitter:description" content="Mae-Maya online shop for Myanmar products in Japan.">
-    <meta name="twitter:image" content="https://www.mae-maya.com/images/maemaya.jpg">
-    <link rel="stylesheet" th:href="@{/css/shop.css}">
-    <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
-    <script defer th:src="@{/js/smooth-ui.js}"></script>
-    <script defer th:src="@{/js/shop.js}"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script>document.documentElement.classList.add("js-motion"); window.setTimeout(function () {if (document.body) {document.body.classList.add("page-ready");} }, 400);</script>
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
+	<meta name="cart-request-failed-message" th:content="#{index.cart.requestFailed}">
+	<link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
+	<title>မေ့မရ</title>
+	<meta name="description"
+		content="Mae-Maya online shop for Myanmar products in Japan. Browse products, add to cart, and place delivery orders easily.">
+	<meta name="robots" content="index,follow,max-image-preview:large">
+	<link rel="canonical" href="https://www.mae-maya.com/">
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="မေ့မရ | Mae-Maya">
+	<meta property="og:description" content="Mae-Maya online shop for Myanmar products in Japan.">
+	<meta property="og:url" content="https://www.mae-maya.com/">
+	<meta property="og:site_name" content="Mae-Maya">
+	<meta property="og:image" content="https://www.mae-maya.com/images/maemaya.jpg">
+	<meta name="google-site-verification" content="nqEkIgbyx7hXR0X6M_izybW7iMxRN0MfpmpI1UQR9Us" />
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="မေ့မရ | Mae-Maya">
+	<meta name="twitter:description" content="Mae-Maya online shop for Myanmar products in Japan.">
+	<meta name="twitter:image" content="https://www.mae-maya.com/images/maemaya.jpg">
+	<link rel="stylesheet" th:href="@{/css/shop.css}">
+	<link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
+	<script defer th:src="@{/js/smooth-ui.js}"></script>
+	<script defer th:src="@{/js/shop.js}"></script>
 
 </head>
 
 <body>
-    <div class="page-shell">
-        <header class="site-header">
-            <div class="header-top">
-                <div class="header-left">
-                    <h1 class="brand-title brand-title-logo live-3d" data-live-3d>
-                        <img th:src="@{/images/maemaya.jpg}" class="brand-logo-mark" alt="Mae Ma Ya logo">
-                        <span class="brand-wordmark">မေ့မရ</span>
-                    </h1>
-                    <form id="shopSearchForm" class="shop-search-form" th:action="@{/}" method="get">
-                        <input type="hidden" name="category" th:value="${activeCategory}">
-                        <input type="hidden" name="lang" th:value="${#locale.language}">
-                        <label class="sr-only" for="productSearch" th:text="#{index.search.placeholder}">Search
-                            products</label>
-                        <input id="productSearch" name="q" class="shop-search-input" type="search"
-                            th:value="${searchQuery}" th:placeholder="#{index.search.placeholder}">
-                    </form>
-                </div>
-                <div class="header-right">
-                    <nav class="utility-links">
-                        <a th:if="${isAdmin}" th:href="@{/admin}" class="utility-btn utility-btn-strong"
-                            th:text="#{nav.admin.panel}">Admin Panel</a>
-                        <a th:href="@{/order/manage}" class="utility-btn" th:text="#{nav.order.manage}">Order Check /
-                            Cancel</a>
-                        <a th:href="@{/request-item}" class="utility-btn" th:text="#{nav.request.item}">Request New
-                            Item</a>
-                    </nav>
-                    <details class="quick-menu">
-                        <summary aria-label="menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></summary>
-                        <div class="quick-menu-panel">
-                            <a th:if="${isAdmin}" th:href="@{/admin}" class="quick-menu-link"
-                                th:text="#{nav.admin.panel}">Admin Panel</a>
-                            <a th:href="@{/order/manage}" class="quick-menu-link" th:text="#{nav.order.manage}">Order
-                                Check / Cancel</a>
-                            <a th:href="@{/request-item}" class="quick-menu-link" th:text="#{nav.request.item}">Request
-                                New Item</a>
-                        </div>
-                    </details>
-                    <a th:href="@{/cart}" class="cart-btn" th:title="#{nav.cart}" th:aria-label="#{nav.cart}">
-                        <span class="cart-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11.4a2.2 2.2 0 0 0 2.2 1.8h7.6a2.2 2.2 0 0 0 2.2-1.8L20.5 8H6"></path><circle cx="10" cy="20" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="17" cy="20" r="1.3" fill="currentColor" stroke="none"></circle></svg></span>
-                        <span class="cart-badge" th:if="${cartCount > 0}" th:text="${cartCount}"></span>
-                    </a>
-                    <div class="lang-switch">
-                        <form class="lang-form" th:action="@{/}" method="get">
-                            <input type="hidden" name="category" th:value="${activeCategory}">
-                            <input type="hidden" name="page" th:value="${shopPagination.currentPage}">
-                            <label class="sr-only" for="langSelect" th:text="#{lang.switch}">Switch Language</label>
-                            <select id="langSelect" name="lang" class="lang-select" onchange="this.form.submit()">
-                                <option value="my" th:selected="${#locale.language == 'my'}" th:text="#{lang.myanmar}">
-                                    မြန်မာ</option>
-                                <option value="en" th:selected="${#locale.language == 'en'}" th:text="#{lang.english}">
-                                    English</option>
-                                <option value="ja" th:selected="${#locale.language == 'ja'}" th:text="#{lang.japanese}">
-                                    日本語</option>
-                            </select>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <p class="brand-sub" th:text="#{index.hero.subtitle}">
-                အရသာရှိတဲ့ မြန်မာစားစရာများကို အလွယ်တကူ ရွေးချယ်ဝယ်ယူနိုင်ပါတယ်။
-            </p>
-        </header>
+	<div class="page-shell">
+		<header class="site-header">
+			<div class="header-top">
+				<div class="header-left">
+					<h1 class="brand-title brand-title-logo live-3d" data-live-3d>
+						<img th:src="@{/images/maemaya.jpg}" class="brand-logo-mark" alt="Mae Ma Ya logo">
+						<span class="brand-wordmark">မေ့မရ</span>
+					</h1>
+					<form id="shopSearchForm" class="shop-search-form" th:action="@{/}" method="get">
+						<input type="hidden" name="category" th:value="${activeCategory}">
+						<input type="hidden" name="lang" th:value="${#locale.language}">
+						<label class="sr-only" for="productSearch" th:text="#{index.search.placeholder}">Search
+							products</label>
+						<input id="productSearch" name="q" class="shop-search-input" type="search"
+							th:value="${searchQuery}" th:placeholder="#{index.search.placeholder}">
+					</form>
+				</div>
+				<div class="header-right">
+					<nav class="utility-links">
+						<a th:if="${isAdmin}" th:href="@{/admin}" class="utility-btn utility-btn-strong"
+							th:text="#{nav.admin.panel}">Admin Panel</a>
+						<a th:href="@{/order/manage}" class="utility-btn" th:text="#{nav.order.manage}">Order Check /
+							Cancel</a>
+						<a th:href="@{/request-item}" class="utility-btn" th:text="#{nav.request.item}">Request New
+							Item</a>
+						<a th:href="@{/(category='out-of-stock', page=1, lang=${#locale.language})}" class="utility-btn"
+							th:text="#{nav.outOfStock}">Out of Stock Items</a>
+					</nav>
+					<details class="quick-menu">
+						<summary aria-label="menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+								stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+								<line x1="4" y1="7" x2="20" y2="7"></line>
+								<line x1="4" y1="12" x2="20" y2="12"></line>
+								<line x1="4" y1="17" x2="20" y2="17"></line>
+							</svg></summary>
+						<div class="quick-menu-panel">
+							<a th:if="${isAdmin}" th:href="@{/admin}" class="quick-menu-link"
+								th:text="#{nav.admin.panel}">Admin Panel</a>
+							<a th:href="@{/order/manage}" class="quick-menu-link" th:text="#{nav.order.manage}">Order
+								Check / Cancel</a>
+							<a th:href="@{/request-item}" class="quick-menu-link" th:text="#{nav.request.item}">Request
+								New Item</a>
+							<a th:href="@{/(category='out-of-stock', page=1, lang=${#locale.language})}"
+								class="quick-menu-link" th:text="#{nav.outOfStock}">Out of Stock Items</a>
+						</div>
+					</details>
+					<a th:href="@{/cart}" class="cart-btn" th:title="#{nav.cart}" th:aria-label="#{nav.cart}">
+						<span class="cart-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+								stroke-linejoin="round">
+								<path d="M3 4h2l2.2 11.4a2.2 2.2 0 0 0 2.2 1.8h7.6a2.2 2.2 0 0 0 2.2-1.8L20.5 8H6">
+								</path>
+								<circle cx="10" cy="20" r="1.3" fill="currentColor" stroke="none"></circle>
+								<circle cx="17" cy="20" r="1.3" fill="currentColor" stroke="none"></circle>
+							</svg></span>
+						<span class="cart-badge" th:if="${cartCount > 0}" th:text="${cartCount}"></span>
+					</a>
+					<div class="lang-switch">
+						<form class="lang-form" th:action="@{/}" method="get">
+							<input type="hidden" name="category" th:value="${activeCategory}">
+							<input type="hidden" name="page" th:value="${shopPagination.currentPage}">
+							<label class="sr-only" for="langSelect" th:text="#{lang.switch}">Switch Language</label>
+							<select id="langSelect" name="lang" class="lang-select" onchange="this.form.submit()">
+								<option value="my" th:selected="${#locale.language == 'my'}" th:text="#{lang.myanmar}">
+									မြန်မာ</option>
+								<option value="en" th:selected="${#locale.language == 'en'}" th:text="#{lang.english}">
+									English</option>
+								<option value="ja" th:selected="${#locale.language == 'ja'}" th:text="#{lang.japanese}">
+									日本語</option>
+							</select>
+						</form>
+					</div>
+				</div>
+			</div>
+			<p class="brand-sub" th:text="#{index.hero.subtitle}">
+				အရသာရှိတဲ့ မြန်မာစားစရာများကို အလွယ်တကူ ရွေးချယ်ဝယ်ယူနိုင်ပါတယ်။
+			</p>
+		</header>
 
-        <div id="flashHost">
-            <div th:if="${cartSuccess}" class="flash flash-success" th:text="${cartSuccess}"></div>
-            <div th:if="${cartError}" class="flash flash-error" th:text="${cartError}"></div>
-        </div>
+		<div id="flashHost">
+			<div th:if="${cartSuccess}" class="flash flash-success" th:text="${cartSuccess}"></div>
+			<div th:if="${cartError}" class="flash flash-error" th:text="${cartError}"></div>
+		</div>
 
-        <section class="menu-section">
-            <h2 th:text="#{index.section.menu}">Menu</h2>
-            <div id="shopResults" th:fragment="shopResults">
-            <div id="searchNoResult" class="flash flash-error"
-                th:if="${!#strings.isEmpty(searchQuery) and #maps.isEmpty(productsByCategory)}"
-                th:text="#{index.search.noResult}">
-                No matching products found.
-            </div>
+		<section class="menu-section">
+			<h2 th:text="#{index.section.menu}">Menu</h2>
+			<div id="shopResults" th:fragment="shopResults">
+				<div id="searchNoResult" class="flash flash-error"
+					th:if="${!#strings.isEmpty(searchQuery) and #maps.isEmpty(productsByCategory)}"
+					th:text="#{index.search.noResult}">
+					No matching products found.
+				</div>
 
-            <nav class="shop-category-bar" aria-label="Shop categories">
-                <span class="shop-category-label">Category</span>
-                <a class="shop-category-link" 
-                    th:classappend="${activeCategory == 'all'} ? ' is-active'"
-                    th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>
-                <a class="shop-category-link" 
-                    th:each="shopCategory : ${shopCategories}"
-                    th:classappend="${shopCategory == activeCategory} ? ' is-active'"
-                    th:href="@{/(category=${shopCategory},page=1,lang=${#locale.language},q=${searchQuery})}"
-                    th:text="${categoryDisplayNames.get(shopCategory) ?: shopCategory}">Category</a>
-            </nav>
+				<nav class="shop-category-bar" aria-label="Shop categories">
+					<span class="shop-category-label">Category</span>
+					<a class="shop-category-link" th:classappend="${activeCategory == 'all'} ? ' is-active'"
+						th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>
+					<a class="shop-category-link" th:each="shopCategory : ${shopCategories}"
+						th:classappend="${shopCategory == activeCategory} ? ' is-active'"
+						th:href="@{/(category=${shopCategory},page=1,lang=${#locale.language},q=${searchQuery})}"
+						th:text="${categoryDisplayNames.get(shopCategory) ?: shopCategory}">Category</a>
+				</nav>
 
-            <div class="category-section" th:each="entry : ${productsByCategory}">
-                <div class="category-header">
-                    <h3 class="category-title" th:text="${categoryDisplayNames.get(entry.key) ?: entry.key}">Category</h3>
-                    <span class="category-count amount-font"
-                        th:text="${(categoryTotalCounts[entry.key] != null and categoryTotalCounts[entry.key] != #lists.size(entry.value)) ? #lists.size(entry.value) + ' / ' + categoryTotalCounts[entry.key] + ' items' : #lists.size(entry.value) + ' items'}">0
-                        items</span>
-                </div>
+				<div class="category-section" th:each="entry : ${productsByCategory}">
+					<div class="category-header">
+						<h3 class="category-title" th:text="${categoryDisplayNames.get(entry.key) ?: entry.key}">
+							Category</h3>
+						<span class="category-count amount-font"
+							th:text="${(categoryTotalCounts[entry.key] != null and categoryTotalCounts[entry.key] != #lists.size(entry.value)) ? #lists.size(entry.value) + ' / ' + categoryTotalCounts[entry.key] + ' items' : #lists.size(entry.value) + ' items'}">0
+							items</span>
+					</div>
 
-                <div class="product-grid">
-                    <article class="product-card" th:each="product : ${entry.value}"
-                        th:with="inCart=${cartItemCounts[product.id] != null ? cartItemCounts[product.id] : 0}"
-                        th:attr="data-search=${#strings.toLowerCase(product.name + ' ' + entry.key)},data-product-id=${product.id},data-stock=${product.stock},data-in-cart=${inCart}">
-                        <img th:if="${product.hasImage()}" th:src="@{/images/{image}(image=${product.image})}"
-                            class="product-media" loading="lazy" decoding="async" th:alt="#{index.product.imageAlt}">
-                        <div th:unless="${product.hasImage()}" class="product-media"></div>
+					<div class="product-grid">
+						<article class="product-card" th:each="product : ${entry.value}"
+							th:with="inCart=${cartItemCounts[product.id] != null ? cartItemCounts[product.id] : 0}"
+							th:attr="data-search=${#strings.toLowerCase(product.name + ' ' + entry.key)},data-product-id=${product.id},data-stock=${product.stock},data-in-cart=${inCart}">
+							<img th:if="${product.hasImage()}" th:src="@{/images/{image}(image=${product.image})}"
+								class="product-media" loading="lazy" decoding="async"
+								th:alt="#{index.product.imageAlt}">
+							<div th:unless="${product.hasImage()}" class="product-media"></div>
 
-                        <h4 class="product-name" th:text="${product.name}">Product</h4>
-                        <p class="product-price amount-font" th:text="|¥${product.price}|">¥0</p>
-                        <div class="product-actions" th:if="${product.stock > 0}">
-                            <button type="button" class="add-cart-btn" th:aria-label="#{index.addToCart}"
-                                aria-label="Add to Cart">
-                                <span class="add-cart-btn-icon" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11.4a2.2 2.2 0 0 0 2.2 1.8h7.6a2.2 2.2 0 0 0 2.2-1.8L20.5 8H6"></path><circle cx="10" cy="20" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="17" cy="20" r="1.3" fill="currentColor" stroke="none"></circle></svg></span>
-                            </button>
-                            <div class="qty-control">
-                                <div class="qty-stepper">
-                                    <button type="button" class="qty-btn qty-minus" aria-label="-">−</button>
-                                    <span class="qty-value amount-font">0</span>
-                                    <button type="button" class="qty-btn qty-plus" aria-label="+">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <span th:unless="${product.stock > 0}" class="sold-out-chip" th:text="#{index.soldOut}">Sold
-                            Out</span>
-                    </article>
-                </div>
-            </div>
+							<h4 class="product-name" th:text="${product.name}">Product</h4>
+							<p class="product-price amount-font" th:text="|¥${product.price}|">¥0</p>
+							<div class="product-actions" th:if="${product.stock > 0}">
+								<button type="button" class="add-cart-btn" th:aria-label="#{index.addToCart}"
+									aria-label="Add to Cart">
+									<span class="add-cart-btn-icon" aria-hidden="true"><svg width="17" height="17"
+											viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+											stroke-linecap="round" stroke-linejoin="round">
+											<path
+												d="M3 4h2l2.2 11.4a2.2 2.2 0 0 0 2.2 1.8h7.6a2.2 2.2 0 0 0 2.2-1.8L20.5 8H6">
+											</path>
+											<circle cx="10" cy="20" r="1.3" fill="currentColor" stroke="none"></circle>
+											<circle cx="17" cy="20" r="1.3" fill="currentColor" stroke="none"></circle>
+										</svg></span>
+								</button>
+								<div class="qty-control">
+									<div class="qty-stepper">
+										<button type="button" class="qty-btn qty-minus" aria-label="-">−</button>
+										<span class="qty-value amount-font">0</span>
+										<button type="button" class="qty-btn qty-plus" aria-label="+">+</button>
+									</div>
+								</div>
+							</div>
+							<span th:unless="${product.stock > 0}" class="sold-out-chip" th:text="#{index.soldOut}">Sold
+								Out</span>
+						</article>
+					</div>
+				</div>
 
-            <div class="pagination-shell" th:if="${shopPagination.totalPages > 1}" th:with="start=${T(java.lang.Math).max(1, shopPagination.currentPage - 2)},
+				<div class="pagination-shell" th:if="${shopPagination.totalPages > 1}" th:with="start=${T(java.lang.Math).max(1, shopPagination.currentPage - 2)},
               end=${T(java.lang.Math).min(shopPagination.totalPages, start + 4)},
               finalStart=${T(java.lang.Math).max(1, end - 4)}">
 
-                <div class="pagination-summary">
-                    <span class="pagination-summary-strong amount-font"
-                        th:text="|Page ${shopPagination.currentPage} of ${shopPagination.totalPages}|">Page 1 of
-                        1</span>
-                    <span class="amount-font"
-                        th:text="|${shopPagination.startItem}-${shopPagination.endItem} of ${shopPagination.totalItems} items|">1-12
-                        of 12 items</span>
-                </div>
+					<div class="pagination-summary">
+						<span class="pagination-summary-strong amount-font"
+							th:text="|Page ${shopPagination.currentPage} of ${shopPagination.totalPages}|">Page 1 of
+							1</span>
+						<span class="amount-font"
+							th:text="|${shopPagination.startItem}-${shopPagination.endItem} of ${shopPagination.totalItems} items|">1-12
+							of 12 items</span>
+					</div>
 
-                            <nav class="pagination-bar" aria-label="Shop pagination">
-                <a class="pagination-nav-link"
-                    th:classappend="${shopPagination.currentPage <= 1} ? ' is-disabled' : ''"
-                    th:href="@{/(category=${activeCategory},page=${shopPagination.currentPage > 1 ? shopPagination.currentPage - 1 : 1},lang=${#locale.language},q=${searchQuery})}">‹ Prev</a>
-        
-                <a class="pagination-link"
-                    th:each="pageNumber : ${#numbers.sequence(finalStart, end)}"
-                    th:classappend="${pageNumber == shopPagination.currentPage} ? ' is-active' : ''"
-                    th:href="@{/(category=${activeCategory},page=${pageNumber},lang=${#locale.language},q=${searchQuery})}"
-                    th:text="${pageNumber}">1</a>
-        
-                <a class="pagination-nav-link"
-                    th:classappend="${shopPagination.currentPage >= shopPagination.totalPages} ? ' is-disabled' : ''"
-                    th:href="@{/(category=${activeCategory},page=${shopPagination.currentPage < shopPagination.totalPages ? shopPagination.currentPage + 1 : shopPagination.totalPages},lang=${#locale.language},q=${searchQuery})}">Next ›</a>
-            </nav>
-            </div>
-            </div>
-        </section>
+					<nav class="pagination-bar" aria-label="Shop pagination">
+						<a class="pagination-nav-link"
+							th:classappend="${shopPagination.currentPage <= 1} ? ' is-disabled' : ''"
+							th:href="@{/(category=${activeCategory},page=${shopPagination.currentPage > 1 ? shopPagination.currentPage - 1 : 1},lang=${#locale.language},q=${searchQuery})}">‹
+							Prev</a>
 
-        <section class="happy-shoppers" aria-label="Happy shoppers scene">
-            <p class="happy-shoppers-caption">မေ့မရစတိုးမှာ ယုံကြည်စိတ်ချစွာ ဝယ်ယူအားပေးခြင်းကို ကျေးဇူးတင်ပါသည်</p>
-            <div class="shopper-scene" aria-hidden="true">
-                <div class="shop-front">
-                    <svg class="shop-front-svg" viewBox="0 0 120 130" width="128" height="139">
-                        <defs>
-                            <radialGradient id="happyShoppersWindowGlow" cx="35%" cy="30%" r="75%">
-                                <stop offset="0%" stop-color="#fff8ea"></stop>
-                                <stop offset="55%" stop-color="#f7dfae"></stop>
-                                <stop offset="100%" stop-color="#e7c184"></stop>
-                            </radialGradient>
-                            <clipPath id="happyShoppersAwningClip">
-                                <path d="M6,36 H114 V46 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 V36 Z"></path>
-                            </clipPath>
-                        </defs>
+						<a class="pagination-link" th:each="pageNumber : ${#numbers.sequence(finalStart, end)}"
+							th:classappend="${pageNumber == shopPagination.currentPage} ? ' is-active' : ''"
+							th:href="@{/(category=${activeCategory},page=${pageNumber},lang=${#locale.language},q=${searchQuery})}"
+							th:text="${pageNumber}">1</a>
 
-                        <ellipse class="sf-ground-shadow" cx="60" cy="124" rx="54" ry="5"></ellipse>
+						<a class="pagination-nav-link"
+							th:classappend="${shopPagination.currentPage >= shopPagination.totalPages} ? ' is-disabled' : ''"
+							th:href="@{/(category=${activeCategory},page=${shopPagination.currentPage < shopPagination.totalPages ? shopPagination.currentPage + 1 : shopPagination.totalPages},lang=${#locale.language},q=${searchQuery})}">Next
+							›</a>
+					</nav>
+				</div>
+			</div>
+		</section>
 
-                        <path class="sf-roof" d="M6,42 L60,8 L114,42 Z"></path>
-                        <rect class="sf-roof-cap" x="56" y="3" width="8" height="9" rx="3"></rect>
+		<section class="happy-shoppers" aria-label="Happy shoppers scene">
+			<p class="happy-shoppers-caption">မေ့မရစတိုးမှာ ယုံကြည်စိတ်ချစွာ ဝယ်ယူအားပေးခြင်းကို ကျေးဇူးတင်ပါသည်</p>
+			<div class="shopper-scene" aria-hidden="true">
+				<div class="shop-front">
+					<svg class="shop-front-svg" viewBox="0 0 120 130" width="128" height="139">
+						<defs>
+							<radialGradient id="happyShoppersWindowGlow" cx="35%" cy="30%" r="75%">
+								<stop offset="0%" stop-color="#fff8ea"></stop>
+								<stop offset="55%" stop-color="#f7dfae"></stop>
+								<stop offset="100%" stop-color="#e7c184"></stop>
+							</radialGradient>
+							<clipPath id="happyShoppersAwningClip">
+								<path
+									d="M6,36 H114 V46 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 V36 Z">
+								</path>
+							</clipPath>
+						</defs>
 
-                        <rect class="sf-wall" x="18" y="40" width="84" height="82" rx="7"></rect>
+						<ellipse class="sf-ground-shadow" cx="60" cy="124" rx="54" ry="5"></ellipse>
 
-                        <g clip-path="url(#happyShoppersAwningClip)">
-                            <rect class="sf-awning-stripe-b" x="6" y="34" width="108" height="14"></rect>
-                            <rect class="sf-awning-stripe-a" x="6" y="34" width="12" height="14"></rect>
-                            <rect class="sf-awning-stripe-a" x="30" y="34" width="12" height="14"></rect>
-                            <rect class="sf-awning-stripe-a" x="54" y="34" width="12" height="14"></rect>
-                            <rect class="sf-awning-stripe-a" x="78" y="34" width="12" height="14"></rect>
-                            <rect class="sf-awning-stripe-a" x="102" y="34" width="12" height="14"></rect>
-                        </g>
-                        <path class="sf-awning-outline" d="M6,36 H114 V46 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 V36"></path>
+						<path class="sf-roof" d="M6,42 L60,8 L114,42 Z"></path>
+						<rect class="sf-roof-cap" x="56" y="3" width="8" height="9" rx="3"></rect>
 
-                        <rect class="sf-sign" x="36" y="52" width="48" height="16" rx="7" transform="rotate(-2 60 60)"></rect>
-                        <text class="sf-sign-text" x="60" y="60.5" transform="rotate(-2 60 60)">မေ့မရ</text>
+						<rect class="sf-wall" x="18" y="40" width="84" height="82" rx="7"></rect>
 
-                        <circle class="sf-window-glass" cx="60" cy="90" r="13"></circle>
-                        <line class="sf-window-mullion" x1="60" y1="78" x2="60" y2="102"></line>
-                        <line class="sf-window-mullion" x1="48" y1="90" x2="72" y2="90"></line>
+						<g clip-path="url(#happyShoppersAwningClip)">
+							<rect class="sf-awning-stripe-b" x="6" y="34" width="108" height="14"></rect>
+							<rect class="sf-awning-stripe-a" x="6" y="34" width="12" height="14"></rect>
+							<rect class="sf-awning-stripe-a" x="30" y="34" width="12" height="14"></rect>
+							<rect class="sf-awning-stripe-a" x="54" y="34" width="12" height="14"></rect>
+							<rect class="sf-awning-stripe-a" x="78" y="34" width="12" height="14"></rect>
+							<rect class="sf-awning-stripe-a" x="102" y="34" width="12" height="14"></rect>
+						</g>
+						<path class="sf-awning-outline"
+							d="M6,36 H114 V46 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 a6,6 0 0 1 -12,0 V36">
+						</path>
 
-                        <rect class="sf-door" x="48" y="105" width="24" height="17" rx="7"></rect>
-                        <circle class="sf-door-knob" cx="66" cy="114" r="1.5"></circle>
-                    </svg>
-                </div>
-                <div class="shopper-lane">
-                    <div class="shopper" style="--delay:0s;--dur:9.8s;--shirt:#6b3f29;--bag:#d19339;--shirt-dark:#4a2a1a;--bag-dark:#a56a25;">
-                        <svg class="shopper-svg" viewBox="0 0 40 78" width="47" height="92">
-                            <ellipse class="shopper-shadow" cx="20" cy="76" rx="13" ry="3"></ellipse>
-                            <g class="shopper-bob">
-                                <g class="shopper-leg shopper-leg-back"><line x1="17" y1="52" x2="14" y2="74"></line></g>
-                                <g class="shopper-arm shopper-arm-back"><line x1="12" y1="34" x2="9" y2="48"></line></g>
-                                <g class="shopper-leg shopper-leg-front"><line x1="23" y1="52" x2="26" y2="74"></line></g>
-                                <rect class="shopper-body" x="8" y="30" width="24" height="24" rx="10"></rect>
-                                <g class="shopper-bag-group">
-                                    <path class="shopper-bag-strap" d="M29,44 Q32.5,36 36,44"></path>
-                                    <rect class="shopper-bag-body" x="27" y="44" width="11" height="14" rx="3"></rect>
-                                </g>
-                                <g class="shopper-arm shopper-arm-front"><line x1="28" y1="34" x2="31" y2="48"></line></g>
-                                <g class="shopper-head-group">
-                                    <path class="shopper-hair" d="M10,8 Q14,-3 22,4 Q16,1.5 10,8 Z"></path>
-                                    <circle class="shopper-head" cx="20" cy="16" r="14"></circle>
-                                    <circle class="shopper-eye" cx="14" cy="17" r="2.6"></circle>
-                                    <circle class="shopper-eye" cx="26" cy="17" r="2.6"></circle>
-                                    <circle class="shopper-eye-shine" cx="13" cy="15.6" r="1"></circle>
-                                    <circle class="shopper-eye-shine" cx="25" cy="15.6" r="1"></circle>
-                                    <ellipse class="shopper-blush" cx="10.5" cy="21" rx="3" ry="2"></ellipse>
-                                    <ellipse class="shopper-blush" cx="29.5" cy="21" rx="3" ry="2"></ellipse>
-                                    <path class="shopper-mouth" d="M14,22 Q20,29 26,22 Q20,25.5 14,22 Z"></path>
-                                    <path class="shopper-mouth-highlight" d="M14.5,22.3 Q20,26.3 25.5,22.3"></path>
-                                </g>
-                            </g>
-                        </svg>
-                        <span class="shopper-sparkle"></span>
-                    </div>
-                    <div class="shopper" style="--delay:2.3s;--dur:10.7s;--shirt:#7c4a2d;--bag:#c27f2e;--shirt-dark:#552f1c;--bag-dark:#93611f;">
-                        <svg class="shopper-svg" viewBox="0 0 40 78" width="47" height="92">
-                            <ellipse class="shopper-shadow" cx="20" cy="76" rx="13" ry="3"></ellipse>
-                            <g class="shopper-bob">
-                                <g class="shopper-leg shopper-leg-back"><line x1="17" y1="52" x2="14" y2="74"></line></g>
-                                <g class="shopper-arm shopper-arm-back"><line x1="12" y1="34" x2="9" y2="48"></line></g>
-                                <g class="shopper-leg shopper-leg-front"><line x1="23" y1="52" x2="26" y2="74"></line></g>
-                                <rect class="shopper-body" x="8" y="30" width="24" height="24" rx="10"></rect>
-                                <g class="shopper-bag-group">
-                                    <path class="shopper-bag-strap" d="M29,44 Q32.5,36 36,44"></path>
-                                    <rect class="shopper-bag-body" x="27" y="44" width="11" height="14" rx="3"></rect>
-                                </g>
-                                <g class="shopper-arm shopper-arm-front"><line x1="28" y1="34" x2="31" y2="48"></line></g>
-                                <g class="shopper-head-group">
-                                    <path class="shopper-hair" d="M10,8 Q14,-3 22,4 Q16,1.5 10,8 Z"></path>
-                                    <circle class="shopper-head" cx="20" cy="16" r="14"></circle>
-                                    <circle class="shopper-eye" cx="14" cy="17" r="2.6"></circle>
-                                    <circle class="shopper-eye" cx="26" cy="17" r="2.6"></circle>
-                                    <circle class="shopper-eye-shine" cx="13" cy="15.6" r="1"></circle>
-                                    <circle class="shopper-eye-shine" cx="25" cy="15.6" r="1"></circle>
-                                    <ellipse class="shopper-blush" cx="10.5" cy="21" rx="3" ry="2"></ellipse>
-                                    <ellipse class="shopper-blush" cx="29.5" cy="21" rx="3" ry="2"></ellipse>
-                                    <path class="shopper-mouth" d="M14,22 Q20,29 26,22 Q20,25.5 14,22 Z"></path>
-                                    <path class="shopper-mouth-highlight" d="M14.5,22.3 Q20,26.3 25.5,22.3"></path>
-                                </g>
-                            </g>
-                        </svg>
-                        <span class="shopper-sparkle"></span>
-                    </div>
-                    <div class="shopper" style="--delay:4.7s;--dur:11.4s;--shirt:#8c5934;--bag:#deab5f;--shirt-dark:#5f3a20;--bag-dark:#b3823f;">
-                        <svg class="shopper-svg" viewBox="0 0 40 78" width="47" height="92">
-                            <ellipse class="shopper-shadow" cx="20" cy="76" rx="13" ry="3"></ellipse>
-                            <g class="shopper-bob">
-                                <g class="shopper-leg shopper-leg-back"><line x1="17" y1="52" x2="14" y2="74"></line></g>
-                                <g class="shopper-arm shopper-arm-back"><line x1="12" y1="34" x2="9" y2="48"></line></g>
-                                <g class="shopper-leg shopper-leg-front"><line x1="23" y1="52" x2="26" y2="74"></line></g>
-                                <rect class="shopper-body" x="8" y="30" width="24" height="24" rx="10"></rect>
-                                <g class="shopper-bag-group">
-                                    <path class="shopper-bag-strap" d="M29,44 Q32.5,36 36,44"></path>
-                                    <rect class="shopper-bag-body" x="27" y="44" width="11" height="14" rx="3"></rect>
-                                </g>
-                                <g class="shopper-arm shopper-arm-front"><line x1="28" y1="34" x2="31" y2="48"></line></g>
-                                <g class="shopper-head-group">
-                                    <path class="shopper-hair" d="M10,8 Q14,-3 22,4 Q16,1.5 10,8 Z"></path>
-                                    <circle class="shopper-head" cx="20" cy="16" r="14"></circle>
-                                    <circle class="shopper-eye" cx="14" cy="17" r="2.6"></circle>
-                                    <circle class="shopper-eye" cx="26" cy="17" r="2.6"></circle>
-                                    <circle class="shopper-eye-shine" cx="13" cy="15.6" r="1"></circle>
-                                    <circle class="shopper-eye-shine" cx="25" cy="15.6" r="1"></circle>
-                                    <ellipse class="shopper-blush" cx="10.5" cy="21" rx="3" ry="2"></ellipse>
-                                    <ellipse class="shopper-blush" cx="29.5" cy="21" rx="3" ry="2"></ellipse>
-                                    <path class="shopper-mouth" d="M14,22 Q20,29 26,22 Q20,25.5 14,22 Z"></path>
-                                    <path class="shopper-mouth-highlight" d="M14.5,22.3 Q20,26.3 25.5,22.3"></path>
-                                </g>
-                            </g>
-                        </svg>
-                        <span class="shopper-sparkle"></span>
-                    </div>
-                </div>
-            </div>
-        </section>
+						<rect class="sf-sign" x="36" y="52" width="48" height="16" rx="7" transform="rotate(-2 60 60)">
+						</rect>
+						<text class="sf-sign-text" x="60" y="60.5" transform="rotate(-2 60 60)">မေ့မရ</text>
 
-        <footer>
-            <p th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
-            <a class="footer-link" th:if="${isAdmin}" th:href="@{/admin}" th:text="#{nav.admin.panel}">Admin Panel</a>
-        </footer>
-    </div>
+						<circle class="sf-window-glass" cx="60" cy="90" r="13"></circle>
+						<line class="sf-window-mullion" x1="60" y1="78" x2="60" y2="102"></line>
+						<line class="sf-window-mullion" x1="48" y1="90" x2="72" y2="90"></line>
+
+						<rect class="sf-door" x="48" y="105" width="24" height="17" rx="7"></rect>
+						<circle class="sf-door-knob" cx="66" cy="114" r="1.5"></circle>
+					</svg>
+				</div>
+				<div class="shopper-lane">
+					<div class="shopper"
+						style="--delay:0s;--dur:9.8s;--shirt:#6b3f29;--bag:#d19339;--shirt-dark:#4a2a1a;--bag-dark:#a56a25;">
+						<svg class="shopper-svg" viewBox="0 0 40 78" width="47" height="92">
+							<ellipse class="shopper-shadow" cx="20" cy="76" rx="13" ry="3"></ellipse>
+							<g class="shopper-bob">
+								<g class="shopper-leg shopper-leg-back">
+									<line x1="17" y1="52" x2="14" y2="74"></line>
+								</g>
+								<g class="shopper-arm shopper-arm-back">
+									<line x1="12" y1="34" x2="9" y2="48"></line>
+								</g>
+								<g class="shopper-leg shopper-leg-front">
+									<line x1="23" y1="52" x2="26" y2="74"></line>
+								</g>
+								<rect class="shopper-body" x="8" y="30" width="24" height="24" rx="10"></rect>
+								<g class="shopper-bag-group">
+									<path class="shopper-bag-strap" d="M29,44 Q32.5,36 36,44"></path>
+									<rect class="shopper-bag-body" x="27" y="44" width="11" height="14" rx="3"></rect>
+								</g>
+								<g class="shopper-arm shopper-arm-front">
+									<line x1="28" y1="34" x2="31" y2="48"></line>
+								</g>
+								<g class="shopper-head-group">
+									<path class="shopper-hair" d="M10,8 Q14,-3 22,4 Q16,1.5 10,8 Z"></path>
+									<circle class="shopper-head" cx="20" cy="16" r="14"></circle>
+									<circle class="shopper-eye" cx="14" cy="17" r="2.6"></circle>
+									<circle class="shopper-eye" cx="26" cy="17" r="2.6"></circle>
+									<circle class="shopper-eye-shine" cx="13" cy="15.6" r="1"></circle>
+									<circle class="shopper-eye-shine" cx="25" cy="15.6" r="1"></circle>
+									<ellipse class="shopper-blush" cx="10.5" cy="21" rx="3" ry="2"></ellipse>
+									<ellipse class="shopper-blush" cx="29.5" cy="21" rx="3" ry="2"></ellipse>
+									<path class="shopper-mouth" d="M14,22 Q20,29 26,22 Q20,25.5 14,22 Z"></path>
+									<path class="shopper-mouth-highlight" d="M14.5,22.3 Q20,26.3 25.5,22.3"></path>
+								</g>
+							</g>
+						</svg>
+						<span class="shopper-sparkle"></span>
+					</div>
+					<div class="shopper"
+						style="--delay:2.3s;--dur:10.7s;--shirt:#7c4a2d;--bag:#c27f2e;--shirt-dark:#552f1c;--bag-dark:#93611f;">
+						<svg class="shopper-svg" viewBox="0 0 40 78" width="47" height="92">
+							<ellipse class="shopper-shadow" cx="20" cy="76" rx="13" ry="3"></ellipse>
+							<g class="shopper-bob">
+								<g class="shopper-leg shopper-leg-back">
+									<line x1="17" y1="52" x2="14" y2="74"></line>
+								</g>
+								<g class="shopper-arm shopper-arm-back">
+									<line x1="12" y1="34" x2="9" y2="48"></line>
+								</g>
+								<g class="shopper-leg shopper-leg-front">
+									<line x1="23" y1="52" x2="26" y2="74"></line>
+								</g>
+								<rect class="shopper-body" x="8" y="30" width="24" height="24" rx="10"></rect>
+								<g class="shopper-bag-group">
+									<path class="shopper-bag-strap" d="M29,44 Q32.5,36 36,44"></path>
+									<rect class="shopper-bag-body" x="27" y="44" width="11" height="14" rx="3"></rect>
+								</g>
+								<g class="shopper-arm shopper-arm-front">
+									<line x1="28" y1="34" x2="31" y2="48"></line>
+								</g>
+								<g class="shopper-head-group">
+									<path class="shopper-hair" d="M10,8 Q14,-3 22,4 Q16,1.5 10,8 Z"></path>
+									<circle class="shopper-head" cx="20" cy="16" r="14"></circle>
+									<circle class="shopper-eye" cx="14" cy="17" r="2.6"></circle>
+									<circle class="shopper-eye" cx="26" cy="17" r="2.6"></circle>
+									<circle class="shopper-eye-shine" cx="13" cy="15.6" r="1"></circle>
+									<circle class="shopper-eye-shine" cx="25" cy="15.6" r="1"></circle>
+									<ellipse class="shopper-blush" cx="10.5" cy="21" rx="3" ry="2"></ellipse>
+									<ellipse class="shopper-blush" cx="29.5" cy="21" rx="3" ry="2"></ellipse>
+									<path class="shopper-mouth" d="M14,22 Q20,29 26,22 Q20,25.5 14,22 Z"></path>
+									<path class="shopper-mouth-highlight" d="M14.5,22.3 Q20,26.3 25.5,22.3"></path>
+								</g>
+							</g>
+						</svg>
+						<span class="shopper-sparkle"></span>
+					</div>
+					<div class="shopper"
+						style="--delay:4.7s;--dur:11.4s;--shirt:#8c5934;--bag:#deab5f;--shirt-dark:#5f3a20;--bag-dark:#b3823f;">
+						<svg class="shopper-svg" viewBox="0 0 40 78" width="47" height="92">
+							<ellipse class="shopper-shadow" cx="20" cy="76" rx="13" ry="3"></ellipse>
+							<g class="shopper-bob">
+								<g class="shopper-leg shopper-leg-back">
+									<line x1="17" y1="52" x2="14" y2="74"></line>
+								</g>
+								<g class="shopper-arm shopper-arm-back">
+									<line x1="12" y1="34" x2="9" y2="48"></line>
+								</g>
+								<g class="shopper-leg shopper-leg-front">
+									<line x1="23" y1="52" x2="26" y2="74"></line>
+								</g>
+								<rect class="shopper-body" x="8" y="30" width="24" height="24" rx="10"></rect>
+								<g class="shopper-bag-group">
+									<path class="shopper-bag-strap" d="M29,44 Q32.5,36 36,44"></path>
+									<rect class="shopper-bag-body" x="27" y="44" width="11" height="14" rx="3"></rect>
+								</g>
+								<g class="shopper-arm shopper-arm-front">
+									<line x1="28" y1="34" x2="31" y2="48"></line>
+								</g>
+								<g class="shopper-head-group">
+									<path class="shopper-hair" d="M10,8 Q14,-3 22,4 Q16,1.5 10,8 Z"></path>
+									<circle class="shopper-head" cx="20" cy="16" r="14"></circle>
+									<circle class="shopper-eye" cx="14" cy="17" r="2.6"></circle>
+									<circle class="shopper-eye" cx="26" cy="17" r="2.6"></circle>
+									<circle class="shopper-eye-shine" cx="13" cy="15.6" r="1"></circle>
+									<circle class="shopper-eye-shine" cx="25" cy="15.6" r="1"></circle>
+									<ellipse class="shopper-blush" cx="10.5" cy="21" rx="3" ry="2"></ellipse>
+									<ellipse class="shopper-blush" cx="29.5" cy="21" rx="3" ry="2"></ellipse>
+									<path class="shopper-mouth" d="M14,22 Q20,29 26,22 Q20,25.5 14,22 Z"></path>
+									<path class="shopper-mouth-highlight" d="M14.5,22.3 Q20,26.3 25.5,22.3"></path>
+								</g>
+							</g>
+						</svg>
+						<span class="shopper-sparkle"></span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<footer>
+			<p th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
+			<a class="footer-link" th:if="${isAdmin}" th:href="@{/admin}" th:text="#{nav.admin.panel}">Admin Panel</a>
+		</footer>
+	</div>
 </body>
 
 </html>

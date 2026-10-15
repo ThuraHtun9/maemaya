@@ -1,34 +1,8 @@
 package com.myshop.springshop.controller;
 
-import com.myshop.springshop.model.CartItem;
-import com.myshop.springshop.model.CategoryDisplaySetting;
-import com.myshop.springshop.model.OrderRequest;
-import com.myshop.springshop.model.PaginationView;
-import com.myshop.springshop.model.Product;
-import com.myshop.springshop.repository.ProductRequestRepository;
-import com.myshop.springshop.repository.ProductRepository;
-import com.myshop.springshop.service.CartService;
-import com.myshop.springshop.service.FileStorageService;
-import com.myshop.springshop.service.OrderService;
-import com.myshop.springshop.service.PostalCodeLookupService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.util.StringUtils;
-
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -37,9 +11,37 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.myshop.springshop.model.CartItem;
+import com.myshop.springshop.model.CategoryDisplaySetting;
+import com.myshop.springshop.model.OrderRequest;
+import com.myshop.springshop.model.PaginationView;
+import com.myshop.springshop.model.Product;
+import com.myshop.springshop.repository.ProductRepository;
+import com.myshop.springshop.repository.ProductRequestRepository;
+import com.myshop.springshop.service.CartService;
+import com.myshop.springshop.service.FileStorageService;
+import com.myshop.springshop.service.OrderService;
+import com.myshop.springshop.service.PostalCodeLookupService;
 
 @Controller
 public class ShopController {
@@ -47,6 +49,8 @@ public class ShopController {
     private static final Logger log = LoggerFactory.getLogger(ShopController.class);
     private static final ZoneId ORDER_TIME_ZONE = ZoneId.of("Asia/Tokyo");
     private static final int SHOP_PAGE_SIZE = 12;
+    
+    private static final String OUT_OF_STOCK_FILTER = "out-of-stock";
 
     private final ProductRepository productRepository;
     private final ProductRequestRepository productRequestRepository;
@@ -56,7 +60,7 @@ public class ShopController {
     private final PostalCodeLookupService postalCodeLookupService;
     private final MessageSource messageSource;
 
-    public ShopController(
+    public ShopController( //Constructor
             ProductRepository productRepository,
             ProductRequestRepository productRequestRepository,
             CartService cartService,
@@ -126,10 +130,21 @@ public class ShopController {
 
         String activeCategory = resolveActiveCategory(category, sortedCategories);
         List<Product> orderedProducts = new ArrayList<>();
-        for (String categoryName : sortedCategories) {
-            if ("all".equals(activeCategory) || activeCategory.equals(categoryName)) {
-                orderedProducts.addAll(grouped.get(categoryName));
-            }
+        
+        if (OUT_OF_STOCK_FILTER.equals(activeCategory)) {
+        	for (String categoryName : sortedCategories) {
+        		for (Product product : grouped.get(categoryName)) {
+        			if (product.stock() <= 0) {
+        				orderedProducts.add(product);
+        			}
+        		}
+        	}
+        } else {
+        	for (String categoryName : sortedCategories) {
+        		if ("all".equals(activeCategory) || activeCategory.equals(categoryName)) {
+        			orderedProducts.addAll(grouped.get(categoryName));
+        		}
+        	}
         }
 
         PaginationView<Product> shopPagination = paginate(orderedProducts, page, SHOP_PAGE_SIZE);
@@ -753,6 +768,11 @@ public class ShopController {
         if (!StringUtils.hasText(normalized) || "all".equalsIgnoreCase(normalized)) {
             return "all";
         }
+        
+        if (OUT_OF_STOCK_FILTER.equalsIgnoreCase(normalized)) {
+        	return OUT_OF_STOCK_FILTER;
+        }
+        
         return categories.stream()
                 .filter(category -> category.equalsIgnoreCase(normalized))
                 .findFirst()
