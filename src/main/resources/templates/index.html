@@ -118,7 +118,15 @@
 		</div>
 
 		<section class="menu-section">
-			<h2 th:text="#{index.section.menu}">Menu</h2>
+			<!-- ပုံမှန် browse view အတွက် ဒီ heading ကိုပြ/ oug of stock view မှာမပြဘူး -->
+			<h2 th:unless="${isOutOfStockView}" th:text="#{index.section.menu}">Menu</h2>
+			<!-- Out of stock view ထဲဝင်မှပဲ banner ကိုပြ heading + shop ကိုပြန်သွားတဲ့ link-->
+			<div th:if="${isOutOfStockView}" class="out-of-stock-banner">
+				<h2 th:text="#{nav.outOfStock}">Out of Stock Items</h2>
+				<a th:href="@{/(category='all', page=1, lang=${#locale.language})}" class="back-to-shop-link"
+					th:text="#{nav.backShopping}">Continue Shopping</a>
+			</div>
+			
 			<div id="shopResults" th:fragment="shopResults">
 				<div id="searchNoResult" class="flash flash-error"
 					th:if="${!#strings.isEmpty(searchQuery) and #maps.isEmpty(productsByCategory)}"
@@ -126,7 +134,7 @@
 					No matching products found.
 				</div>
 
-				<nav class="shop-category-bar" aria-label="Shop categories">
+				<nav th:unless="${isOutOfStockView}" class="shop-category-bar" aria-label="Shop categories">
 					<span class="shop-category-label">Category</span>
 					<a class="shop-category-link" th:classappend="${activeCategory == 'all'} ? ' is-active'"
 						th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>
