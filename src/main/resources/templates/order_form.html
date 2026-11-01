@@ -28,9 +28,10 @@
     <div class="summary">
         <h3 th:text="#{order.form.summary}">Order Summary</h3>
         <ul>
-            <li th:each="p : ${products}">
-                <span th:text="${p.name}"></span>
-                (<span class="amount-font" th:text="|¥${p.price}|"></span>)
+            <li th:each="item : ${cartItems}">
+                <span th:text="${item.product.name}"></span>
+				<span th:text="|x ${item.quantity}|"></span>
+                (<span class="amount-font" th:text="|¥${item.subtotal}|"></span>)
             </li>
         </ul>
         <div class="total-price">

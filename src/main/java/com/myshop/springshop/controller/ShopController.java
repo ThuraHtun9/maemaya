@@ -293,7 +293,7 @@ public class ShopController {
     }
 
     @GetMapping("/cart")
-    public String viewCart(Model model, HttpSession session) {
+    public String viewCart(Model model, HttpSession session, HttpServletRequest request) {
         List<Long> cartIds = cartService.getCart(session);
         Map<Long, Integer> counts = new LinkedHashMap<>();
 
@@ -319,6 +319,11 @@ public class ShopController {
 
         model.addAttribute("cartItems", cartItems);
         model.addAttribute("totalPrice", totalPrice);
+        
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+        	return "cart :: cartContent";
+        }
+        
         return "cart";
     }
 
@@ -335,21 +340,28 @@ public class ShopController {
             return "redirect:/";
         }
 
-        List<Product> products = new ArrayList<>();
-        int totalPrice = 0;
-
+        Map<Long, Integer> counts = new LinkedHashMap<>();
         for (Long productId : cartIds) {
-            Optional<Product> productOpt = productRepository.findById(productId);
-            if (productOpt.isEmpty()) {
-                continue;
-            }
-
-            Product product = productOpt.get();
-            products.add(product);
-            totalPrice += product.price();
+        	counts.put(productId, counts.getOrDefault(productId, 0) + 1);
+        }
+        
+        List<CartItem> cartItems = new ArrayList<>();
+        int totalPrice = 0;
+        
+        for(Map.Entry<Long, Integer> entry : counts.entrySet()) {
+        	Optional<Product> productOpt = productRepository.findById(entry.getKey());
+        	if (productOpt.isEmpty()) {
+        		continue;
+        	}
+        	
+        	Product product = productOpt.get();
+        	int quantity = entry.getValue();
+        	int subtotal = product.price() * quantity;
+        	totalPrice += subtotal;
+        	cartItems.add(new CartItem(product, quantity, subtotal));
         }
 
-        model.addAttribute("products", products);
+        model.addAttribute("cartItems", cartItems);
         model.addAttribute("totalPrice", totalPrice);
         model.addAttribute("minDeliveryDate", earliestDeliveryDate().toString());
         if (!model.containsAttribute("orderRequest")) {

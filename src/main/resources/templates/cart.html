@@ -9,6 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/cart.css}">
     <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
     <script defer th:src="@{/js/smooth-ui.js}"></script>
+    <script defer th:src="@{/js/cart.js}"></script>
 
 </head>
 <body>
@@ -20,54 +21,54 @@
     </div>
     <h1 th:text="#{cart.heading}">Shopping Cart</h1>
 
-    <div th:if="${!#lists.isEmpty(cartItems)}">
-        <div class="cart-table-wrap">
-        <table class="stack-table">
-            <thead>
-            <tr>
-                <th th:text="#{cart.col.product}">Product</th>
-                <th th:text="#{cart.col.unitPrice}">Unit Price</th>
-                <th th:text="#{cart.col.quantity}">Quantity</th>
-                <th th:text="#{cart.col.subtotal}">Subtotal</th>
-                <th th:text="#{cart.col.action}">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${cartItems}">
-                <td class="cell-product" th:attr="data-label=#{cart.col.product}">
-                    <div class="product-cell">
-                    <img th:if="${item.product.hasImage()}"
-                         th:src="@{/images/{image}(image=${item.product.image})}"
-                         class="product-thumb"
-                         loading="lazy"
-                         decoding="async"
-                         th:alt="#{index.product.imageAlt}">
-                        <span th:text="${item.product.name}"></span>
-                    </div>
-                </td>
-                <td class="cell-unit amount-font" th:attr="data-label=#{cart.col.unitPrice}" th:text="|¥${item.product.price}|"></td>
-                <td class="cell-qty" th:attr="data-label=#{cart.col.quantity}">
-                    <span class="quantity-badge" th:text="|× ${item.quantity}|"></span>
-                </td>
-                <td class="cell-subtotal amount-font" th:attr="data-label=#{cart.col.subtotal}" th:text="|¥${item.subtotal}|"></td>
-                <td class="cell-action" th:attr="data-label=#{cart.col.action}">
-                    <a class="btn-delete"
-                       th:href="@{/cart/delete/{productId}(productId=${item.product.id})}"
-                       th:text="#{cart.removeOne}">Remove 1</a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+    <div id="cartContent" th:fragment="cartContent">
+        <div th:if="${!#lists.isEmpty(cartItems)}">
+            <div class="cart-table-wrap">
+            <table class="stack-table">
+                <thead>
+                <tr>
+                    <th th:text="#{cart.col.product}">Product</th>
+                    <th th:text="#{cart.col.unitPrice}">Unit Price</th>
+                    <th th:text="#{cart.col.quantity}">Quantity</th>
+                    <th th:text="#{cart.col.subtotal}">Subtotal</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${cartItems}">
+                    <td class="cell-product" th:attr="data-label=#{cart.col.product}">
+                        <div class="product-cell">
+                        <img th:if="${item.product.hasImage()}"
+                             th:src="@{/images/{image}(image=${item.product.image})}"
+                             class="product-thumb"
+                             loading="lazy"
+                             decoding="async"
+                             th:alt="#{index.product.imageAlt}">
+                            <span th:text="${item.product.name}"></span>
+                        </div>
+                    </td>
+                    <td class="cell-unit amount-font" th:attr="data-label=#{cart.col.unitPrice}" th:text="|¥${item.product.price}|"></td>
+                    <td class="cell-qty" th:attr="data-label=#{cart.col.quantity}">
+                        <div class="qty-stepper" th:attr="data-product-id=${item.product.id}">
+                            <button type="button" class="qty-btn qty-btn-minus" aria-label="Decrease quantity">−</button>
+                            <span class="qty-value amount-font" th:text="${item.quantity}"></span>
+                            <button type="button" class="qty-btn qty-btn-plus" aria-label="Increase quantity">+</button>
+                        </div>
+                    </td>
+                    <td class="cell-subtotal amount-font" th:attr="data-label=#{cart.col.subtotal}" th:text="|¥${item.subtotal}|"></td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+
+            <div class="total-area">
+                <span th:text="#{cart.total}">Total:</span>
+                <span class="amount-font" th:text="|¥${totalPrice}|"></span>
+            </div>
+            <a th:href="@{/checkout}" class="btn-checkout" th:text="#{cart.checkout}">Proceed to Checkout</a>
         </div>
 
-        <div class="total-area">
-            <span th:text="#{cart.total}">Total:</span>
-            <span class="amount-font" th:text="|¥${totalPrice}|"></span>
-        </div>
-        <a th:href="@{/checkout}" class="btn-checkout" th:text="#{cart.checkout}">Proceed to Checkout</a>
+        <p style="text-align: center; padding: 50px;" th:if="${#lists.isEmpty(cartItems)}" th:text="#{cart.empty}">Your cart is empty.</p>
     </div>
-
-    <p style="text-align: center; padding: 50px;" th:if="${#lists.isEmpty(cartItems)}" th:text="#{cart.empty}">Your cart is empty.</p>
 
     <a th:href="@{/}" class="back-link" th:text="#{nav.backShopping}">Continue Shopping</a>
     <p style="margin-top:18px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
