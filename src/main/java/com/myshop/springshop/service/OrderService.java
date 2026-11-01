@@ -1,18 +1,19 @@
 package com.myshop.springshop.service;
 
-import com.myshop.springshop.model.OrderRequest;
-import com.myshop.springshop.repository.OrderRepository;
-import com.myshop.springshop.repository.ProductRepository;
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import com.myshop.springshop.model.OrderRequest;
+import com.myshop.springshop.repository.OrderRepository;
+import com.myshop.springshop.repository.ProductRepository;
 
 @Service
 public class OrderService {
@@ -20,7 +21,9 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final MessageSource messageSource;
-
+    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final String ORDER_NUMBER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789";
+ 
     public OrderService(
             ProductRepository productRepository,
             OrderRepository orderRepository,
@@ -373,17 +376,11 @@ public class OrderService {
     }
 
     private String buildOrderNumber(String phone, int userOrderSeq) {
-        String digitsOnly = phone == null ? "" : phone.replaceAll("\\D", "");
-        String suffix;
-        if (digitsOnly.length() >= 4) {
-            suffix = digitsOnly.substring(digitsOnly.length() - 4);
-        } else if (!digitsOnly.isBlank()) {
-            suffix = digitsOnly;
-        } else {
-            suffix = "0000";
+        StringBuilder randomPart = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+        	randomPart.append(ORDER_NUMBER_CHARS.charAt(secureRandom.nextInt(ORDER_NUMBER_CHARS.length())));
         }
-
-        return "MMY-" + suffix + "-" + String.format(Locale.ROOT, "%04d", userOrderSeq);
+        return "MMY-" + randomPart;
     }
 
     private String msg(String key, Object... args) {
