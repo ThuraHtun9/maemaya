@@ -37,6 +37,9 @@
                 <input type="text" name="requesterName" th:placeholder="#{request.requesterName}" required>
                 <input type="text" name="contact" th:placeholder="#{request.contact}" required>
                 <input type="text" name="productName" th:placeholder="#{request.productName}">
+				<div class ="hp-field" aria-hidden="true">
+					<input type="text" name="website" tabindex="-1" autocomplete="off">
+				</div>
                 <input type="file" name="referenceImage" accept="image/*" th:title="#{request.image}">
                 <textarea name="note" th:placeholder="#{request.note}"></textarea>
                 <div class="submit-wrap">

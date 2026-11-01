@@ -1,15 +1,5 @@
 package com.myshop.springshop.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -25,7 +15,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.UUID;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileStorageService {
@@ -35,6 +37,8 @@ public class FileStorageService {
     // product view, so anything past this is wasted bytes on every page load.
     private static final int MAX_DIMENSION = 1600;
     private static final float JPEG_QUALITY = 0.82f;
+    
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/jpg", "image/png", "image/webp");
 
     private final Path uploadPath;
 
@@ -55,7 +59,13 @@ public class FileStorageService {
         if (file == null || file.isEmpty()) {
             return "";
         }
-
+        
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
+        	throw new IllegalArgumentException("Unsupported File Type: " + contentType);
+        }
+        
+        
         String originalName = StringUtils.cleanPath(file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
         String safeName = originalName.replaceAll("[^a-zA-Z0-9._-]", "_");
         String storedName = UUID.randomUUID() + "_" + safeName;

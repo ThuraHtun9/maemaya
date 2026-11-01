@@ -445,9 +445,14 @@ public class ShopController {
             @RequestParam(value = "productName", required = false) String productName,
             @RequestParam(value = "note", required = false) String note,
             @RequestParam(value = "referenceImage", required = false) MultipartFile referenceImage,
+            @RequestParam(value = "website", required = false, defaultValue = "") String website,
             RedirectAttributes redirectAttributes,
             Locale locale
     ) {
+    	if(!website.isBlank()) {
+    		return "redirect:/request-item?success=true";
+    	}
+    	
         String safeRequesterName = requesterName == null ? "" : requesterName.trim();
         String safeContact = contact == null ? "" : contact.trim();
         String safeProductName = productName == null ? "" : productName.trim();

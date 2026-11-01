@@ -1321,6 +1321,12 @@
             animation: shopper-sparkle-pop var(--dur, 10s) ease-in-out infinite;
             animation-delay: calc(var(--delay, 0s) + 0.85s);
         }
+		
+		.hp-field {
+			position: absolute;
+			left: -9999px;
+			top: -9999px;
+		}
 
         @keyframes shopper-walk {
             0% {

@@ -1,5 +1,7 @@
 package com.myshop.springshop.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ public class SecurityConfig {
 
     private final String adminUsername;
     private final String adminPassword;
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     public SecurityConfig(
             @Value("${app.admin.username:admin}") String adminUsername,
@@ -73,6 +76,16 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/admin", true)
+                        .successHandler((request, response, authentication) -> {
+                        	log.info("ADMIN LOGIN SUCCESS user={} ip={}",
+                        			authentication.getName(), request.getRemoteAddr());
+                        	response.sendRedirect("/admin");
+                        })
+                        .failureHandler((request, response, exception) -> {
+                        	log.warn("ADMIN LOGIN FAILED attemptedUser={} ip={} reason={}",
+                        			request.getParameter("username"), request.getRemoteAddr(), exception.getMessage());
+                        	response.sendRedirect("/login?error");
+                        })
                         .permitAll()
                 )
                 .logout(logout -> logout
