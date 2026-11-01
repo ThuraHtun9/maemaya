@@ -21,7 +21,7 @@
         input, select, textarea, button { font-family: inherit; }
         .amount-font { font-family: "Helvetica Neue", Arial, sans-serif; }
         .admin-container {
-            max-width: 100;
+            max-width: 100%;
             margin: 0 auto;
             background: var(--brand-surface);
             border: 1px solid var(--brand-line);
