@@ -1311,6 +1311,35 @@
 		    max-width: 100%;
 		    min-width: 0;
 		}
+		
+		.orders-table.stack-table tr.order-row .order-date-cell,
+		.orders-table.stack-table tr.order-row .address-cell,
+		.orders-table.stack-table tr.order-row .products-cell {
+		    display: none;
+		}
+		.orders-table.stack-table tr.order-row.is-expanded .order-date-cell,
+		.orders-table.stack-table tr.order-row.is-expanded .address-cell,
+		.orders-table.stack-table tr.order-row.is-expanded .products-cell {
+		    display: grid;
+		}
+
+		/* Toggle button inside the Order No cell */
+		.order-toggle-btn {
+		    display: inline-block;
+		    margin-top: 8px;
+		    padding: 6px 14px;
+		    border: 1px solid #c79a5d;
+		    border-radius: 8px;
+		    background: #fff3e0;
+		    color: #6f3d1a;
+		    font-size: 0.82rem;
+		    font-weight: 700;
+		    cursor: pointer;
+		}
+		.order-toggle-btn:hover {
+		    background: #ffe6c2;
+		}
+		
         @media (prefers-reduced-motion: reduce) {
             .admin-brand.live-3d,
             .admin-brand-logo,

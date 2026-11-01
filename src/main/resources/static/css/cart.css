@@ -115,6 +115,40 @@ th { background: #f7eee1; color: var(--brand-primary); }
 .lang-switch a { color: var(--brand-muted); text-decoration: none; margin: 0 4px; }
 .lang-switch a:hover { text-decoration: underline; }
 
+.cart-table-wrap table.stack-table {
+    min-width: 0;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+.stack-table thead { display: none; }
+.stack-table tbody { display: block; }
+.stack-table tr {
+    display: block;
+    border: 1px solid var(--brand-line);
+    border-radius: 10px;
+    background: #fffdf8;
+}
+.stack-table tr + tr { margin-top: 0; }
+.stack-table td {
+    display: grid;
+    grid-template-columns: minmax(90px, 120px) 1fr;
+    gap: 10px;
+    align-items: center;
+    border: none;
+    border-bottom: 1px dashed var(--brand-line);
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    text-align: left;
+}
+.stack-table td:last-child { border-bottom: none; }
+.stack-table td::before {
+    content: attr(data-label);
+    color: var(--brand-muted);
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
 @media (max-width: 760px) {
     body { padding: 8px; }
     .cart-container {

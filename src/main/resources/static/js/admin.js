@@ -15,6 +15,20 @@
         const template = button.getAttribute("data-confirm-template") || 'Delete order "{0}"?';
         return confirm(template.replace("{0}", orderNumber));
     }
+	
+	function toggleOrderCard(button) {
+	    const row = button.closest("tr.order-row");
+	    if (!row) {
+	        return;
+	    }
+	    const expanded = row.classList.toggle("is-expanded");
+	    const label = expanded
+	        ? button.getAttribute("data-label-hide")
+	        : button.getAttribute("data-label-show");
+	    if (label) {
+	        button.textContent = label;
+	    }
+	}
 
     (function () {
         const normalize = (value) => (value || "").toString().toLowerCase().trim();

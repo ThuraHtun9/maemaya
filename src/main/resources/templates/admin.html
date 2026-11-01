@@ -175,7 +175,14 @@
                 class="order-row"
                 th:attr="data-order-number=${order.orderNumber},data-order-customer=${order.customerName},data-order-phone=${order.phone},data-order-status=${order.orderStatus}">
                 <td class="order-no-cell" th:attr="data-label=#{admin.col.orderNumber}">
-                    <span class="badge badge-blue" th:text="${order.orderNumber}"></span>
+					<div class="order-subcard">
+						<span class="badge badge-blue" th:text="${order.orderNumber}"></span>
+						<button type="button"
+								class="order-toggle-btn"
+								onclick="toggleOrderCard(this)"
+								th:attr="data-label-show=#{admin.order.toggle.show}, data-label-hide=#{admin.order.toggle.hide}"
+								th:attr="#{admin.order.toggle.show}">View Details </button>
+					</div>
                 </td>
                 <td class="status-cell" th:attr="data-label=#{admin.col.status}">
                     <span class="badge badge-blue"
