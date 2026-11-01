@@ -4,10 +4,18 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // တစ်ကြိမ်တည်း request ပဲ run ခွင့်ပြုမယ် (ခလုတ်ကို မြန်မြန်ဆက်နှိပ်ရင် data ရောထွေးမသွားအောင်)
     let busy = false;
 
-    // Cart fragment ကိုပဲ ပြန်ခေါ်ပြီး #cartContent ကို အစားထိုးမယ် (page တစ်ခုလုံး reload မလုပ်ဘူး)
+    function getCsrfHeaders() {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
+        const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+        if (csrfToken && csrfHeader) {
+            headers[csrfHeader] = csrfToken;
+        }
+        return headers;
+    }
+
     function refreshCart() {
         return fetch(window.location.pathname, {
             headers: { "X-Requested-With": "XMLHttpRequest" }
@@ -24,7 +32,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // +1 / -1 ကို server ဆီ AJAX နဲ့ ပို့မယ် (/cart/add, /cart/remove ကတော့ index.html မှာ သုံးနေပြီးသားပါ)
     function changeQuantity(productId, action) {
         if (busy) {
             return;
@@ -37,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            headers: getCsrfHeaders(),
             body: body.toString()
         })
             .then(refreshCart)
@@ -46,19 +53,43 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // .cart-container ပေါ်မှာ click listener တစ်ခုတည်းထားမယ် (event delegation)
-    // — ဒါမှ #cartContent ကို AJAX နဲ့ အစားထိုးတိုင်း listener အသစ် ပြန်မချိတ်ရတော့ဘူး
+    function clearCart() {
+        if (busy) {
+            return;
+        }
+        const confirmMessage =
+            document.querySelector('meta[name="cart-clear-confirm-message"]')?.getAttribute("content") ||
+            "Clear your entire cart?";
+        if (!window.confirm(confirmMessage)) {
+            return;
+        }
+        busy = true;
+        fetch("/cart/clear", {
+            method: "POST",
+            headers: getCsrfHeaders(),
+            body: ""
+        })
+            .then(refreshCart)
+            .finally(function () {
+                busy = false;
+            });
+    }
+
     wrapper.addEventListener("click", function (event) {
-        const btn = event.target.closest(".qty-btn");
-        if (!btn) {
+        const qtyBtn = event.target.closest(".qty-btn");
+        if (qtyBtn) {
+            const stepper = qtyBtn.closest(".qty-stepper");
+            if (stepper) {
+                const productId = stepper.getAttribute("data-product-id");
+                const action = qtyBtn.classList.contains("qty-btn-plus") ? "increase" : "decrease";
+                changeQuantity(productId, action);
+            }
             return;
         }
-        const stepper = btn.closest(".qty-stepper");
-        if (!stepper) {
-            return;
+
+        const clearBtn = event.target.closest("#clearCartBtn");
+        if (clearBtn) {
+            clearCart();
         }
-        const productId = stepper.getAttribute("data-product-id");
-        const action = btn.classList.contains("qty-btn-plus") ? "increase" : "decrease";
-        changeQuantity(productId, action);
     });
 });

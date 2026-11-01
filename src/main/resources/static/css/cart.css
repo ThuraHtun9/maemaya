@@ -74,16 +74,23 @@ th { background: #f7eee1; color: var(--brand-primary); }
 }
 .btn-checkout:hover { background-color: var(--brand-primary-hover); }
 
-.btn-delete {
+.btn-clear-cart {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #fff;
     color: var(--brand-danger);
-    text-decoration: none;
-    font-size: 0.9rem;
     border: 1px solid #d6a58f;
-    padding: 5px 10px;
-    border-radius: 4px;
-    background: #fff7f3;
+    padding: 11px;
+    border-radius: 8px;
+    font-weight: 700;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
 }
-.btn-delete:hover { background-color: #ffece3; }
+.btn-clear-cart:hover {
+    background: #fff3ee;
+}
 
 .qty-stepper {
     display: inline-flex;
@@ -120,16 +127,21 @@ th { background: #f7eee1; color: var(--brand-primary); }
 
 .back-link { display: block; margin-top: 20px; text-align: center; color: var(--brand-muted); }
 
-.quantity-badge {
-    font-weight: bold;
-    font-size: 1rem;
-    color: var(--brand-text);
-    margin-left: 0;
-}
 .product-cell {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
+}
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+.product-name {
+    font-weight: 700;
+    line-height: 1.3;
+    word-break: break-word;
 }
 .product-thumb {
     width: 44px;
@@ -214,32 +226,13 @@ th { background: #f7eee1; color: var(--brand-primary); }
         font-size: 0.92rem;
         border-bottom: 1px solid var(--brand-line);
     }
-    .product-cell {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-align: left;
-    }
-    .product-cell span {
-        min-width: 0;
-        word-break: normal;
-        line-height: 1.35;
-        white-space: nowrap;
-    }
     .product-thumb {
         width: 36px;
         height: 36px;
     }
     .cell-unit,
-    .cell-qty,
-    .cell-subtotal,
-    .cell-action {
+    .cell-subtotal {
         text-align: left;
-    }
-    .btn-delete {
-        font-size: 0.8rem;
-        padding: 4px 8px;
-        white-space: nowrap;
     }
     .total-area {
         margin-top: 14px;

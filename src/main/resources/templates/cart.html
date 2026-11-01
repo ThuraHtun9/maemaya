@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="cart-clear-confirm-message" th:content="#{cart.clear.confirm}">
     <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
     <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
     <title th:text="#{cart.title}">Cart</title>
@@ -29,7 +32,6 @@
                 <tr>
                     <th th:text="#{cart.col.product}">Product</th>
                     <th th:text="#{cart.col.unitPrice}">Unit Price</th>
-                    <th th:text="#{cart.col.quantity}">Quantity</th>
                     <th th:text="#{cart.col.subtotal}">Subtotal</th>
                 </tr>
                 </thead>
@@ -37,23 +39,23 @@
                 <tr th:each="item : ${cartItems}">
                     <td class="cell-product" th:attr="data-label=#{cart.col.product}">
                         <div class="product-cell">
-                        <img th:if="${item.product.hasImage()}"
-                             th:src="@{/images/{image}(image=${item.product.image})}"
-                             class="product-thumb"
-                             loading="lazy"
-                             decoding="async"
-                             th:alt="#{index.product.imageAlt}">
-                            <span th:text="${item.product.name}"></span>
+                            <img th:if="${item.product.hasImage()}"
+                                 th:src="@{/images/{image}(image=${item.product.image})}"
+                                 class="product-thumb"
+                                 loading="lazy"
+                                 decoding="async"
+                                 th:alt="#{index.product.imageAlt}">
+                            <div class="product-info">
+                                <span class="product-name" th:text="${item.product.name}"></span>
+                                <div class="qty-stepper" th:attr="data-product-id=${item.product.id}">
+                                    <button type="button" class="qty-btn qty-btn-minus" aria-label="Decrease quantity">−</button>
+                                    <span class="qty-value amount-font" th:text="${item.quantity}"></span>
+                                    <button type="button" class="qty-btn qty-btn-plus" aria-label="Increase quantity">+</button>
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td class="cell-unit amount-font" th:attr="data-label=#{cart.col.unitPrice}" th:text="|¥${item.product.price}|"></td>
-                    <td class="cell-qty" th:attr="data-label=#{cart.col.quantity}">
-                        <div class="qty-stepper" th:attr="data-product-id=${item.product.id}">
-                            <button type="button" class="qty-btn qty-btn-minus" aria-label="Decrease quantity">−</button>
-                            <span class="qty-value amount-font" th:text="${item.quantity}"></span>
-                            <button type="button" class="qty-btn qty-btn-plus" aria-label="Increase quantity">+</button>
-                        </div>
-                    </td>
                     <td class="cell-subtotal amount-font" th:attr="data-label=#{cart.col.subtotal}" th:text="|¥${item.subtotal}|"></td>
                 </tr>
                 </tbody>
@@ -65,6 +67,7 @@
                 <span class="amount-font" th:text="|¥${totalPrice}|"></span>
             </div>
             <a th:href="@{/checkout}" class="btn-checkout" th:text="#{cart.checkout}">Proceed to Checkout</a>
+            <button type="button" id="clearCartBtn" class="btn-clear-cart" th:text="#{cart.clear}">Clear Cart</button>
         </div>
 
         <p style="text-align: center; padding: 50px;" th:if="${#lists.isEmpty(cartItems)}" th:text="#{cart.empty}">Your cart is empty.</p>

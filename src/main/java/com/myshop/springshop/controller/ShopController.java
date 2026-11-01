@@ -253,6 +253,13 @@ public class ShopController {
                 "productCount", cartService.countByProduct(session, productId)
         );
     }
+    
+    @PostMapping("/cart/clear")
+    @ResponseBody
+    public Map<String, Object> clearCartAjax(HttpSession session) {
+    	cartService.clear(session);
+    	return Map.of("success", true);
+    }
 
     @PostMapping("/cart/add-selected")
     public String addSelectedToCart(
