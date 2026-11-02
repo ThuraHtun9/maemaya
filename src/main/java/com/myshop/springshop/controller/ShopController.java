@@ -150,9 +150,18 @@ public class ShopController {
         }
 
         PaginationView<Product> shopPagination = paginate(orderedProducts, page, SHOP_PAGE_SIZE);
+        // Per-category totals for the result set actually being shown: in the
+        // out-of-stock view that is the number of sold-out products in each
+        // category, not every product in it (which produced labels like
+        // "30 items" above a section holding 4 sold-out products).
+        boolean outOfStockView = OUT_OF_STOCK_FILTER.equals(activeCategory);
         Map<String, Integer> totalCategoryCounts = new LinkedHashMap<>();
         for (String categoryName : sortedCategories) {
-            totalCategoryCounts.put(categoryName, grouped.get(categoryName).size());
+            List<Product> categoryProducts = grouped.get(categoryName);
+            int total = outOfStockView
+                    ? (int) categoryProducts.stream().filter(product -> product.stock() <= 0).count()
+                    : categoryProducts.size();
+            totalCategoryCounts.put(categoryName, total);
         }
 
         Map<String, List<Product>> productsByCategory = new LinkedHashMap<>();

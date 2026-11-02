@@ -265,33 +265,62 @@
     // Shows a right-edge fade on the category bar while there are more
     // categories scrolled off-screen; re-invoked after every AJAX swap
     // since the bar itself gets replaced along with the rest of the fragment.
+    // The window resize listener is registered once and always targets the
+    // current bar - previously every swap added another one that kept the
+    // replaced (detached) bar alive.
+    let fadeBar = null;
+    const updateCategoryBarFade = () => {
+        if (!fadeBar || !fadeBar.isConnected) {
+            return;
+        }
+        const hasMore = fadeBar.scrollWidth - fadeBar.clientWidth - fadeBar.scrollLeft > 4;
+        fadeBar.classList.toggle("has-more-right", hasMore);
+    };
+    window.addEventListener("resize", updateCategoryBarFade, { passive: true });
+
     function wireCategoryBarFade(root) {
         const scope = root || document;
         const bar = scope.querySelector(".shop-category-bar");
         if (!bar) {
+            fadeBar = null;
             return;
         }
-        const update = () => {
-            const hasMore = bar.scrollWidth - bar.clientWidth - bar.scrollLeft > 4;
-            bar.classList.toggle("has-more-right", hasMore);
-        };
-        bar.addEventListener("scroll", update, { passive: true });
-        window.addEventListener("resize", update, { passive: true });
-        update();
+        fadeBar = bar;
+        bar.addEventListener("scroll", updateCategoryBarFade, { passive: true });
+        updateCategoryBarFade();
     }
 
     // ---- AJAX shop results navigation (search / category / pagination) ----
     let activeAbortController = null;
 
+    // Keep the header forms (outside #shopResults, so never re-rendered by
+    // an AJAX swap) in step with the result set on screen: the search form
+    // searches within the current category, and the language switcher
+    // reloads the same category + search instead of the one the page was
+    // first rendered with. page=1 because infinite scroll restores how far
+    // the customer had loaded on its own (see shop-infinite.js).
     function syncSearchFormState(url) {
-        if (!searchForm) {
-            return;
-        }
         try {
             const parsed = new URL(url, window.location.origin);
-            const categoryInput = searchForm.querySelector('input[name="category"]');
-            if (categoryInput) {
-                categoryInput.value = parsed.searchParams.get("category") || "all";
+            const category = parsed.searchParams.get("category") || "all";
+            const query = parsed.searchParams.get("q") || "";
+            if (searchForm) {
+                const categoryInput = searchForm.querySelector('input[name="category"]');
+                if (categoryInput) {
+                    categoryInput.value = category;
+                }
+            }
+            const langForm = document.querySelector(".lang-form");
+            if (langForm) {
+                const setField = (name, value) => {
+                    const input = langForm.querySelector(`input[name="${name}"]`);
+                    if (input) {
+                        input.value = value;
+                    }
+                };
+                setField("category", category);
+                setField("q", query);
+                setField("page", "1");
             }
         } catch (error) {
             // malformed url - nothing to sync
@@ -312,12 +341,24 @@
         const controller = new AbortController();
         activeAbortController = controller;
 
+        // Record where the customer is in the current list before a new
+        // history entry is pushed, so Back returns to exactly this spot.
+        if (pushState && window.MaeMayaShop && typeof window.MaeMayaShop.saveBrowsingPosition === "function") {
+            window.MaeMayaShop.saveBrowsingPosition();
+        }
+
         let response;
+        let html;
         try {
             response = await fetch(url, {
                 headers: { "X-Requested-With": "XMLHttpRequest" },
                 signal: controller.signal
             });
+            if (!response.ok) {
+                window.location.href = url;
+                return;
+            }
+            html = await response.text();
         } catch (error) {
             if (error.name === "AbortError") {
                 return;
@@ -325,13 +366,9 @@
             window.location.href = url;
             return;
         }
-
-        if (!response.ok) {
-            window.location.href = url;
-            return;
+        if (controller !== activeAbortController) {
+            return; // a newer navigation started while this body was streaming
         }
-
-        const html = await response.text();
         const currentResults = document.getElementById("shopResults");
         if (!currentResults) {
             window.location.href = url;
@@ -351,8 +388,11 @@
         // pagination-shell infinite-scroll.js was watching - let it know a
         // fresh #shopResults exists so it can re-observe (or re-decide
         // whether infinite scroll even applies, e.g. a single-page category).
+        // restore=true for back/forward: shop-infinite.js then brings back
+        // how far that history entry had loaded/scrolled instead of
+        // treating it as a fresh category/search selection.
         document.dispatchEvent(new CustomEvent("shop:resultsReplaced", {
-            detail: { url }
+            detail: { url, restore: !pushState }
         }));
     }
 
@@ -368,22 +408,35 @@
         let debounceTimer = null;
         const DEBOUNCE_DELAY = 900; // milliseconds
 
+        const runSearch = () => {
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+                debounceTimer = null;
+            }
+            const categoryInput = searchForm.querySelector('input[name="category"]');
+            const langInput = searchForm.querySelector('input[name="lang"]');
+            const params = new URLSearchParams();
+            params.set("category", categoryInput ? categoryInput.value : "all");
+            params.set("page", "1");
+            if (langInput && langInput.value) {
+                params.set("lang", langInput.value);
+            }
+            params.set("q", searchInput.value.trim());
+            loadShopResults(`${searchForm.action}?${params.toString()}`);
+        };
+
         searchInput.addEventListener("input", () => {
             if (debounceTimer) {
                 clearTimeout(debounceTimer);
             }
-            debounceTimer = setTimeout(() => {
-                const categoryInput = searchForm.querySelector('input[name="category"]');
-                const langInput = searchForm.querySelector('input[name="lang"]');
-                const params = new URLSearchParams();
-                params.set("category", categoryInput ? categoryInput.value : "all");
-                params.set("page", "1");
-                if (langInput && langInput.value) {
-                    params.set("lang", langInput.value);
-                }
-                params.set("q", searchInput.value.trim());
-                loadShopResults(`${searchForm.action}?${params.toString()}`);
-            }, DEBOUNCE_DELAY);
+            debounceTimer = setTimeout(runSearch, DEBOUNCE_DELAY);
+        });
+
+        // Enter searches right away through the same AJAX path (it used to
+        // fall through to a full page reload while the debounce was pending).
+        searchForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            runSearch();
         });
     }
 

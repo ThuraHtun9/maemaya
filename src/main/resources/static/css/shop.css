@@ -566,6 +566,9 @@
 
         .category-section {
             margin-top: 22px;
+            /* Any jump to a section lands with its heading below the
+               sticky category bar, not underneath it. */
+            scroll-margin-top: 64px;
         }
 
         .category-header {
@@ -920,6 +923,11 @@
             width: 85%;
         }
 
+        .skeleton-line-title-2 {
+            width: 60%;
+            margin-top: 6px;
+        }
+
         .skeleton-line-price {
             width: 45%;
         }
@@ -935,7 +943,7 @@
                 opacity: 1;
             }
             50% {
-                opacity: 0.55;
+                opacity: 0.7;
             }
         }
 

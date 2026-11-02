@@ -1,58 +1,71 @@
-// Storefront infinite scroll, skeleton loading, and category scrollspy.
+// Storefront infinite scroll, skeleton loading, category scrollspy and
+// browsing-position restoration.
 //
 // Pure progressive enhancement on top of the existing server-rendered,
 // numbered-pagination shop page (see ShopController#index and shop.js's
-// loadShopResults). No backend changes: this module fetches the exact
-// same "?category=&page=&lang=&q=" fragment URLs the numbered pager
-// already links to (with the X-Requested-With header that makes the
-// controller return just the #shopResults fragment), then appends the
-// new page's products into the page already on screen instead of
-// swapping the whole fragment out.
+// loadShopResults). No new endpoints: this module fetches the exact same
+// "?category=&page=&lang=&q=" fragment URLs the numbered pager links to
+// (with the X-Requested-With header that makes the controller return just
+// the #shopResults fragment), then appends the new page's products into
+// the page already on screen instead of swapping the whole fragment out.
 //
-// Integration points this relies on (added alongside this file):
+// Integration points this relies on:
 //   - #shopResults carries data-active-category / data-search-query /
 //     data-current-page / data-total-pages / data-has-more.
 //   - Each .category-section carries data-category.
-//   - #scrollSentinel / #loadMoreBtn / #loadMoreError+#loadMoreRetryBtn /
-//     #endOfResults / #skeletonBatch / #shopLoadingStatus are static
-//     scaffolding already in the fragment.
-//   - shop.js dispatches a "shop:resultsReplaced" document event after
-//     every outerHTML swap (category click, search, pagination-link
-//     click) and exposes window.MaeMayaShop.wireCartButtons, which this
-//     module reuses instead of re-implementing cart wiring.
+//   - #skeletonBatch sits directly after the last .category-section and is
+//     the insertion point for appended sections; #scrollSentinel /
+//     #loadMoreError+#loadMoreRetryBtn / #endOfResults / #shopLoadingStatus
+//     come after it.
+//   - shop.js dispatches "shop:resultsReplaced" ({ url, restore }) after
+//     every outerHTML swap (category click, search, back/forward) and
+//     exposes window.MaeMayaShop.wireCartButtons, reused here for cart
+//     wiring instead of re-implementing it.
 (function () {
     "use strict";
 
     // Progressive enhancement only: without IntersectionObserver, do
     // nothing at all and leave the always-present numbered pagination
-    // (never removed from the DOM) as the only, fully-working way to
-    // page through products.
+    // (never removed from the DOM) as the only way to page through products.
     if (!("IntersectionObserver" in window)) {
         return;
     }
 
-    const SCROLL_STORAGE_KEY = "maeMayaShopScrollState";
+    const HISTORY_STATE_KEY = "maeMayaShop";
     const SKELETON_DELAY_MS = 180;
     const SKELETON_CARD_COUNT = 6;
+    // Prefetch: start the next request while the end of the loaded content
+    // is still ~800px below the viewport.
     const SENTINEL_ROOT_MARGIN = "0px 0px 800px 0px";
-    const SCROLLSPY_ROOT_MARGIN = "-45% 0px -45% 0px";
-    const SCROLLSPY_MIN_RATIO = 0.12;
-    const SCROLL_SAVE_DEBOUNCE_MS = 220;
+    const SCROLL_SAVE_DEBOUNCE_MS = 300;
+    const RESTORE_CONCURRENCY = 4;
+    const RESTORE_MAX_EXTRA_PAGES = 40;
+    // Scrollspy "reading line": just under the sticky category bar. The
+    // observed band runs from there to 20% of the viewport height.
+    const SPY_LINE_GAP_PX = 8;
+    const SPY_BAND_BOTTOM = "-80%";
 
     const prefersReducedMotion = () =>
         !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
     let dom = null;
     let pageState = null;
+    let loadedIds = new Set();
     let isLoading = false;
     let fetchController = null;
+    // Bumped on every result-set change (category / search / back-forward
+    // swap). Any response that started under an older generation is
+    // dropped, even if it finished after the abort() call.
+    let generation = 0;
     let sentinelObserver = null;
-    let scrollspyObserver = null;
     let skeletonTimer = null;
     let scrollSaveTimer = null;
-    let activeSpyCategory = null;
-    let verifiedWorking = false;
-    let restoredOnce = false;
+
+    let spyObserver = null;
+    let spyVisible = new Set();
+    let spyActive = null;
+    let spyLine = 0;
+    let spyLinks = new Map();
 
     function readDom() {
         const root = document.getElementById("shopResults");
@@ -93,8 +106,14 @@
     }
 
     function announce(text) {
-        if (dom.statusLive && text) {
+        if (dom && dom.statusLive && text) {
             dom.statusLive.textContent = text;
+        }
+    }
+
+    function setPaginationSuperseded(superseded) {
+        if (dom && dom.paginationShell) {
+            dom.paginationShell.classList.toggle("is-superseded", superseded);
         }
     }
 
@@ -102,22 +121,26 @@
 
     function init() {
         dom = readDom();
-        if (!dom || !dom.root) {
+        if (!dom) {
             return;
         }
         pageState = readPageState(dom.root);
         isLoading = false;
-        verifiedWorking = false;
-        activeSpyCategory = null;
+        loadedIds = new Set(
+            Array.from(dom.root.querySelectorAll(".product-card[data-product-id]"))
+                .map((card) => card.dataset.productId)
+        );
 
-        if (dom.paginationShell) {
-            dom.paginationShell.classList.remove("is-superseded");
-        }
         if (dom.endOfResults) {
             dom.endOfResults.hidden = true;
         }
         hideError();
         hideSkeleton();
+
+        // Infinite scroll owns paging from here on, so the numbered pager
+        // steps aside right away instead of showing next to the automatic
+        // loading. It stays in the DOM and comes back if a load fails.
+        setPaginationSuperseded(pageState.hasMore);
 
         setupSentinel();
         setupScrollspy();
@@ -125,6 +148,7 @@
     }
 
     function teardownForNavigation() {
+        generation += 1;
         if (fetchController) {
             fetchController.abort();
             fetchController = null;
@@ -134,11 +158,11 @@
             sentinelObserver.disconnect();
             sentinelObserver = null;
         }
-        if (scrollspyObserver) {
-            scrollspyObserver.disconnect();
-            scrollspyObserver = null;
+        if (spyObserver) {
+            spyObserver.disconnect();
+            spyObserver = null;
         }
-        cancelSkeletonTimer();
+        cancelSkeleton();
     }
 
     function wireControls() {
@@ -157,17 +181,31 @@
     // ---- sentinel / fetching ----
 
     function setupSentinel() {
-        if (!pageState.hasMore || !dom.sentinel) {
+        if (!dom.sentinel) {
             return;
         }
         sentinelObserver = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    loadNextPage();
-                }
-            });
+            if (entries.some((entry) => entry.isIntersecting)) {
+                loadNextPage();
+            }
         }, { rootMargin: SENTINEL_ROOT_MARGIN });
-        sentinelObserver.observe(dom.sentinel);
+        if (pageState.hasMore) {
+            sentinelObserver.observe(dom.sentinel);
+        }
+    }
+
+    // observe() always delivers a fresh initial entry, so re-observing after
+    // each batch keeps loading when the sentinel is *still* within the
+    // prefetch margin (tall screens, short batches). Without this the
+    // observer never fired again and loading silently stopped.
+    function rearmSentinel() {
+        if (!sentinelObserver || !dom.sentinel) {
+            return;
+        }
+        sentinelObserver.unobserve(dom.sentinel);
+        if (pageState.hasMore) {
+            sentinelObserver.observe(dom.sentinel);
+        }
     }
 
     function buildPageUrl(page) {
@@ -179,54 +217,68 @@
         return window.location.pathname + "?" + params.toString();
     }
 
-    async function loadNextPage() {
-        if (isLoading || !pageState.hasMore) {
-            return;
+    async function fetchPage(page, signal) {
+        const response = await fetch(buildPageUrl(page), {
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            signal
+        });
+        if (!response.ok) {
+            throw new Error("Unexpected response status: " + response.status);
         }
+        const html = await response.text();
+        const parsedRoot = new DOMParser().parseFromString(html, "text/html").getElementById("shopResults");
+        if (!parsedRoot) {
+            throw new Error("Unexpected response shape");
+        }
+        return parsedRoot;
+    }
+
+    async function loadNextPage() {
+        if (isLoading || !pageState || !pageState.hasMore) {
+            return false;
+        }
+        const requestGeneration = generation;
         isLoading = true;
         hideError();
         scheduleSkeleton();
 
-        if (fetchController) {
-            fetchController.abort();
-        }
-        fetchController = new AbortController();
-        const nextPage = pageState.currentPage + 1;
+        const controller = new AbortController();
+        fetchController = controller;
 
         try {
-            const response = await fetch(buildPageUrl(nextPage), {
-                headers: { "X-Requested-With": "XMLHttpRequest" },
-                signal: fetchController.signal
-            });
-            if (!response.ok) {
-                throw new Error("Unexpected response status: " + response.status);
+            const parsedRoot = await fetchPage(pageState.currentPage + 1, controller.signal);
+            if (requestGeneration !== generation) {
+                return false; // result set changed while this was in flight
             }
-            const html = await response.text();
-            const parsedRoot = new DOMParser().parseFromString(html, "text/html").getElementById("shopResults");
-            if (!parsedRoot) {
-                throw new Error("Unexpected response shape");
-            }
-            appendPage(parsedRoot);
+            appendPage(parsedRoot, { animate: true });
+            rearmSentinel();
+            return true;
         } catch (error) {
-            if (error && error.name === "AbortError") {
-                // Superseded by a category/search/pagination navigation -
-                // not a failure, nothing to show the user.
-                return;
+            if (requestGeneration !== generation || (error && error.name === "AbortError")) {
+                return false; // superseded by a navigation - not a failure
             }
             showError();
+            return false;
         } finally {
-            isLoading = false;
-            cancelSkeleton();
+            if (requestGeneration === generation) {
+                isLoading = false;
+                fetchController = null;
+                cancelSkeleton();
+            }
         }
     }
 
     // ---- merging a fetched page into the page already on screen ----
 
-    function appendPage(newRoot) {
+    function appendPage(newRoot, options) {
+        const animate = !options || options.animate !== false;
         const newState = readPageState(newRoot);
+        if (newState.activeCategory !== pageState.activeCategory || newState.searchQuery !== pageState.searchQuery) {
+            return; // response for a different result set - never mix it in
+        }
         const newSections = Array.from(newRoot.querySelectorAll(".category-section"));
         const newlyAddedCards = [];
-        const newlyAddedHeaders = [];
+        const insertionPoint = dom.skeletonBatch || dom.paginationShell || dom.controls;
 
         newSections.forEach((section) => {
             const categoryKey = section.dataset.category || "";
@@ -235,52 +287,53 @@
                 return;
             }
 
-            // Wire cart buttons once, while these cards are still detached
-            // from the live document - wireCartButtons attaches fresh
-            // listeners every time it's called, so each card must only
-            // ever pass through it once no matter how many batches load.
+            // Never show the same product twice (e.g. the catalog changed
+            // between two page requests and shifted an item across pages).
+            Array.from(grid.querySelectorAll(".product-card[data-product-id]")).forEach((card) => {
+                if (loadedIds.has(card.dataset.productId)) {
+                    card.remove();
+                }
+            });
+            const cards = Array.from(grid.querySelectorAll(".product-card[data-product-id]"));
+            if (cards.length === 0) {
+                return;
+            }
+
+            // Wire cart buttons exactly once per card, while still detached -
+            // wireCartButtons attaches fresh listeners on every call. Each
+            // card's quantity comes from the server-rendered data-in-cart
+            // of this response, i.e. the cart as it is right now.
             if (window.MaeMayaShop && window.MaeMayaShop.wireCartButtons) {
                 window.MaeMayaShop.wireCartButtons(grid);
             }
+            cards.forEach((card) => {
+                loadedIds.add(card.dataset.productId);
+                if (animate) {
+                    markEntering(card);
+                }
+            });
+            newlyAddedCards.push(...cards);
 
-            const cards = Array.from(grid.querySelectorAll(".product-card[data-product-id]"));
             const existingSection = dom.root.querySelector(
                 '.category-section[data-category="' + cssEscape(categoryKey) + '"]'
             );
-
             if (existingSection) {
                 const existingGrid = existingSection.querySelector(".product-grid");
-                const existingIds = new Set(
-                    Array.from(existingGrid.querySelectorAll(".product-card[data-product-id]"))
-                        .map((card) => card.dataset.productId)
-                );
-                cards.forEach((card) => {
-                    if (existingIds.has(card.dataset.productId)) {
-                        return; // defensive dedupe - shouldn't happen, but never show the same product twice
-                    }
-                    markEntering(card);
-                    existingGrid.appendChild(card);
-                    newlyAddedCards.push(card);
-                });
+                cards.forEach((card) => existingGrid.appendChild(card));
                 const countEl = existingSection.querySelector(".category-count");
                 const newCountEl = section.querySelector(".category-count");
                 if (countEl && newCountEl) {
                     countEl.textContent = newCountEl.textContent;
                 }
-            } else {
-                cards.forEach(markEntering);
-                newlyAddedCards.push(...cards);
-                if (dom.skeletonBatch) {
-                    dom.skeletonBatch.insertAdjacentElement("beforebegin", section);
-                }
-                const header = section.querySelector(".category-header");
-                if (header) {
-                    newlyAddedHeaders.push(header);
+            } else if (insertionPoint) {
+                insertionPoint.insertAdjacentElement("beforebegin", section);
+                if (spyObserver) {
+                    spyObserver.observe(section);
                 }
             }
         });
 
-        if (newlyAddedCards.length > 0) {
+        if (animate && newlyAddedCards.length > 0) {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     newlyAddedCards.forEach((card) => card.classList.add("is-visible"));
@@ -288,35 +341,22 @@
             });
         }
 
-        if (scrollspyObserver) {
-            newlyAddedHeaders.forEach((header) => scrollspyObserver.observe(header));
-        }
+        // The server clamps an out-of-range page to the last one, so a page
+        // number that didn't advance means there is nothing further to load.
+        const advanced = newState.currentPage > pageState.currentPage;
+        pageState = Object.assign({}, newState, {
+            hasMore: advanced && newState.hasMore,
+            currentPage: Math.max(newState.currentPage, pageState.currentPage)
+        });
+        dom.root.dataset.currentPage = String(pageState.currentPage);
+        dom.root.dataset.totalPages = String(pageState.totalPages);
+        dom.root.dataset.hasMore = String(pageState.hasMore);
 
-        pageState = newState;
-        dom.root.dataset.currentPage = String(newState.currentPage);
-        dom.root.dataset.totalPages = String(newState.totalPages);
-        dom.root.dataset.hasMore = String(newState.hasMore);
-
-        updateHistoryPage(newState.currentPage);
-        saveScrollState();
-
-        if (!verifiedWorking) {
-            verifiedWorking = true;
-            // Infinite scroll has now actually loaded a batch successfully -
-            // only now does the numbered pager (kept in the DOM, never
-            // removed) step aside.
-            if (dom.paginationShell) {
-                dom.paginationShell.classList.add("is-superseded");
-            }
-        }
-
-        if (newState.hasMore) {
-            if (sentinelObserver && dom.sentinel) {
-                sentinelObserver.observe(dom.sentinel);
-            }
-        } else {
+        setPaginationSuperseded(pageState.hasMore || pageState.currentPage > 1);
+        if (!pageState.hasMore) {
             finishCatalog();
         }
+        saveHistoryState();
     }
 
     function markEntering(card) {
@@ -335,7 +375,7 @@
         }
         if (dom.endOfResults) {
             dom.endOfResults.hidden = false;
-            announce(dom.endOfResults.textContent);
+            announce(dom.endOfResults.textContent.trim());
         }
     }
 
@@ -345,17 +385,18 @@
         if (dom.errorBox) {
             dom.errorBox.hidden = false;
             const span = dom.errorBox.querySelector("span");
-            announce(span ? span.textContent : "");
+            announce(span ? span.textContent.trim() : "");
         }
-        // Stop auto-retrying on scroll - the retry button is the only way
-        // back in until the next successful load re-observes the sentinel.
+        // Stop auto-retrying on scroll - Retry (or the numbered pager, shown
+        // again as the fallback) is the way back in.
         if (sentinelObserver && dom.sentinel) {
             sentinelObserver.unobserve(dom.sentinel);
         }
+        setPaginationSuperseded(false);
     }
 
     function hideError() {
-        if (dom.errorBox) {
+        if (dom && dom.errorBox) {
             dom.errorBox.hidden = true;
         }
     }
@@ -379,7 +420,7 @@
 
     function showSkeleton() {
         skeletonTimer = null;
-        if (!dom.skeletonBatch) {
+        if (!dom || !dom.skeletonBatch) {
             return;
         }
         if (dom.skeletonBatch.childElementCount === 0) {
@@ -389,7 +430,7 @@
     }
 
     function hideSkeleton() {
-        if (!dom.skeletonBatch) {
+        if (!dom || !dom.skeletonBatch) {
             return;
         }
         dom.skeletonBatch.hidden = true;
@@ -404,66 +445,94 @@
             card.innerHTML =
                 '<div class="product-media-wrap"><div class="skeleton-block skeleton-media"></div></div>' +
                 '<div class="skeleton-block skeleton-line skeleton-line-title"></div>' +
+                '<div class="skeleton-block skeleton-line skeleton-line-title-2"></div>' +
                 '<div class="skeleton-block skeleton-line skeleton-line-price"></div>';
             container.appendChild(card);
         }
     }
 
-    // ---- scrollspy (only meaningful on the "all categories" view) ----
+    // ---- scrollspy (only on the unfiltered "All" view without a search) ----
+    //
+    // The active category is the section crossing a reading line just
+    // under the sticky category bar. Watching whole sections (not just
+    // their headers) keeps it correct in the middle of a long category and
+    // when scrolling back up, where no header crosses the viewport.
 
     function setupScrollspy() {
-        activeSpyCategory = null;
+        spyActive = null;
+        spyVisible = new Set();
+        spyLinks = new Map();
         clearSpyHighlight();
 
-        const spyEligible = pageState.activeCategory === "all" && !pageState.searchQuery;
+        const spyEligible = pageState.activeCategory === "all" && !pageState.searchQuery && !!dom.categoryBar;
         if (!spyEligible) {
             return;
         }
-
-        const headers = Array.from(dom.root.querySelectorAll(".category-header"));
-        if (headers.length === 0) {
-            return;
-        }
-
-        scrollspyObserver = new IntersectionObserver(handleScrollspy, {
-            rootMargin: SCROLLSPY_ROOT_MARGIN
+        dom.categoryBar.querySelectorAll(".shop-category-link").forEach((link) => {
+            try {
+                const category = new URL(link.href, window.location.origin).searchParams.get("category");
+                if (category && category !== "all") {
+                    spyLinks.set(category, link);
+                }
+            } catch (error) {
+                // malformed href - that chip just won't be highlighted
+            }
         });
-        headers.forEach((header) => scrollspyObserver.observe(header));
+
+        spyLine = Math.round(dom.categoryBar.getBoundingClientRect().height) + SPY_LINE_GAP_PX;
+        spyObserver = new IntersectionObserver(handleScrollspy, {
+            rootMargin: "-" + spyLine + "px 0px " + SPY_BAND_BOTTOM + " 0px",
+            threshold: 0
+        });
+        dom.root.querySelectorAll(".category-section").forEach((section) => spyObserver.observe(section));
     }
 
     function handleScrollspy(entries) {
-        let best = null;
         entries.forEach((entry) => {
-            if (entry.isIntersecting && entry.intersectionRatio >= SCROLLSPY_MIN_RATIO) {
-                if (!best || entry.intersectionRatio > best.intersectionRatio) {
-                    best = entry;
-                }
+            if (entry.isIntersecting) {
+                spyVisible.add(entry.target);
+            } else {
+                spyVisible.delete(entry.target);
             }
         });
-        if (!best) {
+
+        // Prefer the section that actually covers the reading line; while
+        // the line sits in the small gap between two sections, the next
+        // one down. A single owner at any scroll position = no flicker.
+        let chosen = null;
+        let firstBelow = null;
+        let firstBelowTop = Infinity;
+        spyVisible.forEach((section) => {
+            if (!section.isConnected) {
+                spyVisible.delete(section);
+                return;
+            }
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= spyLine + 1 && rect.bottom > spyLine) {
+                chosen = section;
+            } else if (rect.top > spyLine && rect.top < firstBelowTop) {
+                firstBelow = section;
+                firstBelowTop = rect.top;
+            }
+        });
+        if (!chosen) {
+            chosen = firstBelow;
+        }
+        const category = chosen ? chosen.dataset.category : null;
+        if (!category || category === spyActive) {
+            if (!category && spyVisible.size === 0 && isAboveFirstSection()) {
+                spyActive = null;
+                clearSpyHighlight();
+            }
             return;
         }
-        const section = best.target.closest(".category-section");
-        const category = section && section.dataset.category;
-        if (!category || category === activeSpyCategory) {
-            return;
-        }
-        activeSpyCategory = category;
+        spyActive = category;
         highlightSpyCategory(category);
     }
 
-    function findCategoryLink(category) {
-        if (!dom.categoryBar) {
-            return null;
-        }
-        const links = Array.from(dom.categoryBar.querySelectorAll(".shop-category-link"));
-        return links.find((link) => {
-            try {
-                return new URL(link.href, window.location.origin).searchParams.get("category") === category;
-            } catch (error) {
-                return false;
-            }
-        }) || null;
+    function isAboveFirstSection() {
+        const first = dom && dom.root.querySelector(".category-section");
+        return !!first && first.getBoundingClientRect().top > spyLine;
     }
 
     function clearSpyHighlight() {
@@ -476,128 +545,263 @@
 
     function highlightSpyCategory(category) {
         clearSpyHighlight();
-        const link = findCategoryLink(category);
+        const link = spyLinks.get(category);
         if (!link) {
             return;
         }
         link.classList.add("is-in-view");
-        link.scrollIntoView({
-            inline: "center",
-            block: "nearest",
-            behavior: prefersReducedMotion() ? "auto" : "smooth"
-        });
+        revealChip(link);
     }
 
-    // ---- history + scroll-position persistence ----
-    //
-    // The app has no separate product-detail page (confirmed against
-    // ShopController - there is no /product/{id} route), so the
-    // realistic "navigate away and come back" flows are cart/checkout
-    // and plain browser back/forward. This restores how far the user
-    // had scrolled/loaded for the *same* category+search, pragmatically,
-    // via sessionStorage rather than a real product-detail round trip.
-
-    function updateHistoryPage(page) {
-        try {
-            const url = new URL(window.location.href);
-            url.searchParams.set("page", String(page));
-            window.history.replaceState(window.history.state || null, "", url.toString());
-        } catch (error) {
-            // History API unavailable/blocked - infinite scroll still
-            // works, the URL just won't reflect how far the user scrolled.
+    // Scroll the bar horizontally just enough to show the chip. Only the
+    // bar's own scrollLeft changes - element.scrollIntoView() can also nudge
+    // the page and interrupts momentum scrolling on iOS Safari.
+    function revealChip(link) {
+        const bar = dom.categoryBar;
+        const barRect = bar.getBoundingClientRect();
+        const linkRect = link.getBoundingClientRect();
+        const leftPad = 12;
+        const rightPad = 44; // clears the right-edge "more" fade
+        let delta = 0;
+        if (linkRect.left < barRect.left + leftPad) {
+            delta = linkRect.left - barRect.left - leftPad;
+        } else if (linkRect.right > barRect.right - rightPad) {
+            delta = linkRect.right - barRect.right + rightPad;
+        }
+        if (delta !== 0) {
+            bar.scrollBy({ left: delta, behavior: prefersReducedMotion() ? "auto" : "smooth" });
         }
     }
 
-    function saveScrollState() {
+    // ---- browsing-position persistence (per history entry) ----
+    //
+    // How far the customer has loaded and where they were reading is kept
+    // in this history entry's state (history.replaceState, URL untouched),
+    // so back/forward and reload return to the same products and position.
+    // The URL deliberately no longer gets ?page=N written into it: on
+    // return the server would render only page N, dropping everything
+    // above it.
+
+    function stateKey() {
+        return pageState.activeCategory + "\u0001" + pageState.searchQuery;
+    }
+
+    function findReadingAnchor() {
+        const line = spyLine || 60;
+        const cards = dom.root.querySelectorAll(".product-card[data-product-id]");
+        for (let i = 0; i < cards.length; i += 1) {
+            const top = cards[i].getBoundingClientRect().top;
+            if (top >= line) {
+                return { id: cards[i].dataset.productId, top: Math.round(top) };
+            }
+        }
+        return null;
+    }
+
+    function saveHistoryState() {
+        if (!dom || !pageState) {
+            return;
+        }
+        const anchor = findReadingAnchor();
+        const entry = {
+            key: stateKey(),
+            page: pageState.currentPage,
+            scrollY: Math.round(window.scrollY),
+            anchorId: anchor ? anchor.id : null,
+            anchorTop: anchor ? anchor.top : null
+        };
         try {
-            sessionStorage.setItem(SCROLL_STORAGE_KEY, JSON.stringify({
-                category: pageState.activeCategory,
-                query: pageState.searchQuery,
-                page: pageState.currentPage,
-                scrollY: window.scrollY
-            }));
+            const next = Object.assign({}, window.history.state || {});
+            next[HISTORY_STATE_KEY] = entry;
+            window.history.replaceState(next, "");
         } catch (error) {
-            // sessionStorage unavailable (private mode, quota, disabled) -
-            // scroll position just won't be restored on return.
+            // History API blocked/rate-limited - position just won't be restored.
         }
     }
 
     function scheduleScrollSave() {
         if (scrollSaveTimer) {
-            return;
+            window.clearTimeout(scrollSaveTimer);
         }
+        // Debounced (saves once scrolling settles) - Safari throttles
+        // replaceState to ~100 calls per 30s.
         scrollSaveTimer = window.setTimeout(() => {
             scrollSaveTimer = null;
-            saveScrollState();
+            saveHistoryState();
         }, SCROLL_SAVE_DEBOUNCE_MS);
     }
 
-    function clearStaleScrollState() {
-        try {
-            const raw = sessionStorage.getItem(SCROLL_STORAGE_KEY);
-            if (!raw) {
-                return;
+    function readSavedState() {
+        const state = window.history.state;
+        const saved = state && state[HISTORY_STATE_KEY];
+        return saved && saved.key === stateKey() ? saved : null;
+    }
+
+    async function fetchPagesInOrder(pages, signal) {
+        const results = new Array(pages.length);
+        let next = 0;
+        let failed = false;
+        const worker = async () => {
+            while (next < pages.length && !failed) {
+                const index = next;
+                next += 1;
+                try {
+                    results[index] = await fetchPage(pages[index], signal); // eslint-disable-line no-await-in-loop
+                } catch (error) {
+                    failed = true;
+                    if (error && error.name === "AbortError") {
+                        throw error;
+                    }
+                }
             }
-            const saved = JSON.parse(raw);
-            if (saved.category !== pageState.activeCategory || saved.query !== pageState.searchQuery) {
-                sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+        };
+        const workers = [];
+        for (let i = 0; i < Math.min(RESTORE_CONCURRENCY, pages.length); i += 1) {
+            workers.push(worker());
+        }
+        await Promise.all(workers);
+        // Only a contiguous run from the first page can be appended in order.
+        const contiguous = [];
+        for (let i = 0; i < results.length && results[i]; i += 1) {
+            contiguous.push(results[i]);
+        }
+        return { roots: contiguous, complete: contiguous.length === pages.length };
+    }
+
+    async function restoreBrowsingPosition() {
+        const saved = readSavedState();
+        if (!saved) {
+            return;
+        }
+        const restoreGeneration = generation;
+        const target = Math.min(saved.page, pageState.totalPages, pageState.currentPage + RESTORE_MAX_EXTRA_PAGES);
+
+        if (target > pageState.currentPage) {
+            const pages = [];
+            for (let p = pageState.currentPage + 1; p <= target; p += 1) {
+                pages.push(p);
             }
-        } catch (error) {
-            // malformed/inaccessible storage - nothing to clean up
+            // isLoading blocks the sentinel for the duration, so no
+            // duplicate request can race the restore.
+            isLoading = true;
+            scheduleSkeleton();
+            const controller = new AbortController();
+            fetchController = controller;
+            let complete = true;
+            try {
+                const result = await fetchPagesInOrder(pages, controller.signal);
+                if (restoreGeneration !== generation) {
+                    return;
+                }
+                result.roots.forEach((root) => appendPage(root, { animate: false }));
+                complete = result.complete;
+            } catch (error) {
+                if (restoreGeneration !== generation) {
+                    return;
+                }
+                complete = false;
+            } finally {
+                if (restoreGeneration === generation) {
+                    isLoading = false;
+                    fetchController = null;
+                    cancelSkeleton();
+                }
+            }
+            if (!complete) {
+                showError();
+            } else {
+                rearmSentinel();
+            }
+        }
+
+        const anchorCard = saved.anchorId
+            ? dom.root.querySelector('.product-card[data-product-id="' + cssEscape(saved.anchorId) + '"]')
+            : null;
+        if (anchorCard && typeof saved.anchorTop === "number") {
+            const y = anchorCard.getBoundingClientRect().top + window.scrollY - saved.anchorTop;
+            window.scrollTo(0, Math.max(0, y));
+        } else {
+            window.scrollTo(0, saved.scrollY || 0);
         }
     }
 
-    async function attemptScrollRestore() {
-        if (restoredOnce) {
-            return;
+    // A fresh category/search choice starts at the top of the results (the
+    // category bar plus the first heading), not wherever the previous,
+    // usually much longer, list had been scrolled to.
+    function revealResultsTop() {
+        const top = dom.root.getBoundingClientRect().top + window.scrollY;
+        if (window.scrollY > top) {
+            window.scrollTo(0, Math.max(0, top - 4));
         }
-        restoredOnce = true;
+    }
 
-        let saved = null;
+    function navigationType() {
         try {
-            const raw = sessionStorage.getItem(SCROLL_STORAGE_KEY);
-            saved = raw ? JSON.parse(raw) : null;
+            const entry = performance.getEntriesByType("navigation")[0];
+            return entry ? entry.type : "navigate";
         } catch (error) {
-            saved = null;
+            return "navigate";
         }
-        if (!saved || saved.category !== pageState.activeCategory || saved.query !== pageState.searchQuery) {
-            return;
-        }
-        if (!(saved.page > pageState.currentPage)) {
-            return;
-        }
-
-        const targetPage = saved.page;
-        const targetScrollY = saved.scrollY || 0;
-
-        while (pageState.hasMore && pageState.currentPage < targetPage) {
-            const before = pageState.currentPage;
-            await loadNextPage(); // eslint-disable-line no-await-in-loop
-            if (pageState.currentPage === before) {
-                break; // the fetch failed/aborted - stop here, let the user scroll/retry manually
-            }
-        }
-        window.scrollTo(0, targetScrollY);
     }
 
     // ---- boot ----
 
+    if ("scrollRestoration" in window.history) {
+        // This module restores the position itself, once the earlier
+        // batches are back on the page; the browser's own attempt would
+        // land in content that hasn't been loaded yet.
+        window.history.scrollRestoration = "manual";
+    }
     window.addEventListener("scroll", scheduleScrollSave, { passive: true });
-    window.addEventListener("pagehide", saveScrollState);
+    window.addEventListener("pagehide", saveHistoryState);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+            saveHistoryState();
+        }
+    });
+
+    let spyResizeTimer = null;
+    window.addEventListener("resize", () => {
+        if (spyResizeTimer) {
+            window.clearTimeout(spyResizeTimer);
+        }
+        spyResizeTimer = window.setTimeout(() => {
+            spyResizeTimer = null;
+            if (!dom || !spyObserver || !dom.categoryBar) {
+                return;
+            }
+            const line = Math.round(dom.categoryBar.getBoundingClientRect().height) + SPY_LINE_GAP_PX;
+            if (line !== spyLine) {
+                spyObserver.disconnect();
+                spyObserver = null;
+                setupScrollspy();
+            }
+        }, 200);
+    }, { passive: true });
+
+    window.MaeMayaShop = Object.assign(window.MaeMayaShop || {}, {
+        saveBrowsingPosition: saveHistoryState
+    });
 
     init();
     if (dom) {
-        attemptScrollRestore();
+        const type = navigationType();
+        if (type === "back_forward" || type === "reload") {
+            restoreBrowsingPosition();
+        }
     }
 
-    document.addEventListener("shop:resultsReplaced", () => {
+    document.addEventListener("shop:resultsReplaced", (event) => {
         teardownForNavigation();
         init();
-        if (dom) {
-            // A deliberate navigation to a different category/search result
-            // set - start fresh rather than replaying an old scroll
-            // position into content it doesn't belong to.
-            clearStaleScrollState();
+        if (!dom) {
+            return;
+        }
+        if (event.detail && event.detail.restore) {
+            restoreBrowsingPosition();
+        } else {
+            revealResultsTop();
+            saveHistoryState();
         }
     });
 })();

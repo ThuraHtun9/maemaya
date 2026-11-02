@@ -42,7 +42,10 @@
 						<img th:src="@{/images/maemaya.jpg}" class="brand-logo-mark" alt="Mae Ma Ya logo">
 						<span class="brand-wordmark">မေ့မရ</span>
 					</h1>
-					<form id="shopSearchForm" class="shop-search-form" th:action="@{/}" method="get">
+					<!-- data-no-page-transition: shop.js runs this search over AJAX;
+						without it smooth-ui.js would also fire a full-page form.submit(). -->
+					<form id="shopSearchForm" class="shop-search-form" th:action="@{/}" method="get"
+						data-no-page-transition>
 						<input type="hidden" name="category" th:value="${activeCategory}">
 						<input type="hidden" name="lang" th:value="${#locale.language}">
 						<label class="sr-only" for="productSearch" th:text="#{index.search.placeholder}">Search
@@ -95,6 +98,7 @@
 						<form class="lang-form" th:action="@{/}" method="get">
 							<input type="hidden" name="category" th:value="${activeCategory}">
 							<input type="hidden" name="page" th:value="${shopPagination.currentPage}">
+							<input type="hidden" name="q" th:value="${searchQuery}">
 							<label class="sr-only" for="langSelect" th:text="#{lang.switch}">Switch Language</label>
 							<select id="langSelect" name="lang" class="lang-select" onchange="this.form.submit()">
 								<option value="my" th:selected="${#locale.language == 'my'}" th:text="#{lang.myanmar}">
@@ -150,8 +154,12 @@
 					<div class="category-header">
 						<h3 class="category-title" th:text="${categoryDisplayNames.get(entry.key) ?: entry.key}">
 							Category</h3>
-						<span class="category-count amount-font"
-							th:text="${(categoryTotalCounts[entry.key] != null and categoryTotalCounts[entry.key] != #lists.size(entry.value)) ? #lists.size(entry.value) + ' / ' + categoryTotalCounts[entry.key] + ' items' : #lists.size(entry.value) + ' items'}">0
+						<!-- Total for the current filter (search / out-of-stock
+							aware - see ShopController#index), not "loaded so far /
+							total": with infinite scroll the loaded share changes on
+							every batch and read as a partial catalog. -->
+						<span class="category-count"
+							th:text="#{index.category.count(${categoryTotalCounts[entry.key] != null ? categoryTotalCounts[entry.key] : #lists.size(entry.value)})}">0
 							items</span>
 					</div>
 
@@ -161,7 +169,9 @@
 							th:attr="data-search=${#strings.toLowerCase(product.name + ' ' + entry.key)},data-product-id=${product.id},data-stock=${product.stock},data-in-cart=${inCart}">
 							<div class="product-media-wrap">
 								<img th:if="${product.hasImage()}" th:src="@{/images/{image}(image=${product.image})}"
-									class="product-media" loading="lazy" decoding="async"
+									class="product-media" decoding="async"
+									th:with="aboveFold=${shopPagination.currentPage == 1 and entryStat.first and productStat.index lt 4}"
+									th:attr="loading=${aboveFold ? 'eager' : 'lazy'},fetchpriority=${aboveFold ? 'high' : 'auto'}"
 									th:alt="#{index.product.imageAlt}">
 								<div th:unless="${product.hasImage()}" class="product-media"></div>
 
@@ -191,10 +201,17 @@
 							</div>
 
 							<h4 class="product-name" th:text="${product.name}">Product</h4>
-							<p class="product-price amount-font" th:text="|¥${product.price}|">¥0</p>
+							<p class="product-price amount-font" th:text="|¥${#numbers.formatInteger(product.price, 1, 'COMMA')}|">¥0</p>
 						</article>
 					</div>
 				</div>
+
+				<!-- Placeholder row for "the next page is loading". It is the
+					insertion point for appended category sections, so it must
+					stay directly after the last .category-section and before
+					the pager / sentinel / end-of-results below - otherwise new
+					products land underneath those controls. -->
+				<div id="skeletonBatch" class="product-grid skeleton-batch" hidden aria-hidden="true"></div>
 
 				<div class="pagination-shell" th:if="${shopPagination.totalPages > 1}" th:with="start=${T(java.lang.Math).max(1, shopPagination.currentPage - 2)},
               end=${T(java.lang.Math).min(shopPagination.totalPages, start + 4)},
@@ -236,7 +253,7 @@
 				<div id="infiniteScrollControls" class="infinite-scroll-controls"
 					th:if="${shopPagination.currentPage lt shopPagination.totalPages}">
 					<div id="scrollSentinel" class="scroll-sentinel" aria-hidden="true"></div>
-					<button type="button" id="loadMoreBtn" class="load-more-btn">
+					<button type="button" id="loadMoreBtn" class="load-more-btn" hidden>
 						<span th:text="#{index.loadMore}">Load more</span>
 					</button>
 				</div>
@@ -247,12 +264,6 @@
 				</p>
 				<p id="endOfResults" class="end-of-results" hidden th:text="#{index.endOfResults}">
 					You've seen all the products in this category.</p>
-				<!-- Generic placeholder batch for "the next page is loading" -
-					not nested in any one category-section, since the next
-					page's category mix isn't known until it arrives. Sized
-					and positioned like a real product-grid row so it never
-					overlaps or shifts the content already on screen. -->
-				<div id="skeletonBatch" class="product-grid skeleton-batch" hidden aria-hidden="true"></div>
 				<div id="shopLoadingStatus" class="sr-only" aria-live="polite"></div>
 			</div>
 		</section>
