@@ -642,20 +642,6 @@
             border-radius: 999px;
         }
 
-        .shop-category-label {
-            flex: 0 0 auto;
-            color: var(--brand-muted);
-            font-size: 0.82rem;
-            font-weight: 800;
-            letter-spacing: 0.02em;
-            padding-right: 2px;
-            position: sticky;
-            left: 0;
-            /* Matches .menu-section's own surface color now that the
-               bar itself has no background fill of its own. */
-            background: linear-gradient(90deg, #fffaf2 0%, rgba(255, 250, 242, 0.96) 78%, rgba(255, 250, 242, 0) 100%);
-        }
-
         .shop-category-link {
             flex: 0 0 auto;
             white-space: nowrap;
@@ -818,10 +804,6 @@
             .shop-category-bar {
                 padding: 0 0 8px 0;
                 gap: 6px;
-            }
-
-            .shop-category-label {
-                font-size: 0.78rem;
             }
 
             .shop-category-link {

@@ -135,7 +135,6 @@
 				</div>
 
 				<nav th:unless="${isOutOfStockView}" class="shop-category-bar" aria-label="Shop categories">
-					<span class="shop-category-label">Category</span>
 					<a class="shop-category-link" th:classappend="${activeCategory == 'all'} ? ' is-active'"
 						th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>
 					<a class="shop-category-link" th:each="shopCategory : ${shopCategories}"
