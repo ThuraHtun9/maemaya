@@ -28,7 +28,7 @@
             margin: 0;
             font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
             color: var(--brand-text);
-            background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+            background: var(--brand-bg-soft);
             padding: 20px;
         }
 
@@ -37,17 +37,23 @@
         }
 
         .page-shell {
-            width: min(1880px, 98vw);
+            /* A capped, centered content column instead of an
+               (almost) full-bleed 1880px canvas - the previous width
+               left so much open space on wide monitors that even a
+               well-filled product row read as sparse on the right. */
+            width: min(1440px, 94vw);
             margin: 0 auto;
         }
 
         .site-header {
-            background: var(--brand-surface);
-            border: 1px solid var(--brand-line);
-            border-radius: 18px;
-            box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
-            padding: 18px 22px 20px 22px;
-            margin-bottom: 20px;
+            /* Minimal-UI pass: no boxed card around the header anymore -
+               it sits directly on the page background, separated from
+               the content below by whitespace instead of a shadowed
+               panel. */
+            background: none;
+            border: none;
+            padding: 14px 4px 18px 4px;
+            margin-bottom: 8px;
             animation: soft-enter 220ms ease-out;
         }
 
@@ -436,11 +442,14 @@
         }
 
         .menu-section {
-            background: var(--brand-surface);
-            border: 1px solid var(--brand-line);
-            border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(70, 39, 23, 0.08);
-            padding: 20px;
+            /* Minimal-UI pass: dropped the surface/border/shadow "card"
+               wrapper - the whole page now reads as one continuous
+               shopping surface rather than cards stacked inside cards.
+               Horizontal padding stays at 0 on purpose so product grid
+               content lines up with the header above it. */
+            background: none;
+            border: none;
+            padding: 0;
         }
 
         .menu-section h2 {
@@ -584,16 +593,21 @@
             font-weight: 700;
         }
 
+        /* No background fill/border-box of its own anymore - it sits
+           directly on .menu-section's surface instead of reading as a
+           second nested card. A single subtle bottom border is enough
+           to separate it from the category sections below. */
         .shop-category-bar {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: nowrap;
             margin: 14px 0 18px 0;
-            padding: 10px 12px;
-            border: 1px solid rgba(92, 51, 32, 0.12);
-            border-radius: 14px;
-            background: linear-gradient(180deg, rgba(255, 251, 244, 0.96) 0%, rgba(248, 238, 221, 0.96) 100%);
+            padding: 0 0 12px 0;
+            border: none;
+            border-bottom: 1px solid var(--brand-line);
+            border-radius: 0;
+            background: none;
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
@@ -606,13 +620,12 @@
         .shop-category-bar.has-more-right::after {
             content: "";
             position: absolute;
-            top: 1px;
-            right: 1px;
-            bottom: 1px;
+            top: 0;
+            right: 0;
+            bottom: 12px;
             width: 36px;
-            background: linear-gradient(90deg, rgba(248, 238, 221, 0) 0%, rgba(248, 238, 221, 0.94) 65%);
+            background: linear-gradient(90deg, rgba(255, 250, 242, 0) 0%, rgba(255, 250, 242, 0.92) 65%);
             pointer-events: none;
-            border-radius: 0 13px 13px 0;
         }
 
         .shop-category-bar::-webkit-scrollbar {
@@ -638,7 +651,9 @@
             padding-right: 2px;
             position: sticky;
             left: 0;
-            background: linear-gradient(90deg, #fbf2e6 0%, rgba(251, 242, 230, 0.96) 78%, rgba(251, 242, 230, 0) 100%);
+            /* Matches .menu-section's own surface color now that the
+               bar itself has no background fill of its own. */
+            background: linear-gradient(90deg, #fffaf2 0%, rgba(255, 250, 242, 0.96) 78%, rgba(255, 250, 242, 0) 100%);
         }
 
         .shop-category-link {
@@ -649,46 +664,74 @@
             padding: 8px 14px;
             border-radius: 999px;
             border: 1px solid var(--brand-line);
-            background: rgba(255, 255, 255, 0.92);
+            background: #fff;
             color: var(--brand-primary);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-size: 0.85rem;
             font-weight: 700;
-            box-shadow: 0 7px 14px rgba(66, 35, 21, 0.07);
-            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+            transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
         }
 
         .shop-category-link:hover {
             background: #fff6e9;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 18px rgba(66, 35, 21, 0.12);
+            border-color: #cfae86;
         }
 
         .shop-category-link.is-active {
-            background: linear-gradient(145deg, #7b4b33, #5a3320);
+            background: var(--brand-primary);
             color: #fff;
             border-color: transparent;
-            box-shadow: 0 12px 20px rgba(72, 39, 24, 0.2);
         }
 
+        /* Fixed 2 columns on mobile (always exactly 2, never stretched
+           wide by a sparse row), then auto-fit with a FIXED column
+           width (not minmax(..., 1fr)) from 640px up. The earlier 1fr
+           version let a short row's columns divide the *entire* row
+           width between them, so e.g. a 2-item "Beer" row put one card
+           far left and the other near the far right with a big gap in
+           between. A fixed track width means each column only ever
+           takes the space a card actually needs - a short row just
+           ends early (cards sit together, trailing space is pushed to
+           the end of the row, not spread between the cards), while a
+           full row still naturally continues onto 3-5 columns as width
+           allows. */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(1, minmax(0, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 14px;
-            align-items: stretch;
-            grid-auto-rows: 1fr;
+            align-items: start;
             justify-content: start;
+        }
+
+        @media (min-width: 640px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fit, 190px);
+            }
+        }
+
+        @media (min-width: 860px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fit, 220px);
+                gap: 16px;
+            }
+        }
+
+        @media (min-width: 1260px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fit, 260px);
+                gap: 18px;
+            }
         }
 
         .pagination-shell {
             margin-top: 28px;
-            padding: 18px 18px 16px 18px;
-            border: 1px solid rgba(92, 51, 32, 0.12);
-            border-radius: 18px;
-            background: linear-gradient(180deg, rgba(255, 250, 242, 0.96) 0%, rgba(246, 235, 215, 0.96) 100%);
-            box-shadow: 0 10px 22px rgba(66, 35, 21, 0.08);
+            padding: 16px 0 0 0;
+            border: none;
+            border-top: 1px solid var(--brand-line);
+            background: none;
+            box-shadow: none;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -776,29 +819,9 @@
             box-shadow: none;
         }
 
-        @media (min-width: 390px) {
-            .product-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (min-width: 860px) {
-            .product-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 16px;
-            }
-        }
-
-        @media (min-width: 1260px) {
-            .product-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-                gap: 18px;
-            }
-        }
-
         @media (max-width: 860px) {
             .shop-category-bar {
-                padding: 8px 10px 10px 10px;
+                padding: 0 0 8px 0;
                 gap: 6px;
             }
 
@@ -822,36 +845,55 @@
         }
 
         .product-card {
-            background: #fffdf8;
-            border: 1px solid var(--brand-line);
-            border-radius: 14px;
-            padding: 12px;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            overflow: hidden;
+            /* The grid cell sets this card's actual width (2 to ~5
+               columns depending on screen size); max-width just keeps
+               a single card from stretching too wide in a sparse row. */
             width: 100%;
             max-width: 300px;
-            justify-self: center;
+        }
+
+        .product-media-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 14px;
+            overflow: hidden;
+            /* Flat, borderless product photo - a single neutral tone
+               (not a photo-specific crop) so every product sits on the
+               same consistent backdrop no matter its own colors. A
+               touch brighter than the page background so the photo
+               frame still reads clearly without needing a border. */
+            background: var(--brand-surface);
+            border: none;
+            padding: 10px;
         }
 
         .product-media {
+            display: block;
             width: 100%;
-            height: clamp(106px, 16vw, 170px);
+            height: 100%;
+            /* contain, not cover: packaged grocery items (jars, bottles,
+               boxes) keep their full shape instead of being cropped. */
             object-fit: contain;
             object-position: center;
-            border-radius: 10px;
-            border: 1px solid #eddcc2;
-            background: linear-gradient(180deg, #fff, #f6ecdc);
-            padding: 5px;
+        }
+
+        .product-media-wrap:has(.sold-out-chip) .product-media {
+            opacity: 0.5;
         }
 
         .product-name {
-            margin: 12px 0 6px 0;
+            margin: 10px 0 4px 0;
             color: var(--brand-text);
-            font-size: 1.01rem;
+            font-size: 1rem;
+            font-weight: 600;
             line-height: 1.35;
-            min-height: 2.7em;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
         }
 
         .product-price {
@@ -869,33 +911,36 @@
         }
 
         .product-actions {
-            margin-top: auto;
-            padding-top: 8px;
-            border-top: 1px dashed #e3d2b8;
-            position: relative;
-            min-height: 40px;
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            /* Fixed footprint the size of the cart button - the qty stepper
+               is absolutely positioned inside it (below), so it replaces the
+               button in the exact same spot instead of stacking under it. */
+            width: 38px;
+            height: 38px;
         }
 
         .add-cart-btn {
             border: none;
             border-radius: 999px;
-            background: linear-gradient(145deg, #6a3f2a, #8a5639);
+            background: var(--brand-primary);
             color: #fff;
             font-weight: 700;
             padding: 0;
             font-family: inherit;
             cursor: pointer;
-            box-shadow: 0 6px 12px rgba(66, 36, 22, 0.24);
+            box-shadow: 0 2px 6px rgba(30, 16, 8, 0.2);
             transition: filter 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease, opacity 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            position: absolute;
+            right: 0;
+            bottom: 0;
             width: 38px;
             height: 38px;
             min-height: 38px;
-            position: absolute;
-            top: 8px;
-            right: 0;
         }
 
         .add-cart-btn.is-hidden {
@@ -913,7 +958,7 @@
         .add-cart-btn:hover {
             filter: brightness(1.06);
             transform: translateY(-1px);
-            box-shadow: 0 8px 16px rgba(66, 36, 22, 0.28);
+            box-shadow: 0 4px 10px rgba(30, 16, 8, 0.26);
         }
 
         .add-cart-btn:disabled {
@@ -947,8 +992,8 @@
             gap: 8px;
             flex-wrap: nowrap;
             position: absolute;
-            top: 8px;
             right: 0;
+            bottom: 0;
             opacity: 0;
             transform: scale(0.82);
             transition: opacity 200ms ease, transform 220ms cubic-bezier(.34, 1.45, .64, 1);
@@ -969,6 +1014,7 @@
             border-radius: 999px;
             padding: 4px;
             background: #fff;
+            box-shadow: 0 2px 6px rgba(30, 16, 8, 0.14);
         }
 
         .qty-btn {
@@ -1004,14 +1050,15 @@
         }
 
         .sold-out-chip {
-            margin-top: auto;
+            position: absolute;
+            left: 8px;
+            bottom: 8px;
             display: inline-flex;
-            align-self: flex-start;
-            background: #ddd0bc;
-            color: #634b39;
+            background: rgba(63, 40, 27, 0.8);
+            color: #fff;
             border-radius: 999px;
             padding: 6px 11px;
-            font-size: 0.84rem;
+            font-size: 0.8rem;
             font-weight: 700;
         }
 		
@@ -1643,7 +1690,7 @@
             }
 
             .menu-section {
-                padding: 12px;
+                padding: 0;
             }
 
             .happy-shoppers {
@@ -1691,24 +1738,13 @@
                 gap: 10px;
             }
 
-            .product-card {
-                max-width: none;
-                padding: 8px;
-                border-radius: 10px;
-            }
-
-            .product-media {
-                height: clamp(88px, 26vw, 116px);
-                border: 1px solid #eddcc2;
-                padding: 2px;
-                background: #fff;
-                border-radius: 8px;
+            .product-media-wrap {
+                border-radius: 12px;
             }
 
             .product-name {
-                margin-top: 10px;
+                margin-top: 8px;
                 font-size: 0.94rem;
-                min-height: 2.4em;
             }
 
             .product-price {
@@ -1716,15 +1752,14 @@
             }
 
             .product-actions {
-                min-height: 40px;
-                gap: 6px;
-                padding-top: 8px;
+                width: 34px;
+                height: 34px;
             }
 
             .add-cart-btn {
-                width: 36px;
-                height: 36px;
-                min-height: 36px;
+                width: 34px;
+                height: 34px;
+                min-height: 34px;
             }
 
             .qty-stepper {
@@ -1777,10 +1812,6 @@
 
             .brand-sub {
                 display: none;
-            }
-
-            .product-media {
-                height: clamp(82px, 30vw, 104px);
             }
 
             .product-name {

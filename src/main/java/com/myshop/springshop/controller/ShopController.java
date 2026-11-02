@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.myshop.springshop.model.CartItem;
 import com.myshop.springshop.model.CategoryDisplaySetting;
@@ -569,7 +571,8 @@ public class ShopController {
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "customerName", required = false) String customerName,
             Model model,
-            Locale locale
+            Locale locale,
+            HttpServletRequest request
     ) {
         String safeOrderNumber = normalize(orderNumber);
         String safePhone = normalizePhone(phone);
@@ -591,6 +594,9 @@ public class ShopController {
                 model.addAttribute("lookupError", messageSource.getMessage("order.manage.customerLookupError", null, locale));
             }
         }
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            return "order_manage :: orderCard";
+        }
         return "order_manage";
     }
 
@@ -606,68 +612,74 @@ public class ShopController {
     }
 
     @PostMapping("/order/cancel")
-    public String cancelOrder(
+    public Object cancelOrder(
             @RequestParam("orderNumber") String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam(value = "customerName", required = false) String customerName,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
     ) {
         String safeOrderNumber = normalize(orderNumber);
         String safePhone = normalizePhone(phone);
         String safeCustomerName = normalize(customerName);
         OrderService.CancelResult result = orderService.cancelOrder(safeOrderNumber, safePhone);
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("success", result.success());
+            body.put("message", result.message());
+            return ResponseEntity.ok(body);
+        }
         redirectAttributes.addFlashAttribute("manageMessage", result.message());
         redirectAttributes.addFlashAttribute("manageSuccess", result.success());
-        redirectAttributes.addAttribute("orderNumber", safeOrderNumber);
-        redirectAttributes.addAttribute("phone", safePhone);
-        if (StringUtils.hasText(safeCustomerName)) {
-            redirectAttributes.addAttribute("customerName", safeCustomerName);
-        }
-        return "redirect:/order/manage";
+        return "redirect:" + buildOrderManageRedirectUrl(safeOrderNumber, safePhone, safeCustomerName);
     }
 
     @PostMapping("/order/reduce-item")
-    public String reduceOrderItem(
+    public Object reduceOrderItem(
             @RequestParam("orderNumber") String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam("productId") long productId,
             @RequestParam(value = "customerName", required = false) String customerName,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
     ) {
         String safeOrderNumber = normalize(orderNumber);
         String safePhone = normalizePhone(phone);
         String safeCustomerName = normalize(customerName);
         OrderService.CancelResult result = orderService.reduceOneItem(safeOrderNumber, safePhone, productId);
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("success", result.success());
+            body.put("message", result.message());
+            return ResponseEntity.ok(body);
+        }
         redirectAttributes.addFlashAttribute("manageMessage", result.message());
         redirectAttributes.addFlashAttribute("manageSuccess", result.success());
-        redirectAttributes.addAttribute("orderNumber", safeOrderNumber);
-        redirectAttributes.addAttribute("phone", safePhone);
-        if (StringUtils.hasText(safeCustomerName)) {
-            redirectAttributes.addAttribute("customerName", safeCustomerName);
-        }
-        return "redirect:/order/manage";
+        return "redirect:" + buildOrderManageRedirectUrl(safeOrderNumber, safePhone, safeCustomerName);
     }
 
     @PostMapping("/order/increase-item")
-    public String increaseOrderItem(
+    public Object increaseOrderItem(
             @RequestParam("orderNumber") String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam("productId") long productId,
             @RequestParam(value = "customerName", required = false) String customerName,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
     ) {
         String safeOrderNumber = normalize(orderNumber);
         String safePhone = normalizePhone(phone);
         String safeCustomerName = normalize(customerName);
         OrderService.CancelResult result = orderService.increaseOneItem(safeOrderNumber, safePhone, productId);
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("success", result.success());
+            body.put("message", result.message());
+            return ResponseEntity.ok(body);
+        }
         redirectAttributes.addFlashAttribute("manageMessage", result.message());
         redirectAttributes.addFlashAttribute("manageSuccess", result.success());
-        redirectAttributes.addAttribute("orderNumber", safeOrderNumber);
-        redirectAttributes.addAttribute("phone", safePhone);
-        if (StringUtils.hasText(safeCustomerName)) {
-            redirectAttributes.addAttribute("customerName", safeCustomerName);
-        }
-        return "redirect:/order/manage";
+        return "redirect:" + buildOrderManageRedirectUrl(safeOrderNumber, safePhone, safeCustomerName);
     }
 
     private int parseQuantity(String raw) {
@@ -827,5 +839,15 @@ public class ShopController {
         static CartAddResult failure(String errorCode) {
             return new CartAddResult(false, 0, 0, errorCode);
         }
+    }
+    
+    private String buildOrderManageRedirectUrl(String orderNumber, String phone, String customerName) {
+    	UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/order/manage")
+    			.queryParam("orderNumber", orderNumber)
+    			.queryParam("phone", phone);
+    	if (StringUtils.hasText(customerName)) {
+    		builder.queryParam("customerName", customerName);
+    	}
+    	return builder.fragment("itemList").build().encode().toUriString();
     }
 }

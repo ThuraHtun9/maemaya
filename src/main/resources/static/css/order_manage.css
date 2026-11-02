@@ -161,6 +161,21 @@ input, button {
     font-size: 0.9rem;
     border: 1px solid var(--brand-line);
 }
+.manage-feedback {
+    display: none;
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+.manage-feedback.is-visible {
+    display: block;
+}
+.manage-feedback.is-error {
+    background: #fdecea;
+    color: #b3261e;
+}
 .item-list {
     margin-top: 14px;
     border: 1px solid var(--brand-line);
@@ -168,18 +183,57 @@ input, button {
     overflow: hidden;
 }
 .item-row {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 8px;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 10px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--brand-line);
     background: var(--brand-surface);
 }
 .item-row:last-child { border-bottom: none; }
+.item-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: break-word;
+}
 .qty {
     font-weight: 700;
     color: var(--brand-text);
+}
+.qty-stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+.qty-value {
+    min-width: 20px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--brand-text);
+}
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--brand-line);
+    background: #fff;
+    color: var(--brand-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.qty-btn:hover {
+    background: #f8efe3;
+}
+.qty-btn:active {
+    transform: scale(0.95);
 }
 .btn-reduce {
     width: auto;
@@ -192,11 +246,6 @@ input, button {
     font-weight: 700;
 }
 .btn-reduce:hover { background: #b47f30; }
-.item-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
 .lookup-list {
     margin-top: 16px;
     border: 1px solid var(--brand-line);
@@ -240,12 +289,5 @@ input, button {
     .lookup-row .btn-outline {
         width: 100%;
         text-align: center;
-    }
-    .item-row {
-        grid-template-columns: 1fr;
-        gap: 6px;
-    }
-    .item-actions {
-        justify-content: flex-start;
     }
 }

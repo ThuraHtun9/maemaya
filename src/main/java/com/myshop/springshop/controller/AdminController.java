@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.ui.Model;
@@ -441,20 +442,27 @@ public class AdminController {
     }
 
     @PostMapping("/admin/orders/{orderNumber}/items/add")
-    public String addOrderItem(
+    public Object addOrderItem(
             @PathVariable String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam("productId") long productId,
             @RequestParam(value = "tab", required = false) String tab,
             @RequestParam(value = "productCategory", required = false) String productCategory,
             @RequestParam(value = "orderPage", required = false) Integer orderPage,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
     ) {
         OrderService.CancelResult result = orderService.adminAddOneItem(
                 normalize(orderNumber),
                 normalizePhone(phone),
                 productId
         );
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("success", result.success());
+            body.put("message", result.message());
+            return ResponseEntity.ok(body);
+        }
         if (result.success()) {
             redirectAttributes.addFlashAttribute("adminNotice", result.message());
         } else {
@@ -464,20 +472,27 @@ public class AdminController {
     }
 
     @PostMapping("/admin/orders/{orderNumber}/items/reduce")
-    public String reduceOrderItem(
+    public Object reduceOrderItem(
             @PathVariable String orderNumber,
             @RequestParam("phone") String phone,
             @RequestParam("productId") long productId,
             @RequestParam(value = "tab", required = false) String tab,
             @RequestParam(value = "productCategory", required = false) String productCategory,
             @RequestParam(value = "orderPage", required = false) Integer orderPage,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request
     ) {
         OrderService.CancelResult result = orderService.adminReduceOneItem(
                 normalize(orderNumber),
                 normalizePhone(phone),
                 productId
         );
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("success", result.success());
+            body.put("message", result.message());
+            return ResponseEntity.ok(body);
+        }
         if (result.success()) {
             redirectAttributes.addFlashAttribute("adminNotice", result.message());
         } else {

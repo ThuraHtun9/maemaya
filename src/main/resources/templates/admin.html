@@ -1,460 +1,520 @@
 <!DOCTYPE html>
 <html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
-    <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
-    <title th:text="#{admin.title}">Admin</title>
-    <link rel="stylesheet" th:href="@{/css/admin.css}">
-    <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
-    <script defer th:src="@{/js/smooth-ui.js}"></script>
-    <script defer th:src="@{/js/admin.js}"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
+	<title th:text="#{admin.title}">Admin</title>
+	<link rel="stylesheet" th:href="@{/css/admin.css}">
+	<link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
+	<script defer th:src="@{/js/smooth-ui.js}"></script>
+	<script defer th:src="@{/js/admin.js}"></script>
 
 </head>
+
 <body>
-<div class="admin-container">
-    <div class="admin-topbar">
-        <a href="/" class="admin-brand live-3d" data-live-3d>
-            <img th:src="@{/images/maemaya.jpg}" class="admin-brand-logo" alt="Mae Ma Ya logo">
-            <span class="admin-brand-text">
-                <span class="admin-brand-name">မေ့မရ</span>
-                <span class="admin-brand-sub">Admin Panel</span>
-            </span>
-        </a>
-        <div class="admin-top-right">
-            <form class="lang-picker-form" th:action="@{/admin}" method="get">
-                <label for="adminLangSelect" class="lang-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><ellipse cx="12" cy="12" rx="4" ry="9"></ellipse><line x1="3" y1="12" x2="21" y2="12"></line></svg></label>
-                <input type="hidden" name="tab" th:value="${activeTab}">
-                <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-                <input type="hidden" name="orderPage" th:value="${orderPagination.currentPage}">
-                <input type="hidden" name="requestPage" th:value="${requestPagination.currentPage}">
-                <input type="hidden" name="orderNumber" th:value="${orderSearchNumber}">
-                <input type="hidden" name="phone" th:value="${orderSearchPhone}">
-                <select id="adminLangSelect" name="lang" class="lang-select" aria-label="Language" onchange="this.form.submit()">
-                    <option value="my" th:selected="${#locale.language == 'my'}">MY</option>
-                    <option value="en" th:selected="${#locale.language == 'en'}">EN</option>
-                    <option value="ja" th:selected="${#locale.language == 'ja'}">JA</option>
-                </select>
-            </form>
-            <div class="top-actions">
-                <a href="/" class="top-btn top-btn-ghost" th:title="#{nav.shop.view}" th:aria-label="#{nav.shop.view}">
-                    <span class="top-btn-glyph" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5 5.3 4h13.4l1.3 5.5"></path><path d="M4 9.5a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"></path><path d="M5 10.2V20h14v-9.8"></path><path d="M9.5 20v-5.5h5V20"></path></svg></span>
-                    <span class="top-btn-text" th:text="#{nav.shop.view}">View Shop</span>
-                </a>
-                <form th:action="@{/logout}" method="post" class="logout-form">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button type="submit" class="logout-btn top-btn top-btn-danger" th:title="#{nav.logout}" th:aria-label="#{nav.logout}">
-                        <span class="top-btn-glyph" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"></path><line x1="10" y1="12" x2="21" y2="12"></line><polyline points="17 8 21 12 17 16"></polyline></svg></span>
-                        <span class="top-btn-text" th:text="#{nav.logout}">Logout</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+	<div class="admin-container">
+		<div class="admin-topbar">
+			<a href="/" class="admin-brand live-3d" data-live-3d>
+				<img th:src="@{/images/maemaya.jpg}" class="admin-brand-logo" alt="Mae Ma Ya logo">
+				<span class="admin-brand-text">
+					<span class="admin-brand-name">မေ့မရ</span>
+					<span class="admin-brand-sub">Admin Panel</span>
+				</span>
+			</a>
+			<div class="admin-top-right">
+				<form class="lang-picker-form" th:action="@{/admin}" method="get">
+					<label for="adminLangSelect" class="lang-icon" aria-hidden="true"><svg width="15" height="15"
+							viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+							<circle cx="12" cy="12" r="9"></circle>
+							<ellipse cx="12" cy="12" rx="4" ry="9"></ellipse>
+							<line x1="3" y1="12" x2="21" y2="12"></line>
+						</svg></label>
+					<input type="hidden" name="tab" th:value="${activeTab}">
+					<input type="hidden" name="productCategory" th:value="${activeProductCategory}">
+					<input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
+					<input type="hidden" name="orderPage" th:value="${orderPagination.currentPage}">
+					<input type="hidden" name="requestPage" th:value="${requestPagination.currentPage}">
+					<input type="hidden" name="orderNumber" th:value="${orderSearchNumber}">
+					<input type="hidden" name="phone" th:value="${orderSearchPhone}">
+					<select id="adminLangSelect" name="lang" class="lang-select" aria-label="Language"
+						onchange="this.form.submit()">
+						<option value="my" th:selected="${#locale.language == 'my'}">MY</option>
+						<option value="en" th:selected="${#locale.language == 'en'}">EN</option>
+						<option value="ja" th:selected="${#locale.language == 'ja'}">JA</option>
+					</select>
+				</form>
+				<div class="top-actions">
+					<a href="/" class="top-btn top-btn-ghost" th:title="#{nav.shop.view}"
+						th:aria-label="#{nav.shop.view}">
+						<span class="top-btn-glyph" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24"
+								fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+								stroke-linejoin="round">
+								<path d="M4 9.5 5.3 4h13.4l1.3 5.5"></path>
+								<path d="M4 9.5a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"></path>
+								<path d="M5 10.2V20h14v-9.8"></path>
+								<path d="M9.5 20v-5.5h5V20"></path>
+							</svg></span>
+						<span class="top-btn-text" th:text="#{nav.shop.view}">View Shop</span>
+					</a>
+					<form th:action="@{/logout}" method="post" class="logout-form">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+						<button type="submit" class="logout-btn top-btn top-btn-danger" th:title="#{nav.logout}"
+							th:aria-label="#{nav.logout}">
+							<span class="top-btn-glyph" aria-hidden="true"><svg width="15" height="15"
+									viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+									stroke-linecap="round" stroke-linejoin="round">
+									<path d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"></path>
+									<line x1="10" y1="12" x2="21" y2="12"></line>
+									<polyline points="17 8 21 12 17 16"></polyline>
+								</svg></span>
+							<span class="top-btn-text" th:text="#{nav.logout}">Logout</span>
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
 
-    <h1 th:text="#{admin.dashboard}">Admin Dashboard</h1>
-    <div th:if="${adminNotice}" class="flash-notice" th:text="${adminNotice}"></div>
-    <div th:if="${adminError}" class="flash-error" th:text="${adminError}"></div>
-    <section class="admin-overview" aria-label="Admin Overview">
-        <article class="kpi-card">
-            <p class="kpi-label">Products</p>
-            <p class="kpi-value amount-font" th:text="${productCount}">0</p>
-            <p class="kpi-note amount-font"
-               th:text="${activeProductCategory != 'all'} ? ${soldOutProductCount + ' sold out / ' + totalProductCount + ' total'} : ${soldOutProductCount + ' sold out'}">0 sold out</p>
-        </article>
-        <article class="kpi-card">
-            <p class="kpi-label">Active Orders</p>
-            <p class="kpi-value amount-font" th:text="${activeOrderCount}">0</p>
-            <p class="kpi-note">Need packing/delivery prep</p>
-        </article>
-        <article class="kpi-card">
-            <p class="kpi-label">Ready Orders</p>
-            <p class="kpi-value amount-font" th:text="${readyOrderCount}">0</p>
-            <p class="kpi-note">Waiting to be delivered</p>
-        </article>
-        <article class="kpi-card">
-            <p class="kpi-label">Delivered</p>
-            <p class="kpi-value amount-font" th:text="${deliveredOrderCount}">0</p>
-            <p class="kpi-note">Completed orders</p>
-        </article>
-        <article class="kpi-card">
-            <p class="kpi-label">New Requests</p>
-            <p class="kpi-value amount-font" th:text="${newRequestCount}">0</p>
-            <p class="kpi-note amount-font"
-               th:text="|${requestCount} total requests|">0 total requests</p>
-        </article>
-    </section>
+		<h1 th:text="#{admin.dashboard}">Admin Dashboard</h1>
+		<div th:if="${adminNotice}" class="flash-notice" th:text="${adminNotice}"></div>
+		<div th:if="${adminError}" class="flash-error" th:text="${adminError}"></div>
+		<section class="admin-overview" aria-label="Admin Overview">
+			<article class="kpi-card">
+				<p class="kpi-label">Products</p>
+				<p class="kpi-value amount-font" th:text="${productCount}">0</p>
+				<p class="kpi-note amount-font"
+					th:text="${activeProductCategory != 'all'} ? ${soldOutProductCount + ' sold out / ' + totalProductCount + ' total'} : ${soldOutProductCount + ' sold out'}">
+					0 sold out</p>
+			</article>
+			<article class="kpi-card">
+				<p class="kpi-label">Active Orders</p>
+				<p class="kpi-value amount-font" th:text="${activeOrderCount}">0</p>
+				<p class="kpi-note">Need packing/delivery prep</p>
+			</article>
+			<article class="kpi-card">
+				<p class="kpi-label">Ready Orders</p>
+				<p class="kpi-value amount-font" th:text="${readyOrderCount}">0</p>
+				<p class="kpi-note">Waiting to be delivered</p>
+			</article>
+			<article class="kpi-card">
+				<p class="kpi-label">Delivered</p>
+				<p class="kpi-value amount-font" th:text="${deliveredOrderCount}">0</p>
+				<p class="kpi-note">Completed orders</p>
+			</article>
+			<article class="kpi-card">
+				<p class="kpi-label">New Requests</p>
+				<p class="kpi-value amount-font" th:text="${newRequestCount}">0</p>
+				<p class="kpi-note amount-font" th:text="|${requestCount} total requests|">0 total requests</p>
+			</article>
+		</section>
 
-    <section class="admin-product-portal" aria-label="Product Management Portal">
-        <div class="admin-product-portal-copy">
-            <span class="portal-badge">Product Studio</span>
-            <h2>Open The Dedicated Product Workspace</h2>
-            <p>Use the separate product page for category sorting, inventory updates, filtering, image changes, and product pagination without crowding the main dashboard.</p>
-        </div>
-        <a class="admin-product-portal-action"
-           th:href="@{/admin/products(lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage})}">
-            <span aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.3"></rect><rect x="13" y="4" width="7" height="7" rx="1.3"></rect><rect x="4" y="13" width="7" height="7" rx="1.3"></rect><rect x="13" y="13" width="7" height="7" rx="1.3"></rect></svg></span>
-            <span>Go To Product Management</span>
-        </a>
-    </section>
+		<section class="admin-product-portal" aria-label="Product Management Portal">
+			<div class="admin-product-portal-copy">
+				<span class="portal-badge">Product Studio</span>
+				<h2>Open The Dedicated Product Workspace</h2>
+				<p>Use the separate product page for category sorting, inventory updates, filtering, image changes, and
+					product pagination without crowding the main dashboard.</p>
+			</div>
+			<a class="admin-product-portal-action"
+				th:href="@{/admin/products(lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage})}">
+				<span aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+						stroke="currentColor" stroke-width="1.9" stroke-linejoin="round">
+						<rect x="4" y="4" width="7" height="7" rx="1.3"></rect>
+						<rect x="13" y="4" width="7" height="7" rx="1.3"></rect>
+						<rect x="4" y="13" width="7" height="7" rx="1.3"></rect>
+						<rect x="13" y="13" width="7" height="7" rx="1.3"></rect>
+					</svg></span>
+				<span>Go To Product Management</span>
+			</a>
+		</section>
 
-    <div id="adminTabResults" th:fragment="adminTabResults">
-    <nav class="admin-tabs" aria-label="Admin Sections">
-        <a th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
-           class="admin-tab-btn"
-           th:classappend="${activeTab == 'orders'} ? ' is-active'"
-           th:text="#{admin.tab.orders}">Orders</a>
-        <a th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
-           class="admin-tab-btn"
-           th:classappend="${activeTab == 'requests'} ? ' is-active'"
-           th:text="#{admin.tab.requests}">Requests</a>
-    </nav>
+		<div id="adminTabResults" th:fragment="adminTabResults">
+			<nav class="admin-tabs" aria-label="Admin Sections">
+				<a th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
+					class="admin-tab-btn" th:classappend="${activeTab == 'orders'} ? ' is-active'"
+					th:text="#{admin.tab.orders}">Orders</a>
+				<a th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.currentPage})}"
+					class="admin-tab-btn" th:classappend="${activeTab == 'requests'} ? ' is-active'"
+					th:text="#{admin.tab.requests}">Requests</a>
+			</nav>
 
 
-    <div class="admin-tab-panel" th:if="${activeTab == 'orders'}">
-    <section class="admin-surface">
-        <div class="admin-section-head">
-            <h2 th:text="#{admin.recentOrders}">Recent Orders</h2>
-            <span class="section-badge amount-font"
-                  th:text="|${orderPagination.totalItems} orders|">0 orders</span>
-        </div>
-        <form class="order-search-form" method="get" th:action="@{/admin}">
-            <input type="hidden" name="tab" value="orders">
-            <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-            <input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
-            <input type="hidden" name="requestPage" th:value="${requestPagination.currentPage}">
-            <input type="text"
-                   name="orderNumber"
-                   th:value="${orderSearchNumber}"
-                   th:placeholder="#{admin.order.search.orderNumber}">
-            <input type="text"
-                   name="phone"
-                   th:value="${orderSearchPhone}"
-                   inputmode="tel"
-                   pattern="[\d\-\+\s\(\)]{0,20}"
-                   th:placeholder="#{admin.order.search.phone}">
-            <button type="submit" class="btn-update" th:text="#{admin.order.search.btn}">Search</button>
-            <a class="search-clear"
-               th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=1,requestPage=${requestPagination.currentPage})}"
-               th:text="#{admin.order.search.clear}">Clear</a>
-        </form>
-        <div class="admin-toolbar" data-filter-toolbar="orders">
-            <input type="text"
-                   class="toolbar-input"
-                   data-filter-input="orders"
-                   placeholder="Quick filter by order no / customer / phone">
-            <select class="toolbar-select" data-filter-status="orders" aria-label="Order status filter">
-                <option value="ALL">All status</option>
-                <option value="ACTIVE">Active</option>
-                <option value="READY">Ready</option>
-                <option value="DELIVERED">Delivered</option>
-                <option value="CANCELED">Canceled</option>
-            </select>
-            <button type="button" class="toolbar-reset" data-filter-reset="orders">Reset</button>
-            <span class="toolbar-result amount-font" data-filter-result="orders">0 / 0 shown</span>
-        </div>
-        <div class="table-wrap">
-        <table class="stack-table orders-table">
-            <thead>
-            <tr>
-                <th th:text="#{admin.col.orderNumber}">Order No</th>
-                <th th:text="#{admin.col.status}">Status</th>
-                <th th:text="#{admin.col.orderDate}">Order Date</th>
-                <th th:text="#{admin.col.customer}">Customer</th>
-                <th th:text="#{admin.col.address}">Address</th>
-                <th th:text="#{admin.col.product}">Product</th>
-                <th th:text="#{admin.col.total}">Total</th>
-                <th th:text="#{admin.col.delivery}">Delivery</th>
-                <th th:text="#{admin.col.orderAction}">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="order : ${orders}"
-                class="order-row"
-                th:attr="data-order-number=${order.orderNumber},data-order-customer=${order.customerName},data-order-phone=${order.phone},data-order-status=${order.orderStatus}">
-                <td class="order-no-cell" th:attr="data-label=#{admin.col.orderNumber}">
-					<div class="order-subcard">
-						<span class="badge badge-blue" th:text="${order.orderNumber}"></span>
-						<button type="button"
-								class="order-toggle-btn"
-								onclick="toggleOrderCard(this)"
-								th:attr="data-label-show=#{admin.order.toggle.show}, data-label-hide=#{admin.order.toggle.hide}"
-								th:text="#{admin.order.toggle.show}">View Details </button>
+			<div class="admin-tab-panel" th:if="${activeTab == 'orders'}">
+				<section class="admin-surface">
+					<div class="admin-section-head">
+						<h2 th:text="#{admin.recentOrders}">Recent Orders</h2>
+						<span class="section-badge amount-font" th:text="|${orderPagination.totalItems} orders|">0
+							orders</span>
 					</div>
-                </td>
-                <td class="status-cell" th:attr="data-label=#{admin.col.status}">
-                    <span class="badge badge-blue"
-                          th:if="${order.orderStatus == 'ACTIVE'}"
-                          th:text="#{order.status.active}">Active</span>
-                    <span class="badge badge-orange"
-                          th:if="${order.orderStatus == 'READY'}"
-                          th:text="#{order.status.ready}">Ready</span>
-                    <span class="badge badge-green"
-                          th:if="${order.orderStatus == 'DELIVERED'}"
-                          th:text="#{order.status.delivered}">Delivered</span>
-                    <span class="badge badge-gray"
-                          th:if="${order.orderStatus == 'CANCELED'}"
-                          th:text="#{order.status.canceled}">Canceled</span>
-                </td>
-                <td class="order-date-cell" style="font-size: 0.85em;" th:text="${order.orderDate}" th:attr="data-label=#{admin.col.orderDate}"></td>
-                <td class="customer-cell" th:attr="data-label=#{admin.col.customer}">
-                    <div class="order-subcard">
-                        <strong th:text="${order.customerName}"></strong><br>
-                        <span style="font-size: 0.85em;">
-                            <span th:text="#{admin.tel}">TEL</span>: <span th:text="${order.phone}"></span>
-                        </span>
-                    </div>
-                </td>
-                <td class="address-cell" style="font-size: 0.85em;" th:attr="data-label=#{admin.col.address}">
-                    <div class="order-subcard">
-                        <span style="display:block;">
-                            <span th:text="#{admin.zip}">ZIP</span>: <span th:text="${order.zipCode}"></span>
-                        </span>
-                        <span style="display:block;" th:text="${order.address}"></span>
-                        <span style="display:block;"
-                              th:if="${not #strings.isEmpty(order.addressDetail)}">
-                            <span th:text="#{admin.address.detail}">丁目・番地・号</span>:
-                            <span th:text="${order.addressDetail}"></span>
-                        </span>
-                        <span style="display:block;"
-                              th:if="${not #strings.isEmpty(order.buildingName)}">
-                            <span th:text="#{admin.address.building}">Building</span>:
-                            <span th:text="${order.buildingName}"></span>
-                        </span>
-                        <span style="display:block;"
-                              th:if="${not #strings.isEmpty(order.roomNumber)}">
-                            <span th:text="#{admin.address.room}">Room</span>:
-                            <span th:text="${order.roomNumber}"></span>
-                        </span>
-                    </div>
-                </td>
-                <td class="products-cell" th:attr="data-label=#{admin.col.product}">
-                    <div class="order-products-panel">
-                        <div th:if="${#lists.isEmpty(order.items)}" style="color:#999;">-</div>
-                        <ul class="order-item-list" th:if="${!#lists.isEmpty(order.items)}">
-                            <li th:each="item : ${order.items}">
-                                <span class="order-item-main" th:text="${item.name}"></span>
-                                <span class="item-qty-actions">
-                                    <span class="item-qty" th:text="|x${item.quantity}|"></span>
-                                    <form class="order-item-reduce-form"
-                                          th:if="${order.orderStatus == 'ACTIVE' and item.productId != null}"
-                                          th:action="@{/admin/orders/{orderNumber}/items/reduce(orderNumber=${order.orderNumber})}"
-                                          method="post">
-                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                        <input type="hidden" name="tab" value="orders">
-                                        <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                                        <input type="hidden" name="orderPage" th:value="${orderPagination.currentPage}">
-                                        <input type="hidden" name="phone" th:value="${order.phone}">
-                                        <input type="hidden" name="productId" th:value="${item.productId}">
-                                        <button type="submit" class="btn-update btn-small" th:text="#{admin.order.btn.reduceOne}">-1</button>
-                                    </form>
-                                </span>
-                            </li>
-                        </ul>
-                        <form class="order-item-add-form"
-                              th:if="${order.orderStatus == 'ACTIVE'}"
-                              th:action="@{/admin/orders/{orderNumber}/items/add(orderNumber=${order.orderNumber})}"
-                              method="post">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                            <input type="hidden" name="tab" value="orders">
-                            <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                            <input type="hidden" name="orderPage" th:value="${orderPagination.currentPage}">
-                            <input type="hidden" name="phone" th:value="${order.phone}">
-                            <select name="productId" required>
-                                <option value="" th:text="#{admin.order.add.select}">Select product to add</option>
-                                <option value=""
-                                        disabled
-                                        th:if="${#lists.isEmpty(orderEditableProducts)}"
-                                        th:text="#{admin.order.add.noStock}">No in-stock products</option>
-                                <option th:each="product : ${orderEditableProducts}"
-                                        th:value="${product.id}"
-                                        th:text="${#messages.msg('admin.order.add.optionFormat', product.name, product.price, product.stock)}">
-                                    Product
-                                </option>
-                            </select>
-                            <button type="submit"
-                                    class="btn-add btn-small"
-                                    th:disabled="${#lists.isEmpty(orderEditableProducts)}"
-                                    th:text="#{admin.order.btn.addItem}">Add Item</button>
-                        </form>
-                    </div>
-                </td>
-                <td class="amount-font total-cell" th:text="|¥${order.totalPrice}|" th:attr="data-label=#{admin.col.total}"></td>
-                <td class="delivery-cell" th:attr="data-label=#{admin.col.delivery}">
-                    <div class="order-subcard">
-                        <span class="badge badge-blue" th:text="${order.deliveryDate}"></span><br>
-                        <span style="font-weight: bold;" th:text="${order.deliveryTime}"></span>
-                    </div>
-                </td>
-                <td class="order-action-cell actions-cell" th:attr="data-label=#{admin.col.orderAction}">
-                    <form th:if="${order.orderStatus == 'ACTIVE'}"
-                          th:action="@{/admin/orders/{orderNumber}/ready(orderNumber=${order.orderNumber})}"
-                          method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <input type="hidden" name="tab" value="orders">
-                        <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                        <input type="hidden" name="orderPage" th:value="${orderPagination.currentPage}">
-                        <input type="hidden" name="phone" th:value="${order.phone}">
-                        <button type="submit" class="btn-ready" th:text="#{admin.order.btn.ready}">Ready</button>
-                    </form>
-                    <form th:if="${order.orderStatus == 'READY'}"
-                          th:action="@{/admin/orders/{orderNumber}/delivered(orderNumber=${order.orderNumber})}"
-                          method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <input type="hidden" name="tab" value="orders">
-                        <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                        <input type="hidden" name="orderPage" th:value="${orderPagination.currentPage}">
-                        <input type="hidden" name="phone" th:value="${order.phone}">
-                        <button type="submit" class="btn-delivered" th:text="#{admin.order.btn.delivered}">Delivered</button>
-                    </form>
-                    <span th:if="${order.orderStatus == 'DELIVERED'}" class="status-delivered-inline" th:text="#{order.status.delivered}">Delivered</span>
-                    <span th:if="${order.orderStatus == 'CANCELED'}" class="status-canceled-inline" th:text="#{order.status.canceled}">Canceled</span>
-                    <form th:action="@{/admin/orders/{orderNumber}/delete(orderNumber=${order.orderNumber})}"
-                          method="post"
-                          style="display:inline;">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <input type="hidden" name="tab" value="orders">
-                        <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                        <input type="hidden" name="orderPage" th:value="${orderPagination.currentPage}">
-                        <input type="hidden" name="phone" th:value="${order.phone}">
-                        <button type="submit"
-                                class="btn-delete"
-                                onclick="return confirmOrderDelete(this)"
-                                th:attr="data-order-number=${order.orderNumber},data-confirm-template=#{admin.order.delete.confirm}"
-                                th:text="#{admin.order.btn.delete}">Delete Order</button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        </div>
-        <div class="pagination-shell" th:if="${orderPagination.totalPages > 1}">
-            <p class="pagination-summary amount-font"
-               th:text="|${orderPagination.startItem}-${orderPagination.endItem} of ${orderPagination.totalItems}|">1-8 of 8</p>
-            <nav class="pagination-bar" aria-label="Order pagination">
-                <a class="pagination-link"
-                   th:classappend="${!orderPagination.hasPrevious()} ? ' is-disabled'"
-                   th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.previousPage()},requestPage=${requestPagination.currentPage},orderNumber=${orderSearchNumber},phone=${orderSearchPhone})}">‹</a>
-                <a class="pagination-link"
-                   th:each="pageNumber : ${#numbers.sequence(1, orderPagination.totalPages)}"
-                   th:classappend="${pageNumber == orderPagination.currentPage} ? ' is-active'"
-                   th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${pageNumber},requestPage=${requestPagination.currentPage},orderNumber=${orderSearchNumber},phone=${orderSearchPhone})}"
-                   th:text="${pageNumber}">1</a>
-                <a class="pagination-link"
-                   th:classappend="${!orderPagination.hasNext()} ? ' is-disabled'"
-                   th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.nextPage()},requestPage=${requestPagination.currentPage},orderNumber=${orderSearchNumber},phone=${orderSearchPhone})}">›</a>
-            </nav>
-        </div>
-    </section>
-    </div>
+					<form class="order-search-form" method="get" th:action="@{/admin}">
+						<input type="hidden" name="tab" value="orders">
+						<input type="hidden" name="productCategory" th:value="${activeProductCategory}">
+						<input type="hidden" name="productPage" th:value="${productPagination.currentPage}">
+						<input type="hidden" name="requestPage" th:value="${requestPagination.currentPage}">
+						<input type="text" name="orderNumber" th:value="${orderSearchNumber}"
+							th:placeholder="#{admin.order.search.orderNumber}">
+						<input type="text" name="phone" th:value="${orderSearchPhone}" inputmode="tel"
+							pattern="[\d\-\+\s\(\)]{0,20}" th:placeholder="#{admin.order.search.phone}">
+						<button type="submit" class="btn-update" th:text="#{admin.order.search.btn}">Search</button>
+						<a class="search-clear"
+							th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=1,requestPage=${requestPagination.currentPage})}"
+							th:text="#{admin.order.search.clear}">Clear</a>
+					</form>
+					<div class="admin-toolbar" data-filter-toolbar="orders">
+						<input type="text" class="toolbar-input" data-filter-input="orders"
+							placeholder="Quick filter by order no / customer / phone">
+						<select class="toolbar-select" data-filter-status="orders" aria-label="Order status filter">
+							<option value="ALL">All status</option>
+							<option value="ACTIVE">Active</option>
+							<option value="READY">Ready</option>
+							<option value="DELIVERED">Delivered</option>
+							<option value="CANCELED">Canceled</option>
+						</select>
+						<button type="button" class="toolbar-reset" data-filter-reset="orders">Reset</button>
+						<span class="toolbar-result amount-font" data-filter-result="orders">0 / 0 shown</span>
+					</div>
+					<div class="table-wrap">
+						<table class="stack-table orders-table">
+							<thead>
+								<tr>
+									<th th:text="#{admin.col.orderNumber}">Order No</th>
+									<th th:text="#{admin.col.status}">Status</th>
+									<th th:text="#{admin.col.orderDate}">Order Date</th>
+									<th th:text="#{admin.col.customer}">Customer</th>
+									<th th:text="#{admin.col.address}">Address</th>
+									<th th:text="#{admin.col.product}">Product</th>
+									<th th:text="#{admin.col.total}">Total</th>
+									<th th:text="#{admin.col.delivery}">Delivery</th>
+									<th th:text="#{admin.col.orderAction}">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="order : ${orders}" class="order-row"
+									th:attr="data-order-number=${order.orderNumber},data-order-customer=${order.customerName},data-order-phone=${order.phone},data-order-status=${order.orderStatus}">
+									<td class="order-no-cell" th:attr="data-label=#{admin.col.orderNumber}">
+										<div class="order-subcard">
+											<span class="badge badge-blue" th:text="${order.orderNumber}"></span>
+											<button type="button" class="order-toggle-btn"
+												onclick="toggleOrderCard(this)"
+												th:attr="data-label-show=#{admin.order.toggle.show}, data-label-hide=#{admin.order.toggle.hide}"
+												th:text="#{admin.order.toggle.show}">View Details </button>
+										</div>
+									</td>
+									<td class="status-cell" th:attr="data-label=#{admin.col.status}">
+										<span class="badge badge-blue" th:if="${order.orderStatus == 'ACTIVE'}"
+											th:text="#{order.status.active}">Active</span>
+										<span class="badge badge-orange" th:if="${order.orderStatus == 'READY'}"
+											th:text="#{order.status.ready}">Ready</span>
+										<span class="badge badge-green" th:if="${order.orderStatus == 'DELIVERED'}"
+											th:text="#{order.status.delivered}">Delivered</span>
+										<span class="badge badge-gray" th:if="${order.orderStatus == 'CANCELED'}"
+											th:text="#{order.status.canceled}">Canceled</span>
+									</td>
+									<td class="order-date-cell" style="font-size: 0.85em;" th:text="${order.orderDate}"
+										th:attr="data-label=#{admin.col.orderDate}"></td>
+									<td class="customer-cell" th:attr="data-label=#{admin.col.customer}">
+										<div class="order-subcard">
+											<strong th:text="${order.customerName}"></strong><br>
+											<span style="font-size: 0.85em;">
+												<span th:text="#{admin.tel}">TEL</span>: <span
+													th:text="${order.phone}"></span>
+											</span>
+										</div>
+									</td>
+									<td class="address-cell" style="font-size: 0.85em;"
+										th:attr="data-label=#{admin.col.address}">
+										<div class="order-subcard">
+											<span style="display:block;">
+												<span th:text="#{admin.zip}">ZIP</span>: <span
+													th:text="${order.zipCode}"></span>
+											</span>
+											<span style="display:block;" th:text="${order.address}"></span>
+											<span style="display:block;"
+												th:if="${not #strings.isEmpty(order.addressDetail)}">
+												<span th:text="#{admin.address.detail}">丁目・番地・号</span>:
+												<span th:text="${order.addressDetail}"></span>
+											</span>
+											<span style="display:block;"
+												th:if="${not #strings.isEmpty(order.buildingName)}">
+												<span th:text="#{admin.address.building}">Building</span>:
+												<span th:text="${order.buildingName}"></span>
+											</span>
+											<span style="display:block;"
+												th:if="${not #strings.isEmpty(order.roomNumber)}">
+												<span th:text="#{admin.address.room}">Room</span>:
+												<span th:text="${order.roomNumber}"></span>
+											</span>
+										</div>
+									</td>
+									<td class="products-cell" th:attr="data-label=#{admin.col.product}">
+										<div class="order-products-panel">
+											<div th:if="${#lists.isEmpty(order.items)}" style="color:#999;">-</div>
+											<ul class="order-item-list" th:if="${!#lists.isEmpty(order.items)}">
+												<li th:each="item : ${order.items}">
+													<span class="order-item-main" th:text="${item.name}"></span>
+													<span class="item-qty-actions">
+														<span class="item-qty" th:text="|x${item.quantity}|"></span>
+														<form class="order-item-reduce-form"
+															th:if="${order.orderStatus == 'ACTIVE' and item.productId != null}"
+															th:action="@{/admin/orders/{orderNumber}/items/reduce(orderNumber=${order.orderNumber})}"
+															method="post">
+															<input type="hidden" th:name="${_csrf.parameterName}"
+																th:value="${_csrf.token}">
+															<input type="hidden" name="tab" value="orders">
+															<input type="hidden" name="productCategory"
+																th:value="${activeProductCategory}">
+															<input type="hidden" name="orderPage"
+																th:value="${orderPagination.currentPage}">
+															<input type="hidden" name="phone" th:value="${order.phone}">
+															<input type="hidden" name="productId"
+																th:value="${item.productId}">
+															<button type="submit" class="btn-update btn-small"
+																th:text="#{admin.order.btn.reduceOne}">-1</button>
+														</form>
+													</span>
+												</li>
+											</ul>
+											<form class="order-item-add-form" th:if="${order.orderStatus == 'ACTIVE'}"
+												th:action="@{/admin/orders/{orderNumber}/items/add(orderNumber=${order.orderNumber})}"
+												method="post">
+												<input type="hidden" th:name="${_csrf.parameterName}"
+													th:value="${_csrf.token}">
+												<input type="hidden" name="tab" value="orders">
+												<input type="hidden" name="productCategory"
+													th:value="${activeProductCategory}">
+												<input type="hidden" name="orderPage"
+													th:value="${orderPagination.currentPage}">
+												<input type="hidden" name="phone" th:value="${order.phone}">
+												<input type="hidden" name="productId" value="">
+												<button type="button" class="btn-add btn-small"
+													onclick="openAddItemModal(this)"
+													th:disabled="${#lists.isEmpty(orderEditableProducts)}"
+													th:text="#{admin.order.btn.addItem}">Add Item</button>
+											</form>
+										</div>
+									</td>
+									<td class="amount-font total-cell" th:text="|¥${order.totalPrice}|"
+										th:attr="data-label=#{admin.col.total}"></td>
+									<td class="delivery-cell" th:attr="data-label=#{admin.col.delivery}">
+										<div class="order-subcard">
+											<span class="badge badge-blue" th:text="${order.deliveryDate}"></span><br>
+											<span style="font-weight: bold;" th:text="${order.deliveryTime}"></span>
+										</div>
+									</td>
+									<td class="order-action-cell actions-cell"
+										th:attr="data-label=#{admin.col.orderAction}">
+										<form th:if="${order.orderStatus == 'ACTIVE'}"
+											th:action="@{/admin/orders/{orderNumber}/ready(orderNumber=${order.orderNumber})}"
+											method="post">
+											<input type="hidden" th:name="${_csrf.parameterName}"
+												th:value="${_csrf.token}">
+											<input type="hidden" name="tab" value="orders">
+											<input type="hidden" name="productCategory"
+												th:value="${activeProductCategory}">
+											<input type="hidden" name="orderPage"
+												th:value="${orderPagination.currentPage}">
+											<input type="hidden" name="phone" th:value="${order.phone}">
+											<button type="submit" class="btn-ready"
+												th:text="#{admin.order.btn.ready}">Ready</button>
+										</form>
+										<form th:if="${order.orderStatus == 'READY'}"
+											th:action="@{/admin/orders/{orderNumber}/delivered(orderNumber=${order.orderNumber})}"
+											method="post">
+											<input type="hidden" th:name="${_csrf.parameterName}"
+												th:value="${_csrf.token}">
+											<input type="hidden" name="tab" value="orders">
+											<input type="hidden" name="productCategory"
+												th:value="${activeProductCategory}">
+											<input type="hidden" name="orderPage"
+												th:value="${orderPagination.currentPage}">
+											<input type="hidden" name="phone" th:value="${order.phone}">
+											<button type="submit" class="btn-delivered"
+												th:text="#{admin.order.btn.delivered}">Delivered</button>
+										</form>
+										<span th:if="${order.orderStatus == 'DELIVERED'}"
+											class="status-delivered-inline"
+											th:text="#{order.status.delivered}">Delivered</span>
+										<span th:if="${order.orderStatus == 'CANCELED'}" class="status-canceled-inline"
+											th:text="#{order.status.canceled}">Canceled</span>
+										<form
+											th:action="@{/admin/orders/{orderNumber}/delete(orderNumber=${order.orderNumber})}"
+											method="post" style="display:inline;">
+											<input type="hidden" th:name="${_csrf.parameterName}"
+												th:value="${_csrf.token}">
+											<input type="hidden" name="tab" value="orders">
+											<input type="hidden" name="productCategory"
+												th:value="${activeProductCategory}">
+											<input type="hidden" name="orderPage"
+												th:value="${orderPagination.currentPage}">
+											<input type="hidden" name="phone" th:value="${order.phone}">
+											<button type="submit" class="btn-delete"
+												onclick="return confirmOrderDelete(this)"
+												th:attr="data-order-number=${order.orderNumber},data-confirm-template=#{admin.order.delete.confirm}"
+												th:text="#{admin.order.btn.delete}">Delete Order</button>
+										</form>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="pagination-shell" th:if="${orderPagination.totalPages > 1}">
+						<p class="pagination-summary amount-font"
+							th:text="|${orderPagination.startItem}-${orderPagination.endItem} of ${orderPagination.totalItems}|">
+							1-8 of 8</p>
+						<nav class="pagination-bar" aria-label="Order pagination">
+							<a class="pagination-link"
+								th:classappend="${!orderPagination.hasPrevious()} ? ' is-disabled'"
+								th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.previousPage()},requestPage=${requestPagination.currentPage},orderNumber=${orderSearchNumber},phone=${orderSearchPhone})}">‹</a>
+							<a class="pagination-link"
+								th:each="pageNumber : ${#numbers.sequence(1, orderPagination.totalPages)}"
+								th:classappend="${pageNumber == orderPagination.currentPage} ? ' is-active'"
+								th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${pageNumber},requestPage=${requestPagination.currentPage},orderNumber=${orderSearchNumber},phone=${orderSearchPhone})}"
+								th:text="${pageNumber}">1</a>
+							<a class="pagination-link" th:classappend="${!orderPagination.hasNext()} ? ' is-disabled'"
+								th:href="@{/admin(tab='orders',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.nextPage()},requestPage=${requestPagination.currentPage},orderNumber=${orderSearchNumber},phone=${orderSearchPhone})}">›</a>
+						</nav>
+					</div>
+				</section>
+			</div>
 
-    <div class="admin-tab-panel" th:if="${activeTab == 'requests'}">
-    <section class="admin-surface">
-        <div class="admin-section-head">
-            <h2 th:text="#{admin.requests.title}">Customer Product Requests</h2>
-            <span class="section-badge amount-font"
-                  th:text="|${requestPagination.totalItems} requests|">0 requests</span>
-        </div>
-        <div class="admin-toolbar" data-filter-toolbar="requests">
-            <input type="text"
-                   class="toolbar-input"
-                   data-filter-input="requests"
-                   placeholder="Quick filter by requester / contact / product">
-            <select class="toolbar-select" data-filter-status="requests" aria-label="Request status filter">
-                <option value="ALL">All status</option>
-                <option value="NEW">New</option>
-                <option value="DONE">Done</option>
-            </select>
-            <button type="button" class="toolbar-reset" data-filter-reset="requests">Reset</button>
-            <span class="toolbar-result amount-font" data-filter-result="requests">0 / 0 shown</span>
-        </div>
-        <div class="table-wrap">
-        <table class="stack-table">
-            <thead>
-            <tr>
-                <th th:text="#{admin.requests.col.date}">Date</th>
-                <th th:text="#{admin.requests.col.requester}">Requester</th>
-                <th th:text="#{admin.requests.col.contact}">Contact</th>
-                <th th:text="#{admin.requests.col.productName}">Product Name</th>
-                <th th:text="#{admin.requests.col.image}">Reference Image</th>
-                <th th:text="#{admin.requests.col.note}">Note</th>
-                <th th:text="#{admin.requests.col.status}">Status</th>
-                <th th:text="#{admin.requests.col.action}">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:if="${#lists.isEmpty(productRequests)}">
-                <td colspan="8" style="text-align:center; color:#888;" th:text="#{admin.requests.empty}">No requests yet.</td>
-            </tr>
-            <tr th:each="req : ${productRequests}"
-                class="request-row"
-                th:attr="data-request-requester=${req.requesterName},data-request-contact=${req.contact},data-request-product=${req.productName},data-request-status=${req.requestStatus}">
-                <td style="font-size:0.85em;" th:text="${req.requestDate}" th:attr="data-label=#{admin.requests.col.date}"></td>
-                <td th:text="${req.requesterName}" th:attr="data-label=#{admin.requests.col.requester}"></td>
-                <td th:text="${req.contact}" th:attr="data-label=#{admin.requests.col.contact}"></td>
-                <td th:text="${#strings.isEmpty(req.productName) ? '-' : req.productName}" th:attr="data-label=#{admin.requests.col.productName}"></td>
-                <td th:attr="data-label=#{admin.requests.col.image}">
-                    <img th:if="${req.hasImage()}"
-                         th:src="@{/images/{image}(image=${req.referenceImage})}"
-                         width="60"
-                         style="border-radius:4px;"
-                         th:alt="#{request.imageAlt}">
-                    <span th:unless="${req.hasImage()}" style="color:#999;">-</span>
-                </td>
-                <td th:text="${#strings.isEmpty(req.note) ? '-' : req.note}" th:attr="data-label=#{admin.requests.col.note}"></td>
-                <td th:attr="data-label=#{admin.requests.col.status}">
-                    <span class="badge badge-blue" th:if="${req.isNew()}" th:text="#{admin.requests.status.new}">NEW</span>
-                    <span class="badge badge-gray" th:if="${!req.isNew()}" th:text="#{admin.requests.status.done}">DONE</span>
-                </td>
-                <td class="request-action-cell" th:attr="data-label=#{admin.requests.col.action}">
-                    <form th:if="${req.isNew()}"
-                          th:action="@{/admin/requests/{requestId}/done(requestId=${req.id})}"
-                          method="post"
-                          style="display:inline;">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <input type="hidden" name="tab" value="requests">
-                        <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                        <input type="hidden" name="requestPage" th:value="${requestPagination.currentPage}">
-                        <button type="submit" class="btn-update" th:text="#{admin.requests.btn.done}">Mark Done</button>
-                    </form>
-                    <form th:action="@{/admin/requests/{requestId}/delete(requestId=${req.id})}"
-                          method="post"
-                          style="display:inline;">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <input type="hidden" name="tab" value="requests">
-                        <input type="hidden" name="productCategory" th:value="${activeProductCategory}">
-                        <input type="hidden" name="requestPage" th:value="${requestPagination.currentPage}">
-                        <button type="submit" class="btn-delete" th:text="#{admin.requests.btn.delete}">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        </div>
-        <div class="pagination-shell" th:if="${requestPagination.totalPages > 1}">
-            <p class="pagination-summary amount-font"
-               th:text="|${requestPagination.startItem}-${requestPagination.endItem} of ${requestPagination.totalItems}|">1-10 of 10</p>
-            <nav class="pagination-bar" aria-label="Request pagination">
-                <a class="pagination-link"
-                   th:classappend="${!requestPagination.hasPrevious()} ? ' is-disabled'"
-                   th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.previousPage()})}">‹</a>
-                <a class="pagination-link"
-                   th:each="pageNumber : ${#numbers.sequence(1, requestPagination.totalPages)}"
-                   th:classappend="${pageNumber == requestPagination.currentPage} ? ' is-active'"
-                   th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${pageNumber})}"
-                   th:text="${pageNumber}">1</a>
-                <a class="pagination-link"
-                   th:classappend="${!requestPagination.hasNext()} ? ' is-disabled'"
-                   th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.nextPage()})}">›</a>
-            </nav>
-        </div>
-    </section>
-    </div>
-    </div>
-    <p style="margin-top:20px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
-       th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
-</div>
+			<div class="admin-tab-panel" th:if="${activeTab == 'requests'}">
+				<section class="admin-surface">
+					<div class="admin-section-head">
+						<h2 th:text="#{admin.requests.title}">Customer Product Requests</h2>
+						<span class="section-badge amount-font" th:text="|${requestPagination.totalItems} requests|">0
+							requests</span>
+					</div>
+					<div class="admin-toolbar" data-filter-toolbar="requests">
+						<input type="text" class="toolbar-input" data-filter-input="requests"
+							placeholder="Quick filter by requester / contact / product">
+						<select class="toolbar-select" data-filter-status="requests" aria-label="Request status filter">
+							<option value="ALL">All status</option>
+							<option value="NEW">New</option>
+							<option value="DONE">Done</option>
+						</select>
+						<button type="button" class="toolbar-reset" data-filter-reset="requests">Reset</button>
+						<span class="toolbar-result amount-font" data-filter-result="requests">0 / 0 shown</span>
+					</div>
+					<div class="table-wrap">
+						<table class="stack-table">
+							<thead>
+								<tr>
+									<th th:text="#{admin.requests.col.date}">Date</th>
+									<th th:text="#{admin.requests.col.requester}">Requester</th>
+									<th th:text="#{admin.requests.col.contact}">Contact</th>
+									<th th:text="#{admin.requests.col.productName}">Product Name</th>
+									<th th:text="#{admin.requests.col.image}">Reference Image</th>
+									<th th:text="#{admin.requests.col.note}">Note</th>
+									<th th:text="#{admin.requests.col.status}">Status</th>
+									<th th:text="#{admin.requests.col.action}">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:if="${#lists.isEmpty(productRequests)}">
+									<td colspan="8" style="text-align:center; color:#888;"
+										th:text="#{admin.requests.empty}">No requests yet.</td>
+								</tr>
+								<tr th:each="req : ${productRequests}" class="request-row"
+									th:attr="data-request-requester=${req.requesterName},data-request-contact=${req.contact},data-request-product=${req.productName},data-request-status=${req.requestStatus}">
+									<td style="font-size:0.85em;" th:text="${req.requestDate}"
+										th:attr="data-label=#{admin.requests.col.date}"></td>
+									<td th:text="${req.requesterName}"
+										th:attr="data-label=#{admin.requests.col.requester}"></td>
+									<td th:text="${req.contact}" th:attr="data-label=#{admin.requests.col.contact}">
+									</td>
+									<td th:text="${#strings.isEmpty(req.productName) ? '-' : req.productName}"
+										th:attr="data-label=#{admin.requests.col.productName}"></td>
+									<td th:attr="data-label=#{admin.requests.col.image}">
+										<img th:if="${req.hasImage()}"
+											th:src="@{/images/{image}(image=${req.referenceImage})}" width="60"
+											style="border-radius:4px;" th:alt="#{request.imageAlt}">
+										<span th:unless="${req.hasImage()}" style="color:#999;">-</span>
+									</td>
+									<td th:text="${#strings.isEmpty(req.note) ? '-' : req.note}"
+										th:attr="data-label=#{admin.requests.col.note}"></td>
+									<td th:attr="data-label=#{admin.requests.col.status}">
+										<span class="badge badge-blue" th:if="${req.isNew()}"
+											th:text="#{admin.requests.status.new}">NEW</span>
+										<span class="badge badge-gray" th:if="${!req.isNew()}"
+											th:text="#{admin.requests.status.done}">DONE</span>
+									</td>
+									<td class="request-action-cell" th:attr="data-label=#{admin.requests.col.action}">
+										<form th:if="${req.isNew()}"
+											th:action="@{/admin/requests/{requestId}/done(requestId=${req.id})}"
+											method="post" style="display:inline;">
+											<input type="hidden" th:name="${_csrf.parameterName}"
+												th:value="${_csrf.token}">
+											<input type="hidden" name="tab" value="requests">
+											<input type="hidden" name="productCategory"
+												th:value="${activeProductCategory}">
+											<input type="hidden" name="requestPage"
+												th:value="${requestPagination.currentPage}">
+											<button type="submit" class="btn-update"
+												th:text="#{admin.requests.btn.done}">Mark Done</button>
+										</form>
+										<form th:action="@{/admin/requests/{requestId}/delete(requestId=${req.id})}"
+											method="post" style="display:inline;">
+											<input type="hidden" th:name="${_csrf.parameterName}"
+												th:value="${_csrf.token}">
+											<input type="hidden" name="tab" value="requests">
+											<input type="hidden" name="productCategory"
+												th:value="${activeProductCategory}">
+											<input type="hidden" name="requestPage"
+												th:value="${requestPagination.currentPage}">
+											<button type="submit" class="btn-delete"
+												th:text="#{admin.requests.btn.delete}">Delete</button>
+										</form>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="pagination-shell" th:if="${requestPagination.totalPages > 1}">
+						<p class="pagination-summary amount-font"
+							th:text="|${requestPagination.startItem}-${requestPagination.endItem} of ${requestPagination.totalItems}|">
+							1-10 of 10</p>
+						<nav class="pagination-bar" aria-label="Request pagination">
+							<a class="pagination-link"
+								th:classappend="${!requestPagination.hasPrevious()} ? ' is-disabled'"
+								th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.previousPage()})}">‹</a>
+							<a class="pagination-link"
+								th:each="pageNumber : ${#numbers.sequence(1, requestPagination.totalPages)}"
+								th:classappend="${pageNumber == requestPagination.currentPage} ? ' is-active'"
+								th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${pageNumber})}"
+								th:text="${pageNumber}">1</a>
+							<a class="pagination-link" th:classappend="${!requestPagination.hasNext()} ? ' is-disabled'"
+								th:href="@{/admin(tab='requests',lang=${#locale.language},productCategory=${activeProductCategory},productPage=${productPagination.currentPage},orderPage=${orderPagination.currentPage},requestPage=${requestPagination.nextPage()})}">›</a>
+						</nav>
+					</div>
+				</section>
+			</div>
+		</div>
+		<p style="margin-top:20px; text-align:center; color: var(--brand-muted); font-size:0.86rem;"
+			th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>
+
+		<div id="addItemModalBackdrop" class="modal-backdrop" onclick="closeAddItemModal()"></div>
+		<div id="addItemModal" class="modal-box" role="dialog" aria-modal="true">
+			<div class="modal-header">
+				<h3 th:text="#{admin.order.add.modalTitle}">Add Item</h3>
+				<button type="button" class="modal-close-btn" onclick="closeAddItemModal()">&times;</button>
+			</div>
+			<input type="text" id="addItemSearch" class="modal-search-input"
+				th:attr="placeholder=#{admin.order.add.searchPlaceholder}" oninput="renderAddItemList(this.value)"
+				autocomplete="off">
+			<p id="addItemFeedback" class="modal-feedback"></p>
+			<ul id="addItemList" class="modal-product-list"></ul>
+			<p id="addItemEmpty" class="modal-empty-text"
+				th:attr="data-no-match=#{admin.order.add.noMatch}, data-type-to-search=#{admin.order.add.typeToSearch}"
+				th:text="#{admin.order.add.typeToSearch}" style="display:none;">Type to search</p>
+		</div>
+
+		<ul id="productOptionsMaster" hidden>
+			<li th:each="product : ${orderEditableProducts}"
+				th:attr="data-id=${product.id}, data-text=${#messages.msg('admin.order.add.optionFormat', product.name, product.price, product.stock)}">
+			</li>
+		</ul>
+	</div>
 </body>
+
 </html>

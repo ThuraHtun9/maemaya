@@ -1348,3 +1348,154 @@
                 transition: none !important;
             }
         }
+		
+		.modal-backdrop {
+		    display: none;
+		    position: fixed;
+		    inset: 0;
+		    background: rgba(40, 24, 12, 0.45);
+		    z-index: 1000;
+		}
+		.modal-backdrop.open {
+		    display: block;
+		}
+		.modal-box {
+		    display: none;
+		    flex-direction: column;
+		    gap: 10px;
+		    position: fixed;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%);
+		    width: min(92vw, 420px);
+		    max-height: 80vh;
+		    background: #fffdf8;
+		    border: 1px solid var(--brand-line);
+		    border-radius: 14px;
+		    box-shadow: 0 12px 34px rgba(70, 39, 23, 0.25);
+		    z-index: 1001;
+		    padding: 16px;
+		}
+		.modal-box.open {
+		    display: flex;
+		}
+		.modal-header {
+		    display: flex;
+		    align-items: center;
+		    justify-content: space-between;
+		}
+		.modal-header h3 {
+		    margin: 0;
+		    font-size: 1.05rem;
+		    color: var(--brand-primary);
+		}
+		.modal-close-btn {
+		    border: none;
+		    background: none;
+		    font-size: 1.4rem;
+		    line-height: 1;
+		    cursor: pointer;
+		    color: var(--brand-muted);
+		    padding: 0 4px;
+		}
+		.modal-search-input {
+		    width: 100%;
+		    padding: 8px 12px;
+		    border: 1px solid var(--brand-line);
+		    border-radius: 8px;
+		    font-size: 0.9rem;
+		}
+		.modal-product-list {
+		    list-style: none;
+		    margin: 0;
+		    padding: 0;
+		    overflow-y: auto;
+		    max-height: 50vh;
+		    border: 1px solid var(--brand-line);
+		    border-radius: 8px;
+		}
+		.modal-product-item {
+		    padding: 10px 12px;
+		    font-size: 0.88rem;
+		    border-bottom: 1px dashed #e7d8c2;
+		    cursor: pointer;
+		}
+		.modal-product-item:last-child {
+		    border-bottom: none;
+		}
+		.modal-product-item:hover {
+		    background: #fff3e0;
+		}
+		.modal-empty-text {
+		    text-align: center;
+		    color: var(--brand-muted);
+		    font-size: 0.85rem;
+		    margin: 8px 0 0;
+		}
+		.modal-feedback {
+		    display: none;
+		    text-align: center;
+		    font-size: 0.85rem;
+		    font-weight: 600;
+		    margin: 0 0 8px;
+		    padding: 6px 10px;
+		    border-radius: 6px;
+		}
+		.modal-feedback.is-visible {
+		    display: block;
+		}
+		.modal-feedback.is-success {
+		    background: #e6f4ea;
+		    color: #1e7a34;
+		}
+		.modal-feedback.is-error {
+		    background: #fdecea;
+		    color: #b3261e;
+		}
+		body.modal-open {
+		    overflow: hidden;
+		}
+		@media (max-width: 600px) {
+		    .modal-box {
+		        width: 94vw;
+		        max-height: 85vh;
+		    }
+		}
+		
+		/* ===== Phone-only fix: simple stacked label/value layout (no CSS grid) ===== */
+		@media (max-width: 600px) {
+		    .orders-table.stack-table td,
+		    .stack-table:not(.orders-table) td {
+		        display: block;
+		        padding: 10px 12px;
+		        border: none;
+		        border-bottom: 1px dashed #e7d8c2;
+		        font-size: 0.9rem;
+		    }
+		    .orders-table.stack-table td:last-child,
+		    .stack-table:not(.orders-table) td:last-child {
+		        border-bottom: none;
+		    }
+		    .orders-table.stack-table td::before,
+		    .stack-table:not(.orders-table) td::before {
+		        content: attr(data-label);
+		        display: block;
+		        color: #6f533f;
+		        font-size: 0.78rem;
+		        font-weight: 700;
+		        letter-spacing: 0.01em;
+		        line-height: 1.4;
+		        margin-bottom: 6px;
+		    }
+		    .orders-table.stack-table td > *,
+		    .stack-table:not(.orders-table) td > * {
+		        max-width: 100%;
+		        min-width: 0;
+		    }
+		    /* collapse/expand feature ကို block layout အသစ်နဲ့ ဆက်အလုပ်လုပ်အောင် */
+		    .orders-table.stack-table tr.order-row.is-expanded .order-date-cell,
+		    .orders-table.stack-table tr.order-row.is-expanded .address-cell,
+		    .orders-table.stack-table tr.order-row.is-expanded .products-cell {
+		        display: block;
+		    }
+		}

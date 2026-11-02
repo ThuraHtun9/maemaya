@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>document.documentElement.classList.add("js-motion");window.setTimeout(function(){if(document.body){document.body.classList.add("page-ready");}},400);</script>
     <link rel="icon" type="image/jpeg" th:href="@{/images/maemaya.jpg}">
     <title th:text="#{order.manage.title}">Order Management</title>
     <link rel="stylesheet" th:href="@{/css/order_manage.css}">
     <link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
     <script defer th:src="@{/js/smooth-ui.js}"></script>
+    <script defer th:src="@{/js/order_manage.js}"></script>
+    <style>
+        /* This page reloads via a full redirect to a #itemList anchor after
+           +/- or Cancel actions. The site-wide smooth-scroll (smooth-ui.css)
+           would animate that jump (visible scroll-to-top-then-down); an
+           instant jump reads better here, so override it for this page only. */
+        html {
+            scroll-behavior: auto;
+        }
+    </style>
 
 </head>
 <body>
@@ -70,7 +79,8 @@
         </div>
     </div>
 
-    <div th:if="${managedOrder}" class="order-card">
+    <div th:if="${managedOrder}" class="order-card" th:fragment="orderCard"
+         th:attr="data-order-number=${managedOrder.orderNumber},data-phone=${managedOrder.phone},data-customer-name=${customerName}">
         <div class="row">
             <span class="key" th:text="#{order.manage.orderNumber}">Order Number</span>
             <span class="value" th:text="${managedOrder.orderNumber}"></span>
@@ -110,36 +120,37 @@
         </div>
 
         <div class="hint" th:text="${managedOrder.cancelStatusMessage}"></div>
+        <div id="orderCardFeedback" class="manage-feedback"></div>
 
-        <div class="item-list" th:if="${!#lists.isEmpty(managedOrder.items)}">
+        <div class="item-list" id="itemList" th:if="${!#lists.isEmpty(managedOrder.items)}">
             <div class="item-row" th:each="item : ${managedOrder.items}">
-                <span th:text="${item.productName}"></span>
-                <span class="qty" th:text="|x ${item.quantity}|"></span>
-                <div class="item-actions" th:if="${managedOrder.cancelable}">
-                    <form th:action="@{/order/increase-item}" method="post" style="margin:0;">
+                <span class="item-name" th:text="${item.productName}"></span>
+
+                <div class="qty-stepper" th:if="${managedOrder.cancelable}">
+                    <form th:action="@{/order/reduce-item}" method="post" class="qty-reduce-form" style="margin:0;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <input type="hidden" name="orderNumber" th:value="${managedOrder.orderNumber}">
                         <input type="hidden" name="phone" th:value="${managedOrder.phone}">
                         <input type="hidden" name="customerName" th:value="${customerName}">
                         <input type="hidden" name="productId" th:value="${item.productId}">
-                        <button type="submit" class="btn-increase" th:text="#{order.manage.increaseOne}">Add 1</button>
+                        <button type="submit" class="qty-btn qty-btn-minus" aria-label="Decrease quantity">−</button>
                     </form>
-                    <form th:action="@{/order/reduce-item}" method="post" style="margin:0;">
+                    <span class="qty-value" th:text="${item.quantity}"></span>
+                    <form th:action="@{/order/increase-item}" method="post" class="qty-increase-form" style="margin:0;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                         <input type="hidden" name="orderNumber" th:value="${managedOrder.orderNumber}">
                         <input type="hidden" name="phone" th:value="${managedOrder.phone}">
                         <input type="hidden" name="customerName" th:value="${customerName}">
                         <input type="hidden" name="productId" th:value="${item.productId}">
-                        <button type="submit" class="btn-reduce" th:text="#{order.manage.reduceOne}">Remove 1</button>
+                        <button type="submit" class="qty-btn qty-btn-plus" aria-label="Increase quantity">+</button>
                     </form>
                 </div>
-                <span th:unless="${managedOrder.cancelable}" class="qty">-</span>
+                <span th:unless="${managedOrder.cancelable}" class="qty" th:text="|x ${item.quantity}|"></span>
             </div>
         </div>
 
-        <form th:if="${managedOrder.cancelable}" th:action="@{/order/cancel}" method="post"
-              th:attr="data-confirm-message=#{order.manage.cancelConfirm}"
-              onsubmit="return confirm(this.dataset.confirmMessage)">
+        <form th:if="${managedOrder.cancelable}" th:action="@{/order/cancel}" method="post" class="cancel-order-form"
+              th:attr="data-confirm-message=#{order.manage.cancelConfirm}">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <input type="hidden" name="orderNumber" th:value="${managedOrder.orderNumber}">
             <input type="hidden" name="phone" th:value="${managedOrder.phone}">
