@@ -346,6 +346,14 @@
         if (pushState) {
             history.pushState({ shopUrl: url }, "", url);
         }
+
+        // A full fragment replace just tore out whatever #scrollSentinel /
+        // pagination-shell infinite-scroll.js was watching - let it know a
+        // fresh #shopResults exists so it can re-observe (or re-decide
+        // whether infinite scroll even applies, e.g. a single-page category).
+        document.dispatchEvent(new CustomEvent("shop:resultsReplaced", {
+            detail: { url }
+        }));
     }
 
     // Search input: debounce, then fetch results via AJAX instead of a full reload.
@@ -404,6 +412,12 @@
 
     wireCartButtons(document);
     wireCategoryBarFade(document);
+
+    window.MaeMayaShop = Object.assign(window.MaeMayaShop || {}, {
+        wireCartButtons,
+        wireCategoryBarFade,
+        loadShopResults
+    });
 })();
 
 (function () {

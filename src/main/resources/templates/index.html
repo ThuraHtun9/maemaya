@@ -29,6 +29,7 @@
 	<link rel="stylesheet" th:href="@{/css/smooth-ui.css}">
 	<script defer th:src="@{/js/smooth-ui.js}"></script>
 	<script defer th:src="@{/js/shop.js}"></script>
+	<script defer th:src="@{/js/shop-infinite.js}"></script>
 
 </head>
 
@@ -127,7 +128,8 @@
 					th:text="#{nav.backShopping}">Continue Shopping</a>
 			</div>
 			
-			<div id="shopResults" th:fragment="shopResults">
+			<div id="shopResults" th:fragment="shopResults"
+				th:attr="data-active-category=${activeCategory},data-search-query=${searchQuery},data-current-page=${shopPagination.currentPage},data-total-pages=${shopPagination.totalPages},data-has-more=${shopPagination.currentPage lt shopPagination.totalPages}">
 				<div id="searchNoResult" class="flash flash-error"
 					th:if="${!#strings.isEmpty(searchQuery) and #maps.isEmpty(productsByCategory)}"
 					th:text="#{index.search.noResult}">
@@ -143,7 +145,8 @@
 						th:text="${categoryDisplayNames.get(shopCategory) ?: shopCategory}">Category</a>
 				</nav>
 
-				<div class="category-section" th:each="entry : ${productsByCategory}">
+				<div class="category-section" th:each="entry : ${productsByCategory}"
+					th:attr="data-category=${entry.key}">
 					<div class="category-header">
 						<h3 class="category-title" th:text="${categoryDisplayNames.get(entry.key) ?: entry.key}">
 							Category</h3>
@@ -223,6 +226,34 @@
 							›</a>
 					</nav>
 				</div>
+
+				<!-- Progressive-enhancement infinite scroll. The numbered
+					pagination above is the real fallback: shop-infinite.js
+					hides it only once it has successfully taken over, so a
+					browser without JS or IntersectionObserver support (or a
+					script error) still has a fully working, clickable
+					pager. -->
+				<div id="infiniteScrollControls" class="infinite-scroll-controls"
+					th:if="${shopPagination.currentPage lt shopPagination.totalPages}">
+					<div id="scrollSentinel" class="scroll-sentinel" aria-hidden="true"></div>
+					<button type="button" id="loadMoreBtn" class="load-more-btn">
+						<span th:text="#{index.loadMore}">Load more</span>
+					</button>
+				</div>
+				<p id="loadMoreError" class="load-more-error" hidden>
+					<span th:text="#{index.loadMore.error}">Couldn't load more products. Please try again.</span>
+					<button type="button" id="loadMoreRetryBtn" class="load-more-retry-btn"
+						th:text="#{index.loadMore.retry}">Retry</button>
+				</p>
+				<p id="endOfResults" class="end-of-results" hidden th:text="#{index.endOfResults}">
+					You've seen all the products in this category.</p>
+				<!-- Generic placeholder batch for "the next page is loading" -
+					not nested in any one category-section, since the next
+					page's category mix isn't known until it arrives. Sized
+					and positioned like a real product-grid row so it never
+					overlaps or shifts the content already on screen. -->
+				<div id="skeletonBatch" class="product-grid skeleton-batch" hidden aria-hidden="true"></div>
+				<div id="shopLoadingStatus" class="sr-only" aria-live="polite"></div>
 			</div>
 		</section>
 

@@ -593,27 +593,32 @@
             font-weight: 700;
         }
 
-        /* No background fill/border-box of its own anymore - it sits
-           directly on .menu-section's surface instead of reading as a
-           second nested card. A single subtle bottom border is enough
-           to separate it from the category sections below. */
+        /* No border-box/shadow of its own - it sits directly on
+           .menu-section's surface, separated from the category
+           sections below by a single subtle bottom border. Sticky so
+           category navigation (and the scrollspy highlight below) stays
+           reachable while scrolling a long "All" listing; an opaque
+           background is required once it's sticky, since content now
+           scrolls underneath it instead of past it. */
         .shop-category-bar {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: nowrap;
             margin: 14px 0 18px 0;
-            padding: 0 0 12px 0;
+            padding: 10px 0 12px 0;
             border: none;
             border-bottom: 1px solid var(--brand-line);
             border-radius: 0;
-            background: none;
+            background: var(--brand-bg-soft);
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
             scrollbar-color: #d3b282 #f8efe3;
-            position: relative;
+            position: sticky;
+            top: 0;
+            z-index: 20;
         }
 
         /* Hints that more categories are scrollable off the right edge; toggled by JS. */
@@ -798,6 +803,168 @@
             pointer-events: none;
             opacity: 0.45;
             box-shadow: none;
+        }
+
+        /* ---- Infinite scroll: sentinel, manual fallback button, error
+           and end-of-catalog states, skeleton placeholders, scrollspy ---- */
+
+        .scroll-sentinel {
+            height: 1px;
+        }
+
+        .infinite-scroll-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .load-more-btn {
+            min-height: 42px;
+            padding: 10px 22px;
+            border-radius: 999px;
+            border: 1px solid var(--brand-line);
+            background: #fff;
+            color: var(--brand-primary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .load-more-btn:hover {
+            background: #fff6e9;
+            border-color: #cfae86;
+        }
+
+        .load-more-btn:focus-visible {
+            outline: 2px solid var(--brand-accent);
+            outline-offset: 2px;
+        }
+
+        .load-more-error {
+            margin: 18px 0 0 0;
+            text-align: center;
+            color: var(--brand-danger);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .load-more-retry-btn {
+            margin-left: 8px;
+            border: none;
+            background: none;
+            color: var(--brand-primary);
+            font-weight: 800;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .load-more-retry-btn:focus-visible {
+            outline: 2px solid var(--brand-accent);
+            outline-offset: 2px;
+        }
+
+        .end-of-results {
+            margin: 18px 0 0 0;
+            text-align: center;
+            color: var(--brand-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* The numbered pager stays in the DOM and keeps working - this
+           class is only ever added once infinite scroll has actually
+           loaded a batch successfully (see shop-infinite.js), and never
+           removes the markup, so it's one class toggle away from coming
+           back if anything goes wrong. */
+        .pagination-shell.is-superseded {
+            display: none;
+        }
+
+        /* Skeleton placeholder batch - reuses .product-grid so it's
+           sized exactly like a real row and never shifts the page when
+           it appears or disappears. Cards mimic the real card's box
+           model with warm, neutral placeholder blocks, not real content. */
+        .skeleton-batch {
+            margin-top: 14px;
+        }
+
+        .product-card.is-skeleton {
+            pointer-events: none;
+        }
+
+        .product-card.is-skeleton .product-media-wrap {
+            padding: 0;
+        }
+
+        .skeleton-block {
+            background: var(--brand-bg);
+            border-radius: 8px;
+        }
+
+        .skeleton-media {
+            width: 100%;
+            height: 100%;
+            border-radius: 14px;
+        }
+
+        .skeleton-line {
+            height: 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+        }
+
+        .skeleton-line-title {
+            width: 85%;
+        }
+
+        .skeleton-line-price {
+            width: 45%;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .skeleton-block {
+                animation: skeleton-pulse 1.4s ease-in-out infinite;
+            }
+        }
+
+        @keyframes skeleton-pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.55;
+            }
+        }
+
+        /* Fade-in for newly appended product cards. */
+        .product-card.is-entering {
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 220ms ease-out, transform 220ms ease-out;
+        }
+
+        .product-card.is-entering.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .product-card.is-entering {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+
+        /* Scrollspy highlight on the category chip whose section is
+           currently in view while scrolling the "All" listing - separate
+           from .is-active, which still marks the real selected filter. */
+        .shop-category-link.is-in-view:not(.is-active) {
+            border-color: var(--brand-accent);
+            background: #fff6e9;
         }
 
         @media (max-width: 860px) {
