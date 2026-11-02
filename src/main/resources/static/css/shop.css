@@ -685,42 +685,37 @@
             border-color: transparent;
         }
 
-        /* Fixed 2 columns on mobile (always exactly 2, never stretched
-           wide by a sparse row), then auto-fit with a FIXED column
-           width (not minmax(..., 1fr)) from 640px up. The earlier 1fr
-           version let a short row's columns divide the *entire* row
-           width between them, so e.g. a 2-item "Beer" row put one card
-           far left and the other near the far right with a big gap in
-           between. A fixed track width means each column only ever
-           takes the space a card actually needs - a short row just
-           ends early (cards sit together, trailing space is pushed to
-           the end of the row, not spread between the cards), while a
-           full row still naturally continues onto 3-5 columns as width
-           allows. */
+        /* Flexbox, not CSS Grid, and crucially flex-grow:0 on the
+           cards (see .product-card) - this is what actually solves
+           both failure modes we kept hitting with Grid:
+           - A short row (e.g. a 2-item "Beer" category) does NOT
+             stretch its 1-2 cards to share the full row width, because
+             nothing is set to grow; the cards just sit at their normal
+             size, packed together on the left, with any leftover space
+             trailing after the last one - not a big gap between them.
+           - A fully-stocked row doesn't leave an unexplained block of
+             empty space on wide screens either: items wrap onto the
+             next row only once they stop fitting, so a row always
+             holds as many items as actually fit edge-to-edge.
+           Each card's width is a percentage of the row (100% / N minus
+           its share of the gaps), so the column count (2 on mobile,
+           3-5 on larger screens) is exact at every width within a
+           tier, not dependent on guessing a pixel threshold. */
         .product-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            display: flex;
+            flex-wrap: wrap;
             gap: 14px;
-            align-items: start;
-            justify-content: start;
-        }
-
-        @media (min-width: 640px) {
-            .product-grid {
-                grid-template-columns: repeat(auto-fit, 190px);
-            }
+            align-items: stretch;
         }
 
         @media (min-width: 860px) {
             .product-grid {
-                grid-template-columns: repeat(auto-fit, 220px);
                 gap: 16px;
             }
         }
 
         @media (min-width: 1260px) {
             .product-grid {
-                grid-template-columns: repeat(auto-fit, 260px);
                 gap: 18px;
             }
         }
@@ -847,11 +842,33 @@
         .product-card {
             display: flex;
             flex-direction: column;
-            /* The grid cell sets this card's actual width (2 to ~5
-               columns depending on screen size); max-width just keeps
-               a single card from stretching too wide in a sparse row. */
-            width: 100%;
+            /* flex-grow:0 (the default "0 0" below) is the key part -
+               the card never grows past its calculated width to fill
+               leftover row space, which is what caused both the
+               "giant gap between 2 cards" and "dead space on the
+               right" bugs. Width is a percentage of the row (2 per row
+               on mobile, more as the screen widens); max-width is just
+               a safety ceiling. */
+            flex: 0 0 calc((100% - 14px) / 2);
             max-width: 300px;
+        }
+
+        @media (min-width: 640px) {
+            .product-card {
+                flex-basis: calc((100% - 2 * 14px) / 3);
+            }
+        }
+
+        @media (min-width: 860px) {
+            .product-card {
+                flex-basis: calc((100% - 3 * 16px) / 4);
+            }
+        }
+
+        @media (min-width: 1260px) {
+            .product-card {
+                flex-basis: calc((100% - 4 * 18px) / 5);
+            }
         }
 
         .product-media-wrap {
