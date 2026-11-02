@@ -25,9 +25,9 @@
             margin: 0 auto;
             background: var(--brand-surface);
             border: 1px solid var(--brand-line);
-            padding: 30px;
+            padding: 18px 20px;
             border-radius: 10px;
-            box-shadow: 0 10px 24px rgba(70, 39, 23, 0.1);
+            box-shadow: 0 6px 16px rgba(70, 39, 23, 0.08);
         }
         h1 {
             border-bottom: 2px solid var(--brand-line);
@@ -39,7 +39,7 @@
             color: var(--brand-primary);
             margin-bottom: 12px;
         }
-        section { margin-bottom: 40px; }
+        section { margin-bottom: 22px; }
         .admin-collapse {
             border: 1px solid var(--brand-line);
             border-radius: 10px;
@@ -620,20 +620,20 @@
         .admin-overview {
             display: grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 10px;
-            margin: 10px 0 18px 0;
+            gap: 8px;
+            margin: 8px 0 14px 0;
         }
         .kpi-card {
             border: 1px solid var(--brand-line);
-            border-radius: 12px;
+            border-radius: 10px;
             background: linear-gradient(165deg, #fffdf8 0%, #f8ecda 100%);
-            padding: 10px 12px;
-            box-shadow: 0 5px 12px rgba(70, 39, 23, 0.08);
-            min-height: 78px;
+            padding: 9px 12px;
+            box-shadow: 0 3px 8px rgba(70, 39, 23, 0.06);
+            min-height: 66px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
         }
         .kpi-label {
             font-size: 0.75rem;
@@ -654,12 +654,12 @@
             line-height: 1.2;
         }
         .admin-product-portal {
-            margin: 0 0 18px 0;
-            padding: 18px 20px;
+            margin: 0 0 16px 0;
+            padding: 12px 16px;
             border: 1px solid var(--brand-line);
-            border-radius: 16px;
+            border-radius: 12px;
             background: linear-gradient(135deg, #fffaf2 0%, #f6ebd9 48%, #f2e1c6 100%);
-            box-shadow: 0 12px 26px rgba(70, 39, 23, 0.09);
+            box-shadow: 0 6px 14px rgba(70, 39, 23, 0.07);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -712,10 +712,10 @@
         }
         .admin-surface {
             border: 1px solid var(--brand-line);
-            border-radius: 14px;
+            border-radius: 12px;
             background: linear-gradient(180deg, #fffdf9 0%, #fff7ea 100%);
-            padding: 14px;
-            box-shadow: 0 8px 18px rgba(70, 39, 23, 0.08);
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(70, 39, 23, 0.06);
         }
         .admin-section-head {
             display: flex;
@@ -783,10 +783,10 @@
             gap: 8px;
             flex-wrap: nowrap;
             margin: 0 0 12px 0;
-            padding: 10px 12px;
-            border: 1px solid var(--brand-line);
-            border-radius: 12px;
-            background: linear-gradient(180deg, #fffdf8 0%, #fbf2e6 100%);
+            padding: 0 0 10px 0;
+            border: none;
+            border-bottom: 1px solid var(--brand-line);
+            background: none;
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
@@ -802,32 +802,32 @@
             position: sticky;
             left: 0;
             padding-right: 4px;
-            background: linear-gradient(90deg, #fbf2e6 0%, rgba(251, 242, 230, 0.96) 78%, rgba(251, 242, 230, 0) 100%);
+            /* Matches .admin-surface's own background now that the bar
+               itself has no background fill of its own. */
+            background: linear-gradient(90deg, #fffdf9 0%, rgba(255, 253, 249, 0.96) 78%, rgba(255, 253, 249, 0) 100%);
         }
         .category-filter-chip {
             border: 1px solid var(--brand-line);
             background: #fff;
             color: var(--brand-primary);
             border-radius: 999px;
-            padding: 7px 12px;
+            padding: 6px 12px;
             font-size: 0.84rem;
             font-weight: 700;
             cursor: pointer;
             flex: 0 0 auto;
             white-space: nowrap;
             text-decoration: none;
-            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
-            box-shadow: 0 6px 12px rgba(66, 35, 21, 0.06);
+            transition: background-color 0.16s ease, border-color 0.16s ease;
         }
         .category-filter-chip:hover {
             background: #f8efe3;
-            transform: translateY(-1px);
+            border-color: #cfae86;
         }
         .category-filter-chip.is-active {
-            background: linear-gradient(145deg, #6c3d27, #4d2a1a);
+            background: var(--brand-primary);
             color: #fff;
             border-color: transparent;
-            box-shadow: 0 10px 18px rgba(72, 39, 24, 0.18);
         }
         .category-filter-bar::-webkit-scrollbar {
             height: 8px;
@@ -860,9 +860,9 @@
             flex-wrap: wrap;
         }
         .pagination-link {
-            min-width: 40px;
-            min-height: 40px;
-            padding: 9px 13px;
+            min-width: 36px;
+            min-height: 36px;
+            padding: 7px 12px;
             border-radius: 999px;
             border: 1px solid var(--brand-line);
             background: #fff;
@@ -872,19 +872,16 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            box-shadow: 0 8px 14px rgba(66, 35, 21, 0.08);
-            transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+            transition: background-color 0.16s ease, border-color 0.16s ease;
         }
         .pagination-link:hover {
             background: #fbf2e5;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 18px rgba(66, 35, 21, 0.12);
+            border-color: #cfae86;
         }
         .pagination-link.is-active {
             color: #fff;
             border-color: transparent;
-            background: linear-gradient(145deg, #6c3d27, #4d2a1a);
-            box-shadow: 0 12px 20px rgba(72, 39, 24, 0.18);
+            background: var(--brand-primary);
         }
         .pagination-link.is-disabled {
             pointer-events: none;
@@ -1101,10 +1098,23 @@
                 min-width: 0;
                 height: 36px;
             }
+            /* =============================================================
+               Orders / products / categories / requests tables.
+               < 760px: each row becomes a compact card (one field per
+                 line) - this is what keeps a long order readable on a
+                 phone without a wide table squeezed into the screen.
+               >= 760px: a real <table> - every column shows side by
+                 side at once, which is the efficient use of horizontal
+                 space a tablet/desktop admin screen has to spare.
+               (Previously this behavior was duplicated three times,
+               including once with no media-query guard at all, which
+               made every order list render as stacked cards even on
+               desktop - that duplication is removed here.)
+               ============================================================= */
             .stack-table {
                 width: 100%;
                 border-collapse: separate;
-                border-spacing: 0 10px;
+                border-spacing: 0 12px;
             }
             .stack-table thead {
                 display: none;
@@ -1118,17 +1128,12 @@
                 border-radius: 10px;
                 overflow: hidden;
                 background: #fff;
-                box-shadow: 0 4px 10px rgba(70, 39, 23, 0.08);
             }
             .stack-table td {
-                display: grid;
-                grid-template-columns: minmax(92px, 36%) 1fr;
-                gap: 10px;
-                align-items: flex-start;
+                display: block;
                 border: none;
                 border-bottom: 1px dashed #e7d8c2;
-                padding: 10px 12px;
-                text-align: left;
+                padding: 8px 12px;
                 font-size: 0.9rem;
             }
             .stack-table td:last-child {
@@ -1136,10 +1141,11 @@
             }
             .stack-table td::before {
                 content: attr(data-label);
+                display: block;
                 color: var(--brand-muted);
-                font-size: 0.8rem;
+                font-size: 0.76rem;
                 font-weight: 700;
-                line-height: 1.3;
+                margin-bottom: 3px;
             }
             .stack-table td > * {
                 max-width: 100%;
@@ -1159,7 +1165,7 @@
                 display: flex;
                 flex-direction: column;
                 align-items: stretch;
-                gap: 8px;
+                gap: 6px;
             }
             .stack-table .product-action-cell form,
             .stack-table .order-action-cell form,
@@ -1179,7 +1185,7 @@
             .order-item-list li {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 6px;
+                gap: 4px;
             }
             .order-item-main {
                 width: 100%;
@@ -1196,12 +1202,8 @@
                 width: 100%;
             }
             .orders-table.stack-table tr.order-row {
-                border: 1px solid #d9ba8d;
-                border-radius: 12px;
+                border-color: #d9ba8d;
                 background: linear-gradient(180deg, #fffdf8 0%, #fff8ee 100%);
-            }
-            .orders-table.stack-table tr.order-row + tr.order-row {
-                margin-top: 14px;
             }
             .orders-table.stack-table td {
                 background: transparent;
@@ -1211,145 +1213,52 @@
                 letter-spacing: 0.01em;
             }
             .orders-table.stack-table .actions-cell form {
-                margin: 0 0 10px 0 !important;
+                margin: 0 0 8px 0 !important;
             }
             .orders-table.stack-table .actions-cell form:last-of-type {
                 margin-bottom: 0 !important;
             }
-        }
-		.orders-table.stack-table {
-		    width: 100%;
-		    border-collapse: separate;
-		    border-spacing: 0 14px;
-		}
-		.orders-table.stack-table thead {
-		    display: none;
-		}
-		.orders-table.stack-table tbody {
-		    display: block;
-		}
-		.orders-table.stack-table tr.order-row {
-		    display: block;
-		    border: 1px solid #d9ba8d;
-		    border-radius: 12px;
-		    overflow: hidden;
-		    background: linear-gradient(180deg, #fffdf8 0%, #fff8ee 100%);
-		    box-shadow: 0 4px 10px rgba(70, 39, 23, 0.08);
-		}
-		.orders-table.stack-table tr.order-row + tr.order-row {
-		    margin-top: 14px;
-		}
-		.orders-table.stack-table td {
-		    display: grid;
-		    grid-template-columns: minmax(140px, 200px) 1fr;
-		    gap: 14px;
-		    align-items: flex-start;
-		    border: none;
-		    border-bottom: 1px dashed #e7d8c2;
-		    padding: 12px 16px;
-		    text-align: left;
-		    font-size: 0.92rem;
-		    background: transparent;
-		}
-		.orders-table.stack-table td:last-child {
-		    border-bottom: none;
-		}
-		.orders-table.stack-table td::before {
-		    content: attr(data-label);
-		    color: #6f533f;
-		    font-size: 0.82rem;
-		    font-weight: 700;
-		    letter-spacing: 0.01em;
-		    line-height: 1.3;
-		}
-		.orders-table.stack-table td > * {
-		    max-width: 100%;
-		    min-width: 0;
-		}
-		.orders-table.stack-table .actions-cell form {
-		    display: block;
-		    width: 100%;
-		    margin: 0 0 8px 0;
-		}
-		.orders-table.stack-table .actions-cell form:last-of-type {
-		    margin-bottom: 0;
-		}
-		.stack-table:not(.orders-table) {
-		    width: 100%;
-		    border-collapse: separate;
-		    border-spacing: 0 14px;
-		}
-		.stack-table:not(.orders-table) thead {
-		    display: none;
-		}
-		.stack-table:not(.orders-table) tbody {
-		    display: block;
-		}
-		.stack-table:not(.orders-table) tr {
-		    display: block;
-		    border: 1px solid #d9ba8d;
-		    border-radius: 12px;
-		    overflow: hidden;
-		    background: #fffdf8;
-		    box-shadow: 0 4px 10px rgba(70, 39, 23, 0.08);
-		}
-		.stack-table:not(.orders-table) tr + tr {
-		    margin-top: 14px;
-		}
-		.stack-table:not(.orders-table) td {
-		    display: grid;
-		    grid-template-columns: minmax(140px, 200px) 1fr;
-		    gap: 14px;
-		    align-items: flex-start;
-		    border: none;
-		    border-bottom: 1px dashed #e7d8c2;
-		    padding: 12px 16px;
-		    text-align: left;
-		    font-size: 0.92rem;
-		}
-		.stack-table:not(.orders-table) td:last-child {
-		    border-bottom: none;
-		}
-		.stack-table:not(.orders-table) td::before {
-		    content: attr(data-label);
-		    color: #6f533f;
-		    font-size: 0.82rem;
-		    font-weight: 700;
-		    line-height: 1.3;
-		}
-		.stack-table:not(.orders-table) td > * {
-		    max-width: 100%;
-		    min-width: 0;
-		}
-		
-		.orders-table.stack-table tr.order-row .order-date-cell,
-		.orders-table.stack-table tr.order-row .address-cell,
-		.orders-table.stack-table tr.order-row .products-cell {
-		    display: none;
-		}
-		.orders-table.stack-table tr.order-row.is-expanded .order-date-cell,
-		.orders-table.stack-table tr.order-row.is-expanded .address-cell,
-		.orders-table.stack-table tr.order-row.is-expanded .products-cell {
-		    display: grid;
-		}
 
-		/* Toggle button inside the Order No cell */
-		.order-toggle-btn {
-		    display: inline-block;
-		    margin-top: 8px;
-		    padding: 6px 14px;
-		    border: 1px solid #c79a5d;
-		    border-radius: 8px;
-		    background: #fff3e0;
-		    color: #6f3d1a;
-		    font-size: 0.82rem;
-		    font-weight: 700;
-		    cursor: pointer;
-		}
-		.order-toggle-btn:hover {
-		    background: #ffe6c2;
-		}
-		
+            /* Collapse the long fields (date, address, item list) behind
+               "View details" to keep the default card short - mobile
+               only; tablet/desktop show every column of the real table
+               without needing to expand anything. */
+            .orders-table.stack-table tr.order-row .order-date-cell,
+            .orders-table.stack-table tr.order-row .address-cell,
+            .orders-table.stack-table tr.order-row .products-cell {
+                display: none;
+            }
+            .orders-table.stack-table tr.order-row.is-expanded .order-date-cell,
+            .orders-table.stack-table tr.order-row.is-expanded .address-cell,
+            .orders-table.stack-table tr.order-row.is-expanded .products-cell {
+                display: block;
+            }
+
+            .order-toggle-btn {
+                display: inline-block;
+                margin-top: 6px;
+                padding: 5px 12px;
+                border: 1px solid #c79a5d;
+                border-radius: 8px;
+                background: #fff3e0;
+                color: #6f3d1a;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+            }
+            .order-toggle-btn:hover {
+                background: #ffe6c2;
+            }
+        }
+
+        /* Tablet/desktop: a real table, so the "View details" toggle
+           (mobile-only affordance above) has nothing to do here. */
+        @media (min-width: 760px) {
+            .order-toggle-btn {
+                display: none;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .admin-brand.live-3d,
             .admin-brand-logo,
@@ -1462,6 +1371,40 @@
 		    background: #fdecea;
 		    color: #b3261e;
 		}
+		/* Small floating status message for quick inline actions (the
+		   order-item qty stepper) that have no modal/feedback box on
+		   screen already - e.g. "out of stock", shown briefly then
+		   auto-dismissed. */
+		.admin-toast {
+		    position: fixed;
+		    left: 50%;
+		    bottom: 18px;
+		    transform: translate(-50%, 12px);
+		    max-width: calc(100vw - 32px);
+		    padding: 10px 16px;
+		    border-radius: 999px;
+		    font-size: 0.86rem;
+		    font-weight: 700;
+		    box-shadow: 0 10px 22px rgba(70, 39, 23, 0.18);
+		    opacity: 0;
+		    pointer-events: none;
+		    transition: opacity 0.18s ease, transform 0.18s ease;
+		    z-index: 1200;
+		}
+		.admin-toast.is-visible {
+		    opacity: 1;
+		    transform: translate(-50%, 0);
+		}
+		.admin-toast.is-error {
+		    background: #fdecea;
+		    color: #b3261e;
+		    border: 1px solid #f0c5ba;
+		}
+		.admin-toast.is-success {
+		    background: #e6f4ea;
+		    color: #1e7a34;
+		    border: 1px solid #b9e0c4;
+		}
 		body.modal-open {
 		    overflow: hidden;
 		}
@@ -1469,43 +1412,5 @@
 		    .modal-box {
 		        width: 94vw;
 		        max-height: 85vh;
-		    }
-		}
-		
-		/* ===== Phone-only fix: simple stacked label/value layout (no CSS grid) ===== */
-		@media (max-width: 600px) {
-		    .orders-table.stack-table td,
-		    .stack-table:not(.orders-table) td {
-		        display: block;
-		        padding: 10px 12px;
-		        border: none;
-		        border-bottom: 1px dashed #e7d8c2;
-		        font-size: 0.9rem;
-		    }
-		    .orders-table.stack-table td:last-child,
-		    .stack-table:not(.orders-table) td:last-child {
-		        border-bottom: none;
-		    }
-		    .orders-table.stack-table td::before,
-		    .stack-table:not(.orders-table) td::before {
-		        content: attr(data-label);
-		        display: block;
-		        color: #6f533f;
-		        font-size: 0.78rem;
-		        font-weight: 700;
-		        letter-spacing: 0.01em;
-		        line-height: 1.4;
-		        margin-bottom: 6px;
-		    }
-		    .orders-table.stack-table td > *,
-		    .stack-table:not(.orders-table) td > * {
-		        max-width: 100%;
-		        min-width: 0;
-		    }
-		    /* collapse/expand feature ကို block layout အသစ်နဲ့ ဆက်အလုပ်လုပ်အောင် */
-		    .orders-table.stack-table tr.order-row.is-expanded .order-date-cell,
-		    .orders-table.stack-table tr.order-row.is-expanded .address-cell,
-		    .orders-table.stack-table tr.order-row.is-expanded .products-cell {
-		        display: block;
 		    }
 		}

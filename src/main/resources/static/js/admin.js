@@ -64,6 +64,32 @@ function showAddItemFeedback(message, isSuccess) {
     feedbackEl.className = "modal-feedback is-visible " + (isSuccess ? "is-success" : "is-error");
 }
 
+let adminToastTimer = null;
+
+// Small, non-intrusive status message (e.g. "out of stock") for quick
+// inline actions like the order-item qty stepper, where there is no
+// modal/feedback element already on screen to report into.
+function showAdminToast(message, isError) {
+    if (!message) {
+        return;
+    }
+    let toastEl = document.getElementById("adminToast");
+    if (!toastEl) {
+        toastEl = document.createElement("div");
+        toastEl.id = "adminToast";
+        toastEl.className = "admin-toast";
+        document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = message;
+    toastEl.className = "admin-toast is-visible " + (isError ? "is-error" : "is-success");
+    if (adminToastTimer) {
+        clearTimeout(adminToastTimer);
+    }
+    adminToastTimer = window.setTimeout(() => {
+        toastEl.classList.remove("is-visible");
+    }, 3200);
+}
+
 function closeAddItemModal() {
     document.getElementById("addItemModalBackdrop").classList.remove("open");
     document.getElementById("addItemModal").classList.remove("open");
@@ -379,6 +405,15 @@ document.addEventListener("keydown", function(event) {
             const qtyForm = event.target.closest(".order-item-reduce-form, .order-item-increase-form");
             if (qtyForm) {
                 event.preventDefault();
+                const qtyButton = qtyForm.querySelector("button[type=submit]");
+                // Guard against a double-tap firing a second request before the
+                // first one's table refresh has a chance to replace this button.
+                if (qtyButton && qtyButton.disabled) {
+                    return;
+                }
+                if (qtyButton) {
+                    qtyButton.disabled = true;
+                }
                 const formData = new FormData(qtyForm);
                 fetch(qtyForm.action, {
                     method: "POST",
@@ -391,13 +426,20 @@ document.addEventListener("keydown", function(event) {
                         }
                         return response.json();
                     })
-                    .then(() => {
+                    .then((data) => {
+                        if (!data.success) {
+                            showAdminToast(data.message, true);
+                        }
                         // Refresh the table in place (preserves the expanded card,
-                        // see loadAdminResults) instead of a full page reload.
+                        // see loadAdminResults) instead of a full page reload. This
+                        // also re-enables the button via a fresh (non-disabled) one.
                         loadAdminResults(window.location.href, { pushState: false });
                     })
                     .catch(() => {
                         // Network/server hiccup - fall back to the old full-page submit.
+                        if (qtyButton) {
+                            qtyButton.disabled = false;
+                        }
                         if (qtyForm.requestSubmit) {
                             qtyForm.requestSubmit();
                         } else {
