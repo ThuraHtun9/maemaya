@@ -14,20 +14,25 @@
 
         body {
             font-family: "Noto Sans Myanmar", "Padauk", "Pyidaungsu", sans-serif;
-            padding: 20px;
-            background: linear-gradient(160deg, var(--brand-bg) 0%, var(--brand-bg-soft) 45%, #f1e3cf 100%);
+            /* No UA margin / body padding: .admin-container is the single
+               layer that owns the page gutter (previously body margin 8 +
+               body padding + container padding stacked up to 30px on a
+               phone). */
+            margin: 0;
+            padding: 0;
+            background: var(--brand-bg-soft);
             color: var(--brand-text);
         }
-        input, select, textarea, button { font-family: inherit; }
+        /* border-box so width:100% form controls include their padding
+           and border - with content-box they ran 18px past the content
+           edge, which only stayed hidden while the old stacked gutters
+           absorbed it. */
+        input, select, textarea, button { font-family: inherit; box-sizing: border-box; }
         .amount-font { font-family: "Helvetica Neue", Arial, sans-serif; }
         .admin-container {
             max-width: 100%;
             margin: 0 auto;
-            background: var(--brand-surface);
-            border: 1px solid var(--brand-line);
-            padding: 18px 20px;
-            border-radius: 10px;
-            box-shadow: 0 6px 16px rgba(70, 39, 23, 0.08);
+            padding: 24px 28px;
         }
         h1 {
             border-bottom: 2px solid var(--brand-line);
@@ -79,8 +84,11 @@
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        /* Row dividers only, not a bordered grid on every cell - a working
+           desktop table without the heavy spreadsheet look. */
         th, td {
-            border: 1px solid var(--brand-line);
+            border: none;
+            border-bottom: 1px solid var(--brand-line);
             padding: 10px;
             text-align: left;
             vertical-align: middle;
@@ -256,12 +264,7 @@
             font-weight: 700;
             text-decoration: none;
             cursor: pointer;
-            transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
-            box-shadow: 0 5px 10px rgba(66, 35, 21, 0.15);
-        }
-        .top-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(66, 35, 21, 0.2);
+            transition: background-color 0.16s ease;
         }
         .top-btn-ghost {
             color: var(--brand-primary);
@@ -273,10 +276,10 @@
         }
         .top-btn-danger {
             color: #fff;
-            background: linear-gradient(145deg, #7b4b33, #5a3320);
+            background: var(--brand-danger);
         }
         .top-btn-danger:hover {
-            background: linear-gradient(145deg, #8a5639, #6a3f2a);
+            background: #7a3222;
         }
         .logout-btn {
             border: 0;
@@ -320,9 +323,7 @@
             justify-content: space-between;
             gap: 8px;
             padding: 3px 0;
-            border-bottom: 1px dashed #e5d7c4;
         }
-        .order-item-list li:last-child { border-bottom: none; }
         .item-qty {
             display: inline-block;
             min-width: 36px;
@@ -405,10 +406,6 @@
         }
         .orders-table .order-row td {
             vertical-align: top;
-            background: #fffefb;
-        }
-        .orders-table .order-subcard {
-            padding: 0;
         }
         .orders-table .products-cell {
             min-width: 220px;
@@ -438,12 +435,10 @@
             border-radius: 999px;
         }
         .orders-table .order-item-list li {
-            padding: 5px 0;
+            padding: 4px 0;
         }
         .orders-table .order-item-add-form {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed #e7d8c2;
+            margin-top: 8px;
         }
         .orders-table .total-cell {
             font-size: 1.05rem;
@@ -466,10 +461,6 @@
         .orders-table .actions-cell .status-canceled-inline {
             display: inline-block;
             margin-bottom: 8px;
-        }
-        .orders-table .order-row + .order-row td {
-            border-top-width: 2px;
-            border-top-color: #dec49f;
         }
         .order-action-cell form { display: inline-block; margin-right: 6px; }
         .request-action-cell form { display: inline-block; margin-right: 6px; margin-top: 4px; }
@@ -608,7 +599,7 @@
             color: var(--brand-primary);
         }
         .admin-tab-btn.is-active {
-            background: linear-gradient(145deg, #7b4b33, #5a3320);
+            background: var(--brand-primary);
             border-color: transparent;
             color: #fff;
         }
@@ -624,11 +615,9 @@
             margin: 8px 0 14px 0;
         }
         .kpi-card {
-            border: 1px solid var(--brand-line);
-            border-radius: 10px;
-            background: linear-gradient(165deg, #fffdf8 0%, #f8ecda 100%);
+            border-radius: 8px;
+            background: var(--brand-surface);
             padding: 9px 12px;
-            box-shadow: 0 3px 8px rgba(70, 39, 23, 0.06);
             min-height: 66px;
             display: flex;
             flex-direction: column;
@@ -656,10 +645,8 @@
         .admin-product-portal {
             margin: 0 0 16px 0;
             padding: 12px 16px;
-            border: 1px solid var(--brand-line);
-            border-radius: 12px;
-            background: linear-gradient(135deg, #fffaf2 0%, #f6ebd9 48%, #f2e1c6 100%);
-            box-shadow: 0 6px 14px rgba(70, 39, 23, 0.07);
+            border-radius: 10px;
+            background: var(--brand-surface);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -701,21 +688,14 @@
             text-decoration: none;
             color: #fff;
             font-weight: 800;
-            background: linear-gradient(145deg, #6f412a, #4d2b1c);
-            box-shadow: 0 12px 22px rgba(72, 39, 24, 0.18);
-            transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+            background: var(--brand-primary);
+            transition: background-color 0.16s ease;
         }
         .admin-product-portal-action:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.02);
-            box-shadow: 0 14px 24px rgba(72, 39, 24, 0.24);
+            background: var(--brand-primary-hover);
         }
         .admin-surface {
-            border: 1px solid var(--brand-line);
-            border-radius: 12px;
-            background: linear-gradient(180deg, #fffdf9 0%, #fff7ea 100%);
-            padding: 12px;
-            box-shadow: 0 4px 12px rgba(70, 39, 23, 0.06);
+            padding: 0;
         }
         .admin-section-head {
             display: flex;
@@ -746,10 +726,6 @@
             gap: 8px;
             align-items: center;
             margin: 0 0 12px 0;
-            padding: 10px;
-            border: 1px solid var(--brand-line);
-            border-radius: 10px;
-            background: #fffdf8;
         }
         .admin-toolbar .toolbar-input,
         .admin-toolbar .toolbar-select {
@@ -802,9 +778,9 @@
             position: sticky;
             left: 0;
             padding-right: 4px;
-            /* Matches .admin-surface's own background now that the bar
-               itself has no background fill of its own. */
-            background: linear-gradient(90deg, #fffdf9 0%, rgba(255, 253, 249, 0.96) 78%, rgba(255, 253, 249, 0) 100%);
+            /* Fades into the flat page canvas (--brand-bg-soft) now that
+               nothing between here and <body> paints its own background. */
+            background: linear-gradient(90deg, var(--brand-bg-soft) 0%, rgba(251, 244, 233, 0.96) 78%, rgba(251, 244, 233, 0) 100%);
         }
         .category-filter-chip {
             border: 1px solid var(--brand-line);
@@ -948,7 +924,6 @@
                 width: auto;
                 white-space: nowrap;
                 justify-content: center;
-                box-shadow: 0 3px 8px rgba(66, 35, 21, 0.12);
             }
             .top-btn-text {
                 display: none;
@@ -958,8 +933,7 @@
             }
         }
         @media (max-width: 900px) {
-            body { padding: 8px; }
-            .admin-container { padding: 14px; }
+            .admin-container { padding: 12px 14px; }
             h1 { font-size: 1.55rem; line-height: 1.25; }
             h2 { font-size: 1.15rem; line-height: 1.3; }
             .admin-overview {
@@ -1027,7 +1001,6 @@
                 width: auto;
                 white-space: nowrap;
                 justify-content: center;
-                box-shadow: 0 3px 8px rgba(66, 35, 21, 0.12);
             }
             .top-btn-text {
                 display: none;
@@ -1099,22 +1072,17 @@
                 height: 36px;
             }
             /* =============================================================
-               Orders / products / categories / requests tables.
-               < 760px: each row becomes a compact card (one field per
-                 line) - this is what keeps a long order readable on a
+               Orders / requests tables (and anything else using
+               .stack-table).
+               <= 900px: each row becomes a compact, flat section (one
+                 field per line, no card box around it) - readable on a
                  phone without a wide table squeezed into the screen.
-               >= 760px: a real <table> - every column shows side by
-                 side at once, which is the efficient use of horizontal
-                 space a tablet/desktop admin screen has to spare.
-               (Previously this behavior was duplicated three times,
-               including once with no media-query guard at all, which
-               made every order list render as stacked cards even on
-               desktop - that duplication is removed here.)
+               > 900px: a real <table> - every column shows side by side
+                 at once, the efficient use of space a tablet/desktop
+                 admin screen has to spare.
                ============================================================= */
             .stack-table {
                 width: 100%;
-                border-collapse: separate;
-                border-spacing: 0 12px;
             }
             .stack-table thead {
                 display: none;
@@ -1122,22 +1090,32 @@
             .stack-table tbody {
                 display: block;
             }
+            /* No per-row card (border/radius/background) - rows sit
+               directly on the flat page canvas, separated by one subtle
+               divider + consistent spacing instead of a boxed container
+               each. */
             .stack-table tr {
                 display: block;
-                border: 1px solid var(--brand-line);
-                border-radius: 10px;
-                overflow: hidden;
-                background: #fff;
+                border: none;
+                border-bottom: 1px solid var(--brand-line);
+                padding-bottom: 12px;
+                margin-bottom: 12px;
             }
+            .stack-table tr:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-bottom: 0;
+            }
+            /* No per-field divider or horizontal inset here - that was
+               the "bordered after every field" look, and the extra 12px
+               side padding was one more accumulated layer on top of the
+               page's own gutter. Fields are told apart by the data-label
+               above each one plus the row-level divider added above. */
             .stack-table td {
                 display: block;
                 border: none;
-                border-bottom: 1px dashed #e7d8c2;
-                padding: 8px 12px;
+                padding: 6px 0;
                 font-size: 0.9rem;
-            }
-            .stack-table td:last-child {
-                border-bottom: none;
             }
             .stack-table td::before {
                 content: attr(data-label);
@@ -1190,25 +1168,26 @@
                 width: 100%;
             }
 
-            /* Mobile order card: the <tr> becomes the card (one grid
-               container), its <td>s become grid items repositioned into
-               the compact reading order below - order number + status
-               share the header row, everything else stacks full-width
-               with a hairline divider only at the start of a new
-               information group (not after every field). No markup is
-               duplicated here - the existing <td>s are only repositioned
-               and relabeled via CSS. */
+            /* Mobile order section: the <tr> is a grid container (no
+               box of its own - see .stack-table tr above), its <td>s
+               become grid items repositioned into the compact reading
+               order below - order number + status share the header row,
+               everything else stacks full-width with a hairline divider
+               only at the start of a new information group (not after
+               every field). No markup is duplicated here - the existing
+               <td>s are only repositioned and relabeled via CSS. */
             .orders-table.stack-table tr.order-row {
                 display: grid;
                 grid-template-columns: 1fr auto;
                 column-gap: 10px;
-                padding: 12px;
-                border-color: #d9ba8d;
-                background: linear-gradient(180deg, #fffdf8 0%, #fff8ee 100%);
-                margin-bottom: 12px;
             }
-            .orders-table.stack-table tr.order-row:last-child {
-                margin-bottom: 0;
+            /* The quick-filter toolbar hides rows via the [hidden]
+               attribute; the display:grid / display:block above out-rank
+               the browser's own [hidden] rule, so restate it here or
+               filtered-out orders stay on screen on a phone. */
+            .stack-table tr[hidden],
+            .orders-table.stack-table tr.order-row[hidden] {
+                display: none;
             }
             .orders-table.stack-table td {
                 background: transparent;
@@ -1245,41 +1224,53 @@
                 justify-self: end;
                 align-self: center;
             }
+            /* Information groups are separated by spacing alone - the
+               only line in the flow is the one between two orders
+               (.stack-table tr border-bottom above), so it reads as an
+               order boundary rather than one more internal rule. */
             .orders-table.stack-table tr.order-row > td.customer-cell {
                 order: 2;
                 margin-top: 10px;
-                padding-top: 8px;
-                border-top: 1px solid var(--brand-line);
             }
             .orders-table.stack-table tr.order-row > td.order-date-cell {
                 order: 3;
-                margin-top: 8px;
+                margin-top: 6px;
             }
             .orders-table.stack-table tr.order-row > td.address-cell {
                 order: 4;
-                margin-top: 8px;
+                margin-top: 6px;
             }
             .orders-table.stack-table tr.order-row > td.products-cell {
                 order: 5;
-                margin-top: 10px;
-                padding-top: 8px;
-                border-top: 1px solid var(--brand-line);
+                margin-top: 12px;
             }
             .orders-table.stack-table tr.order-row > td.total-cell {
                 order: 6;
-                margin-top: 10px;
-                padding-top: 8px;
-                border-top: 1px solid var(--brand-line);
+                margin-top: 12px;
             }
             .orders-table.stack-table tr.order-row > td.delivery-cell {
                 order: 7;
-                margin-top: 8px;
+                margin-top: 4px;
             }
             .orders-table.stack-table tr.order-row > td.actions-cell {
                 order: 8;
-                margin-top: 10px;
-                padding-top: 8px;
-                border-top: 1px solid var(--brand-line);
+                margin-top: 12px;
+            }
+            /* Full product list stays in the page flow on a phone (no
+               inner 260px scroll box); desktop keeps the cap so one long
+               order doesn't stretch a table row. */
+            .orders-table.stack-table .order-products-panel {
+                max-height: none;
+                overflow: visible;
+            }
+            /* Larger -/+ hit area on touch screens, still one compact row. */
+            .orders-table.stack-table .qty-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+            }
+            .orders-table.stack-table .qty-stepper {
+                gap: 8px;
             }
             .orders-table.stack-table .actions-cell form {
                 margin: 0 0 8px 0 !important;

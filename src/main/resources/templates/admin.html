@@ -325,10 +325,8 @@
 									<td class="amount-font total-cell" th:text="|¥${order.totalPrice}|"
 										th:attr="data-label=#{admin.col.total}"></td>
 									<td class="delivery-cell" th:attr="data-label=#{admin.col.delivery}">
-										<div class="order-subcard">
-											<span class="badge badge-blue" th:text="${order.deliveryDate}"></span><br>
-											<span style="font-weight: bold;" th:text="${order.deliveryTime}"></span>
-										</div>
+										<span class="badge badge-blue" th:text="${order.deliveryDate}"></span><br>
+										<span style="font-weight: bold;" th:text="${order.deliveryTime}"></span>
 									</td>
 									<td class="order-action-cell actions-cell"
 										th:attr="data-label=#{admin.col.orderAction}">
