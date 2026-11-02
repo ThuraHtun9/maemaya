@@ -1218,6 +1218,16 @@
                 padding: 0;
                 border: none;
                 font-size: 0.9rem;
+                /* The body font ("Noto Sans Myanmar") reserves tall
+                   vertical metrics for stacked Burmese diacritics, so a
+                   browser's default line-height (normal) renders every
+                   line of card text noticeably taller than its font-size
+                   implies - on multi-line fields (customer, address) that
+                   inflates the visible gap between lines far past the
+                   2-4px/8-12px this file actually sets. Pin a compact
+                   line-height here so the real gap values below are the
+                   gap you see. */
+                line-height: 1.3;
             }
             .orders-table.stack-table tr.order-row > td::before {
                 content: none;
@@ -1238,7 +1248,7 @@
             .orders-table.stack-table tr.order-row > td.customer-cell {
                 order: 2;
                 margin-top: 10px;
-                padding-top: 10px;
+                padding-top: 8px;
                 border-top: 1px solid var(--brand-line);
             }
             .orders-table.stack-table tr.order-row > td.order-date-cell {
@@ -1252,13 +1262,13 @@
             .orders-table.stack-table tr.order-row > td.products-cell {
                 order: 5;
                 margin-top: 10px;
-                padding-top: 10px;
+                padding-top: 8px;
                 border-top: 1px solid var(--brand-line);
             }
             .orders-table.stack-table tr.order-row > td.total-cell {
                 order: 6;
                 margin-top: 10px;
-                padding-top: 10px;
+                padding-top: 8px;
                 border-top: 1px solid var(--brand-line);
             }
             .orders-table.stack-table tr.order-row > td.delivery-cell {
@@ -1268,7 +1278,7 @@
             .orders-table.stack-table tr.order-row > td.actions-cell {
                 order: 8;
                 margin-top: 10px;
-                padding-top: 10px;
+                padding-top: 8px;
                 border-top: 1px solid var(--brand-line);
             }
             .orders-table.stack-table .actions-cell form {
@@ -1299,6 +1309,9 @@
                 flex-direction: column;
                 gap: 3px;
                 min-width: 0;
+            }
+            .address-text {
+                line-height: 1.45;
             }
             .cell-subtext {
                 font-size: 0.82em;
