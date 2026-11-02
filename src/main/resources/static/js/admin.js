@@ -376,18 +376,18 @@ document.addEventListener("keydown", function(event) {
                 return;
             }
 
-            const reduceForm = event.target.closest(".order-item-reduce-form");
-            if (reduceForm) {
+            const qtyForm = event.target.closest(".order-item-reduce-form, .order-item-increase-form");
+            if (qtyForm) {
                 event.preventDefault();
-                const formData = new FormData(reduceForm);
-                fetch(reduceForm.action, {
+                const formData = new FormData(qtyForm);
+                fetch(qtyForm.action, {
                     method: "POST",
                     headers: { "X-Requested-With": "XMLHttpRequest" },
                     body: formData
                 })
                     .then((response) => {
                         if (!response.ok) {
-                            throw new Error("reduce-item request failed");
+                            throw new Error("order item qty request failed");
                         }
                         return response.json();
                     })
@@ -398,10 +398,10 @@ document.addEventListener("keydown", function(event) {
                     })
                     .catch(() => {
                         // Network/server hiccup - fall back to the old full-page submit.
-                        if (reduceForm.requestSubmit) {
-                            reduceForm.requestSubmit();
+                        if (qtyForm.requestSubmit) {
+                            qtyForm.requestSubmit();
                         } else {
-                            reduceForm.submit();
+                            qtyForm.submit();
                         }
                     });
             }

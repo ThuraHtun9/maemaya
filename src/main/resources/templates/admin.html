@@ -254,24 +254,40 @@
 												<li th:each="item : ${order.items}">
 													<span class="order-item-main" th:text="${item.name}"></span>
 													<span class="item-qty-actions">
-														<span class="item-qty" th:text="|x${item.quantity}|"></span>
-														<form class="order-item-reduce-form"
-															th:if="${order.orderStatus == 'ACTIVE' and item.productId != null}"
-															th:action="@{/admin/orders/{orderNumber}/items/reduce(orderNumber=${order.orderNumber})}"
-															method="post">
-															<input type="hidden" th:name="${_csrf.parameterName}"
-																th:value="${_csrf.token}">
-															<input type="hidden" name="tab" value="orders">
-															<input type="hidden" name="productCategory"
-																th:value="${activeProductCategory}">
-															<input type="hidden" name="orderPage"
-																th:value="${orderPagination.currentPage}">
-															<input type="hidden" name="phone" th:value="${order.phone}">
-															<input type="hidden" name="productId"
-																th:value="${item.productId}">
-															<button type="submit" class="btn-update btn-small"
-																th:text="#{admin.order.btn.reduceOne}">-1</button>
-														</form>
+														<div class="qty-stepper" th:if="${order.orderStatus == 'ACTIVE' and item.productId != null}">
+															<form class="order-item-reduce-form"
+																th:action="@{/admin/orders/{orderNumber}/items/reduce(orderNumber=${order.orderNumber})}"
+																method="post">
+																<input type="hidden" th:name="${_csrf.parameterName}"
+																	th:value="${_csrf.token}">
+																<input type="hidden" name="tab" value="orders">
+																<input type="hidden" name="productCategory"
+																	th:value="${activeProductCategory}">
+																<input type="hidden" name="orderPage"
+																	th:value="${orderPagination.currentPage}">
+																<input type="hidden" name="phone" th:value="${order.phone}">
+																<input type="hidden" name="productId"
+																	th:value="${item.productId}">
+																<button type="submit" class="qty-btn qty-btn-minus" aria-label="-">−</button>
+															</form>
+															<span class="qty-value" th:text="${item.quantity}"></span>
+															<form class="order-item-increase-form"
+																th:action="@{/admin/orders/{orderNumber}/items/add(orderNumber=${order.orderNumber})}"
+																method="post">
+																<input type="hidden" th:name="${_csrf.parameterName}"
+																	th:value="${_csrf.token}">
+																<input type="hidden" name="tab" value="orders">
+																<input type="hidden" name="productCategory"
+																	th:value="${activeProductCategory}">
+																<input type="hidden" name="orderPage"
+																	th:value="${orderPagination.currentPage}">
+																<input type="hidden" name="phone" th:value="${order.phone}">
+																<input type="hidden" name="productId"
+																	th:value="${item.productId}">
+																<button type="submit" class="qty-btn qty-btn-plus" aria-label="+">+</button>
+															</form>
+														</div>
+														<span th:unless="${order.orderStatus == 'ACTIVE' and item.productId != null}" class="item-qty" th:text="|x${item.quantity}|"></span>
 													</span>
 												</li>
 											</ul>
