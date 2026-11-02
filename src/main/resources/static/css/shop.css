@@ -975,6 +975,261 @@
             background: #fff6e9;
         }
 
+        /* ---- Search from the sticky category bar (#barSearch) ---- */
+        .bar-search-toggle {
+            display: none; /* shown only when JS runs - see html.js-bar-search */
+        }
+
+        html.js-bar-search .bar-search-toggle {
+            /* First item of the sticky category bar; sticky inside the bar's
+               own horizontal scroll so it stays put while chips scroll
+               under it. The bar-colored spread on the right lets chips fade
+               out under it instead of cutting off at a hard edge. */
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid var(--brand-line);
+            background: #fff;
+            color: var(--brand-primary);
+            cursor: pointer;
+            box-shadow: 10px 0 8px -2px var(--brand-bg-soft);
+        }
+
+        html.js-bar-search .bar-search-toggle:hover {
+            background: #fff6e9;
+            border-color: #cfae86;
+        }
+
+        .bar-search-toggle:focus-visible,
+        .bar-search-close:focus-visible {
+            outline: 2px solid var(--brand-primary);
+            outline-offset: -2px;
+        }
+
+        .bar-search[hidden] {
+            display: none;
+        }
+
+        .bar-search {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 40;
+            padding-top: env(safe-area-inset-top);
+            background: var(--brand-bg-soft);
+            border-bottom: 1px solid var(--brand-line);
+        }
+
+        .bar-search.is-open {
+            animation: bar-search-in 0.16s ease-out;
+        }
+
+        @keyframes bar-search-in {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bar-search-inner {
+            position: relative;
+            width: min(1440px, 94vw);
+            margin: 0 auto;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bar-search-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--brand-muted);
+            pointer-events: none;
+        }
+
+        .bar-search-input {
+            flex: 1 1 auto;
+            min-width: 0;
+            height: 42px;
+            padding: 0 14px 0 40px;
+            border: 1px solid var(--brand-line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--brand-text);
+            /* 16px or more: iOS Safari zooms the page into smaller inputs on focus. */
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .bar-search-input:focus {
+            outline: 0;
+            border-color: #c58e4e;
+            box-shadow: 0 0 0 3px rgba(197, 142, 78, 0.16);
+        }
+
+        /* The close button already clears; no second, native clear "x". */
+        .bar-search-input::-webkit-search-cancel-button {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .bar-search-close {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--brand-primary);
+            cursor: pointer;
+        }
+
+        .bar-search-close:hover {
+            background: #f4eadb;
+        }
+
+        @media (max-width: 860px) {
+            html.js-bar-search .bar-search-toggle {
+                width: 34px;
+                height: 34px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bar-search.is-open {
+                animation: none;
+            }
+        }
+
+        /* smooth-ui.css leaves body at transform: translate3d(0,0,0) after
+           its page-enter fade. Any transform on an ancestor turns
+           position: fixed into "fixed to the page", which pinned the
+           floating cart to the bottom of the whole document instead of the
+           screen. The settled state needs no transform, so clear it here
+           (storefront only - smooth-ui.css is shared with other pages);
+           the enter animation still runs, from 6px down to none. */
+        html.js-motion body.page-ready:not(.page-leaving) {
+            transform: none;
+        }
+
+        /* ---- Floating cart (see #floatingCart in index.html and the
+           floating-cart block in shop.js). Same colors as the header
+           cart; the one place a small shadow is kept, since it floats
+           over product photos and needs to read as a separate layer. ---- */
+        .floating-cart {
+            position: fixed;
+            right: max(16px, env(safe-area-inset-right));
+            bottom: calc(16px + env(safe-area-inset-bottom));
+            z-index: 30;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--brand-cta);
+            color: #fff;
+            text-decoration: none;
+            box-shadow: 0 6px 16px rgba(43, 24, 15, 0.24);
+            /* Hidden state: visibility (not display) so it can fade, and so
+               it also leaves the tab order / accessibility tree while hidden. */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+            transition: opacity 0.18s ease-out, transform 0.18s ease-out, visibility 0s linear 0.18s;
+        }
+
+        .floating-cart.is-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            transition: opacity 0.18s ease-out, transform 0.18s ease-out, visibility 0s;
+        }
+
+        .floating-cart:hover {
+            background: #2f1d13;
+        }
+
+        .floating-cart:focus-visible {
+            outline: 3px solid var(--brand-accent);
+            outline-offset: 3px;
+        }
+
+        .floating-cart-icon {
+            display: inline-flex;
+            line-height: 0;
+        }
+
+        .floating-cart-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: var(--brand-accent);
+            color: #2b180f;
+            border: 2px solid var(--brand-bg-soft);
+            font-size: 0.72rem;
+            font-weight: 800;
+            line-height: 18px;
+            text-align: center;
+        }
+
+        .floating-cart-badge.is-bumping {
+            animation: floating-cart-bump 0.45s ease-out;
+        }
+
+        @keyframes floating-cart-bump {
+            0% {
+                transform: scale(1);
+            }
+            40% {
+                transform: scale(1.25);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @media (min-width: 860px) {
+            .floating-cart {
+                right: max(24px, env(safe-area-inset-right));
+                bottom: calc(24px + env(safe-area-inset-bottom));
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .floating-cart,
+            .floating-cart.is-visible {
+                transform: none;
+                transition: none;
+            }
+
+            .floating-cart-badge.is-bumping {
+                animation: none;
+            }
+        }
+
         @media (max-width: 860px) {
             .shop-category-bar {
                 padding: 0 0 8px 0;

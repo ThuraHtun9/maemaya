@@ -132,6 +132,35 @@
 					th:text="#{nav.backShopping}">Continue Shopping</a>
 			</div>
 			
+			<!-- Search box opened from the category bar's search button. Lives
+				outside #shopResults so it is never replaced (and never loses
+				focus) while results update underneath it. Pinned to the top of
+				the screen while open; shop.js runs the same AJAX search as the
+				header box and keeps both in sync. -->
+			<form id="barSearch" class="bar-search" th:action="@{/}" method="get" role="search" hidden
+				data-no-page-transition>
+				<div class="bar-search-inner">
+					<label class="sr-only" for="barSearchInput" th:text="#{index.search.placeholder}">Search
+						products</label>
+					<svg class="bar-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+						stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"
+						aria-hidden="true">
+						<circle cx="11" cy="11" r="6.5"></circle>
+						<line x1="16" y1="16" x2="20.5" y2="20.5"></line>
+					</svg>
+					<input id="barSearchInput" class="bar-search-input" type="search" name="q" autocomplete="off"
+						enterkeyhint="search" th:placeholder="#{index.search.placeholder}">
+					<button type="button" class="bar-search-close" th:aria-label="#{index.search.close}"
+						th:title="#{index.search.close}">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+							<line x1="6" y1="6" x2="18" y2="18"></line>
+							<line x1="18" y1="6" x2="6" y2="18"></line>
+						</svg>
+					</button>
+				</div>
+			</form>
+
 			<div id="shopResults" th:fragment="shopResults"
 				th:attr="data-active-category=${activeCategory},data-search-query=${searchQuery},data-current-page=${shopPagination.currentPage},data-total-pages=${shopPagination.totalPages},data-has-more=${shopPagination.currentPage lt shopPagination.totalPages}">
 				<div id="searchNoResult" class="flash flash-error"
@@ -141,6 +170,17 @@
 				</div>
 
 				<nav th:unless="${isOutOfStockView}" class="shop-category-bar" aria-label="Shop categories">
+					<!-- Search shortcut that stays reachable in the sticky bar while
+						scrolling; opens #barSearch (outside this fragment). Shown only
+						when JS is running (html.js-bar-search, set by shop.js). -->
+					<button type="button" class="bar-search-toggle" aria-controls="barSearch" aria-expanded="false"
+						th:aria-label="#{index.search.open}" th:title="#{index.search.open}">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="11" cy="11" r="6.5"></circle>
+							<line x1="16" y1="16" x2="20.5" y2="20.5"></line>
+						</svg>
+					</button>
 					<a class="shop-category-link" th:classappend="${activeCategory == 'all'} ? ' is-active'"
 						th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>
 					<a class="shop-category-link" th:each="shopCategory : ${shopCategories}"
@@ -435,6 +475,25 @@
 				</div>
 			</div>
 		</section>
+
+		<!-- Floating cart: shortcut to the cart once the header's cart button
+			has scrolled out of view, so a customer deep in the product list
+			doesn't have to scroll back to the top. Starts hidden (no-JS keeps
+			just the header cart); shop.js shows it when scrolling stops or
+			reverses upward, hides it while scrolling down, and only while the
+			cart has items. -->
+		<a th:href="@{/cart}" id="floatingCart" class="floating-cart" hidden
+			th:attr="data-count=${cartCount}">
+			<span class="sr-only" th:text="#{nav.cart}">Cart</span>
+			<span class="floating-cart-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24"
+					fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+					stroke-linejoin="round">
+					<path d="M3 4h2l2.2 11.4a2.2 2.2 0 0 0 2.2 1.8h7.6a2.2 2.2 0 0 0 2.2-1.8L20.5 8H6"></path>
+					<circle cx="10" cy="20" r="1.3" fill="currentColor" stroke="none"></circle>
+					<circle cx="17" cy="20" r="1.3" fill="currentColor" stroke="none"></circle>
+				</svg></span>
+			<span class="floating-cart-badge amount-font" th:text="${cartCount}">0</span>
+		</a>
 
 		<footer>
 			<p th:text="|© ${#dates.format(#dates.createNow(), 'yyyy')} မေ့မရ|">&copy; 2026 မေ့မရ</p>

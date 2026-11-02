@@ -81,7 +81,15 @@
     };
 
     const setCartCount = (count) => {
-        if (!cartButton || !Number.isFinite(count)) {
+        if (!Number.isFinite(count)) {
+            return;
+        }
+        // The floating cart (separate block below) keeps its own badge in
+        // step through this event.
+        document.dispatchEvent(new CustomEvent("shop:cartCountChanged", {
+            detail: { count }
+        }));
+        if (!cartButton) {
             return;
         }
         let badge = cartButton.querySelector(".cart-badge");
@@ -310,6 +318,14 @@
                     categoryInput.value = category;
                 }
             }
+            // Search boxes show the query of the results on screen (matters
+            // for back/forward) - but never overwrite a box being typed in,
+            // where a slower earlier response would eat newer keystrokes.
+            [searchInput, document.getElementById("barSearchInput")].forEach((input) => {
+                if (input && document.activeElement !== input) {
+                    input.value = query;
+                }
+            });
             const langForm = document.querySelector(".lang-form");
             if (langForm) {
                 const setField = (name, value) => {
@@ -438,6 +454,104 @@
             event.preventDefault();
             runSearch();
         });
+
+        // ---- Search opened from the sticky category bar ----
+        // The bar's search button opens #barSearch pinned to the top of the
+        // screen, so searching doesn't require scrolling back up to the
+        // header. It drives the header box (same debounce, same AJAX search,
+        // same history entry), so the two always agree.
+        const barSearch = document.getElementById("barSearch");
+        const barInput = document.getElementById("barSearchInput");
+        if (barSearch && barInput) {
+            document.documentElement.classList.add("js-bar-search");
+
+            const isBarOpen = () => !barSearch.hidden;
+            const setToggleExpanded = () => {
+                document.querySelectorAll(".bar-search-toggle").forEach((toggle) => {
+                    toggle.setAttribute("aria-expanded", isBarOpen() ? "true" : "false");
+                });
+            };
+            const focusToggle = () => {
+                const toggle = document.querySelector(".bar-search-toggle");
+                if (toggle) {
+                    toggle.focus({ preventScroll: true });
+                }
+            };
+
+            const openBar = () => {
+                if (!isBarOpen()) {
+                    barInput.value = searchInput.value;
+                    barSearch.hidden = false;
+                    barSearch.classList.add("is-open");
+                    setToggleExpanded();
+                }
+                // Focus in the same tap so the phone keyboard opens right away.
+                barInput.focus({ preventScroll: true });
+                const end = barInput.value.length;
+                barInput.setSelectionRange(end, end);
+            };
+
+            // Closing also clears an active search and returns to the full
+            // list (the category chips come back into view).
+            const closeBar = () => {
+                if (!isBarOpen()) {
+                    return;
+                }
+                const hadQuery = searchInput.value.trim() !== "";
+                barSearch.classList.remove("is-open");
+                barSearch.hidden = true;
+                setToggleExpanded();
+                barInput.value = "";
+                if (hadQuery) {
+                    searchInput.value = "";
+                    runSearch();
+                } else if (debounceTimer) {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = null;
+                }
+                focusToggle();
+            };
+
+            // Delegated: the toggle lives in #shopResults and is replaced on
+            // every results update.
+            document.addEventListener("click", (event) => {
+                if (event.target.closest(".bar-search-toggle")) {
+                    event.preventDefault();
+                    openBar();
+                }
+            });
+
+            barInput.addEventListener("input", () => {
+                searchInput.value = barInput.value;
+                if (debounceTimer) {
+                    clearTimeout(debounceTimer);
+                }
+                debounceTimer = setTimeout(runSearch, DEBOUNCE_DELAY);
+            });
+
+            searchInput.addEventListener("input", () => {
+                if (isBarOpen()) {
+                    barInput.value = searchInput.value;
+                }
+            });
+
+            barSearch.addEventListener("submit", (event) => {
+                event.preventDefault();
+                searchInput.value = barInput.value;
+                runSearch();
+                barInput.blur(); // close the phone keyboard so results are visible
+            });
+
+            barSearch.querySelector(".bar-search-close").addEventListener("click", closeBar);
+            barSearch.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeBar();
+                }
+            });
+
+            document.addEventListener("shop:resultsReplaced", setToggleExpanded);
+        }
     }
 
     // Category / pagination links: intercept clicks via delegation so the
@@ -471,6 +585,113 @@
         wireCategoryBarFade,
         loadShopResults
     });
+})();
+
+// ---- Floating cart ----
+// Shown once the header's cart button has scrolled out of view and the cart
+// has items: hidden while scrolling down (browsing), shown again when
+// scrolling stops or reverses upward, and briefly shown with a badge bump
+// whenever an item is added.
+(function () {
+    const floating = document.getElementById("floatingCart");
+    if (!floating) {
+        return;
+    }
+    const headerCart = document.querySelector(".site-header .cart-btn");
+    const badge = floating.querySelector(".floating-cart-badge");
+    const SCROLL_DELTA_PX = 8;      // ignore tiny jitter / small adjustments
+    const IDLE_SHOW_MS = 250;       // "scrolling stopped" after this long
+    const BUMP_MS = 450;
+
+    let count = Number(floating.dataset.count || "0");
+    let headerInView = !!headerCart;
+    let wantVisible = false;
+    let lastY = window.scrollY;
+    let idleTimer = null;
+    let frame = 0;
+
+    const render = () => {
+        const visible = wantVisible && !headerInView && count > 0;
+        floating.classList.toggle("is-visible", visible);
+    };
+    const show = () => {
+        wantVisible = true;
+        render();
+    };
+    const hide = () => {
+        if (document.activeElement === floating) {
+            return; // never yank it away from a keyboard user who is on it
+        }
+        wantVisible = false;
+        render();
+    };
+
+    // JS is running, so the CSS hidden/visible states take over from the
+    // markup's no-JS `hidden` attribute.
+    floating.hidden = false;
+
+    if (headerCart && "IntersectionObserver" in window) {
+        new IntersectionObserver((entries) => {
+            headerInView = entries[entries.length - 1].isIntersecting;
+            render();
+        }).observe(headerCart);
+    } else {
+        headerInView = false;
+    }
+
+    const onScrollFrame = () => {
+        frame = 0;
+        const y = window.scrollY;
+        const delta = y - lastY;
+        if (Math.abs(delta) >= SCROLL_DELTA_PX) {
+            if (delta > 0) {
+                hide();
+            } else {
+                show();
+            }
+            lastY = y;
+        }
+    };
+
+    window.addEventListener("scroll", () => {
+        if (!frame) {
+            frame = window.requestAnimationFrame(onScrollFrame);
+        }
+        if (idleTimer) {
+            window.clearTimeout(idleTimer);
+        }
+        idleTimer = window.setTimeout(() => {
+            idleTimer = null;
+            lastY = window.scrollY;
+            show();
+        }, IDLE_SHOW_MS);
+    }, { passive: true });
+
+    document.addEventListener("shop:cartCountChanged", (event) => {
+        const next = Number(event.detail && event.detail.count);
+        if (!Number.isFinite(next)) {
+            return;
+        }
+        const added = next > count;
+        count = next;
+        floating.dataset.count = String(count);
+        if (badge) {
+            badge.textContent = String(count);
+        }
+        if (added) {
+            show();
+            if (badge) {
+                badge.classList.remove("is-bumping");
+                void badge.offsetWidth; // restart the animation
+                badge.classList.add("is-bumping");
+                window.setTimeout(() => badge.classList.remove("is-bumping"), BUMP_MS);
+            }
+        } else {
+            render();
+        }
+    });
+
+    render();
 })();
 
 (function () {

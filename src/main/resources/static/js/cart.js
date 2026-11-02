@@ -6,6 +6,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let busy = false;
 
+    // True when the page before this cart page was the shop's product list
+    // (same site, path "/"), i.e. going back returns to that list.
+    function cameFromShopList() {
+        if (window.history.length < 2 || !document.referrer) {
+            return false;
+        }
+        try {
+            const referrer = new URL(document.referrer);
+            return referrer.origin === window.location.origin && referrer.pathname === "/";
+        } catch (error) {
+            return false;
+        }
+    }
+
     function getCsrfHeaders() {
         const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");
@@ -76,6 +90,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     wrapper.addEventListener("click", function (event) {
+        // "Continue Shopping": step back through history instead of opening
+        // "/" fresh, so the shop restores the products the customer had
+        // loaded and the spot they were reading (shop-infinite.js restores
+        // on back/forward). Opened from anywhere else, it stays a normal link.
+        const backLink = event.target.closest(".back-link");
+        if (backLink) {
+            if (cameFromShopList() && !event.metaKey && !event.ctrlKey && !event.shiftKey && event.button === 0) {
+                event.preventDefault();
+                window.history.back();
+            }
+            return;
+        }
+
         const qtyBtn = event.target.closest(".qty-btn");
         if (qtyBtn) {
             const stepper = qtyBtn.closest(".qty-stepper");

@@ -719,9 +719,20 @@
             : null;
         if (anchorCard && typeof saved.anchorTop === "number") {
             const y = anchorCard.getBoundingClientRect().top + window.scrollY - saved.anchorTop;
-            window.scrollTo(0, Math.max(0, y));
+            jumpTo(y);
         } else {
-            window.scrollTo(0, saved.scrollY || 0);
+            jumpTo(saved.scrollY || 0);
+        }
+    }
+
+    // Programmatic jumps (restoring a position, landing on new results)
+    // must be instant: smooth-ui.css sets scroll-behavior: smooth on <html>,
+    // which otherwise turns these into long animated glides.
+    function jumpTo(y) {
+        try {
+            window.scrollTo({ top: Math.max(0, y), left: 0, behavior: "instant" });
+        } catch (error) {
+            window.scrollTo(0, Math.max(0, y));
         }
     }
 
@@ -729,9 +740,13 @@
     // category bar plus the first heading), not wherever the previous,
     // usually much longer, list had been scrolled to.
     function revealResultsTop() {
-        const top = dom.root.getBoundingClientRect().top + window.scrollY;
+        // The bar search box (#barSearch) is pinned over the top of the
+        // screen while open - land the results just below it.
+        const pinned = document.querySelector(".bar-search:not([hidden])");
+        const offset = pinned ? pinned.getBoundingClientRect().height : 0;
+        const top = dom.root.getBoundingClientRect().top + window.scrollY - offset;
         if (window.scrollY > top) {
-            window.scrollTo(0, Math.max(0, top - 4));
+            jumpTo(top - 4);
         }
     }
 
