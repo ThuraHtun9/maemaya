@@ -1182,18 +1182,6 @@
                 width: 100%;
                 margin-left: 0;
             }
-            .order-item-list li {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-            .order-item-main {
-                width: 100%;
-            }
-            .item-qty-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
             .order-item-add-form {
                 flex-direction: column;
                 align-items: stretch;
@@ -1201,16 +1189,87 @@
             .order-item-add-form button {
                 width: 100%;
             }
+
+            /* Mobile order card: the <tr> becomes the card (one grid
+               container), its <td>s become grid items repositioned into
+               the compact reading order below - order number + status
+               share the header row, everything else stacks full-width
+               with a hairline divider only at the start of a new
+               information group (not after every field). No markup is
+               duplicated here - the existing <td>s are only repositioned
+               and relabeled via CSS. */
             .orders-table.stack-table tr.order-row {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                column-gap: 10px;
+                padding: 12px;
                 border-color: #d9ba8d;
                 background: linear-gradient(180deg, #fffdf8 0%, #fff8ee 100%);
+                margin-bottom: 12px;
+            }
+            .orders-table.stack-table tr.order-row:last-child {
+                margin-bottom: 0;
             }
             .orders-table.stack-table td {
                 background: transparent;
             }
-            .orders-table.stack-table td::before {
-                color: #6f533f;
-                letter-spacing: 0.01em;
+            .orders-table.stack-table tr.order-row > td {
+                grid-column: 1 / -1;
+                padding: 0;
+                border: none;
+                font-size: 0.9rem;
+            }
+            .orders-table.stack-table tr.order-row > td::before {
+                content: none;
+            }
+            .orders-table.stack-table tr.order-row > td.order-no-cell {
+                order: 1;
+                grid-column: 1;
+                grid-row: 1;
+                align-self: center;
+            }
+            .orders-table.stack-table tr.order-row > td.status-cell {
+                order: 1;
+                grid-column: 2;
+                grid-row: 1;
+                justify-self: end;
+                align-self: center;
+            }
+            .orders-table.stack-table tr.order-row > td.customer-cell {
+                order: 2;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid var(--brand-line);
+            }
+            .orders-table.stack-table tr.order-row > td.order-date-cell {
+                order: 3;
+                margin-top: 8px;
+            }
+            .orders-table.stack-table tr.order-row > td.address-cell {
+                order: 4;
+                margin-top: 8px;
+            }
+            .orders-table.stack-table tr.order-row > td.products-cell {
+                order: 5;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid var(--brand-line);
+            }
+            .orders-table.stack-table tr.order-row > td.total-cell {
+                order: 6;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid var(--brand-line);
+            }
+            .orders-table.stack-table tr.order-row > td.delivery-cell {
+                order: 7;
+                margin-top: 8px;
+            }
+            .orders-table.stack-table tr.order-row > td.actions-cell {
+                order: 8;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid var(--brand-line);
             }
             .orders-table.stack-table .actions-cell form {
                 margin: 0 0 8px 0 !important;
@@ -1219,42 +1278,49 @@
                 margin-bottom: 0 !important;
             }
 
-            /* Collapse the long fields (date, address, item list) behind
-               "View details" to keep the default card short - mobile
-               only; tablet/desktop show every column of the real table
-               without needing to expand anything. */
-            .orders-table.stack-table tr.order-row .order-date-cell,
-            .orders-table.stack-table tr.order-row .address-cell,
-            .orders-table.stack-table tr.order-row .products-cell {
-                display: none;
+            /* Small icon + content row/column used by the customer,
+               order-date and address cells above - a compact alternative
+               to the generic data-label prefix (suppressed for this row
+               via the td::before rule above). Hidden on tablet/desktop
+               by the (min-width: 901px) rule further down, where the
+               real table's own <th> headers already label each column. */
+            .cell-icon-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
             }
-            .orders-table.stack-table tr.order-row.is-expanded .order-date-cell,
-            .orders-table.stack-table tr.order-row.is-expanded .address-cell,
-            .orders-table.stack-table tr.order-row.is-expanded .products-cell {
-                display: block;
+            .cell-icon {
+                flex: 0 0 auto;
+                margin-top: 2px;
+                color: var(--brand-muted);
             }
-
-            .order-toggle-btn {
-                display: inline-block;
-                margin-top: 6px;
-                padding: 5px 12px;
-                border: 1px solid #c79a5d;
-                border-radius: 8px;
-                background: #fff3e0;
-                color: #6f3d1a;
-                font-size: 0.8rem;
+            .cell-group-text {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+                min-width: 0;
+            }
+            .cell-subtext {
+                font-size: 0.82em;
+                color: var(--brand-muted);
+            }
+            .products-cell-heading {
+                font-size: 0.76rem;
                 font-weight: 700;
-                cursor: pointer;
-            }
-            .order-toggle-btn:hover {
-                background: #ffe6c2;
+                color: var(--brand-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.02em;
+                margin-bottom: 6px;
             }
         }
 
-        /* Tablet/desktop: a real table, so the "View details" toggle
-           (mobile-only affordance above) has nothing to do here. */
-        @media (min-width: 760px) {
-            .order-toggle-btn {
+        /* Tablet/desktop: a real table with its own <th> column headers,
+           so the mobile card's small inline icons and "Products"
+           sub-heading (both informative only on the label-less stacked
+           card above) have nothing to add here. */
+        @media (min-width: 901px) {
+            .cell-icon,
+            .products-cell-heading {
                 display: none;
             }
         }

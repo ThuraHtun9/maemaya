@@ -16,20 +16,6 @@ function confirmOrderDelete(button) {
     return confirm(template.replace("{0}", orderNumber));
 }
 
-function toggleOrderCard(button) {
-    const row = button.closest("tr.order-row");
-    if (!row) {
-        return;
-    }
-    const expanded = row.classList.toggle("is-expanded");
-    const label = expanded
-        ? button.getAttribute("data-label-hide")
-        : button.getAttribute("data-label-show");
-    if (label) {
-        button.textContent = label;
-    }
-}
-
 let activeAddItemForm = null;
 
 function openAddItemModal(button) {
@@ -298,35 +284,6 @@ document.addEventListener("keydown", function(event) {
         }
     }
 
-    // Expanded order cards are purely a client-side class toggle (toggleOrderCard),
-    // so a fresh server render always comes back collapsed. Remember which
-    // order numbers were expanded before a swap and re-apply it after, so an
-    // in-place action (reduce item, add item) doesn't collapse the card the
-    // admin is actively looking at.
-    function getExpandedOrderNumbers() {
-        return Array.from(document.querySelectorAll("tr.order-row.is-expanded"))
-            .map((row) => row.dataset.orderNumber)
-            .filter(Boolean);
-    }
-
-    function restoreExpandedOrderNumbers(orderNumbers) {
-        if (!orderNumbers || orderNumbers.length === 0) {
-            return;
-        }
-        const expandedSet = new Set(orderNumbers);
-        document.querySelectorAll("tr.order-row").forEach((row) => {
-            if (!expandedSet.has(row.dataset.orderNumber)) {
-                return;
-            }
-            row.classList.add("is-expanded");
-            const toggleBtn = row.querySelector(".order-toggle-btn");
-            const hideLabel = toggleBtn && toggleBtn.getAttribute("data-label-hide");
-            if (toggleBtn && hideLabel) {
-                toggleBtn.textContent = hideLabel;
-            }
-        });
-    }
-
     async function loadAdminResults(url, options) {
         const pushState = !options || options.pushState !== false;
 
@@ -340,8 +297,6 @@ document.addEventListener("keydown", function(event) {
         }
         const controller = new AbortController();
         activeAbortController = controller;
-
-        const expandedOrderNumbers = getExpandedOrderNumbers();
 
         let response;
         try {
@@ -370,7 +325,6 @@ document.addEventListener("keydown", function(event) {
         }
         currentResults.outerHTML = html;
 
-        restoreExpandedOrderNumbers(expandedOrderNumbers);
         wireAdminToolbarFilters(document);
         syncAdminFormState(url);
 

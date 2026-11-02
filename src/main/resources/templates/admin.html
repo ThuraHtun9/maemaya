@@ -193,13 +193,7 @@
 								<tr th:each="order : ${orders}" class="order-row"
 									th:attr="data-order-number=${order.orderNumber},data-order-customer=${order.customerName},data-order-phone=${order.phone},data-order-status=${order.orderStatus}">
 									<td class="order-no-cell" th:attr="data-label=#{admin.col.orderNumber}">
-										<div class="order-subcard">
-											<span class="badge badge-blue" th:text="${order.orderNumber}"></span>
-											<button type="button" class="order-toggle-btn"
-												onclick="toggleOrderCard(this)"
-												th:attr="data-label-show=#{admin.order.toggle.show}, data-label-hide=#{admin.order.toggle.hide}"
-												th:text="#{admin.order.toggle.show}">View Details </button>
-										</div>
+										<span class="badge badge-blue order-no-badge" th:text="${order.orderNumber}"></span>
 									</td>
 									<td class="status-cell" th:attr="data-label=#{admin.col.status}">
 										<span class="badge badge-blue" th:if="${order.orderStatus == 'ACTIVE'}"
@@ -211,43 +205,61 @@
 										<span class="badge badge-gray" th:if="${order.orderStatus == 'CANCELED'}"
 											th:text="#{order.status.canceled}">Canceled</span>
 									</td>
-									<td class="order-date-cell" style="font-size: 0.85em;" th:text="${order.orderDate}"
-										th:attr="data-label=#{admin.col.orderDate}"></td>
+									<td class="order-date-cell" th:attr="data-label=#{admin.col.orderDate}">
+										<span class="cell-icon-row">
+											<svg class="cell-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+												<rect x="3" y="5" width="18" height="16" rx="2"></rect>
+												<line x1="3" y1="10" x2="21" y2="10"></line>
+												<line x1="8" y1="3" x2="8" y2="7"></line>
+												<line x1="16" y1="3" x2="16" y2="7"></line>
+											</svg>
+											<span class="order-date-text" th:text="${#strings.length(order.orderDate) >= 19 ? #strings.substring(order.orderDate, 0, 19) : order.orderDate}"></span>
+										</span>
+									</td>
 									<td class="customer-cell" th:attr="data-label=#{admin.col.customer}">
-										<div class="order-subcard">
-											<strong th:text="${order.customerName}"></strong><br>
-											<span style="font-size: 0.85em;">
-												<span th:text="#{admin.tel}">TEL</span>: <span
-													th:text="${order.phone}"></span>
+										<div class="cell-icon-row">
+											<svg class="cell-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+												<circle cx="12" cy="8" r="4"></circle>
+												<path d="M4 20c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5"></path>
+											</svg>
+											<span class="cell-group-text">
+												<strong th:text="${order.customerName}"></strong>
+												<span class="cell-subtext">
+													<span th:text="#{admin.tel}">TEL</span>: <span
+														th:text="${order.phone}"></span>
+												</span>
 											</span>
 										</div>
 									</td>
-									<td class="address-cell" style="font-size: 0.85em;"
-										th:attr="data-label=#{admin.col.address}">
-										<div class="order-subcard">
-											<span style="display:block;">
-												<span th:text="#{admin.zip}">ZIP</span>: <span
-													th:text="${order.zipCode}"></span>
-											</span>
-											<span style="display:block;" th:text="${order.address}"></span>
-											<span style="display:block;"
-												th:if="${not #strings.isEmpty(order.addressDetail)}">
-												<span th:text="#{admin.address.detail}">丁目・番地・号</span>:
-												<span th:text="${order.addressDetail}"></span>
-											</span>
-											<span style="display:block;"
-												th:if="${not #strings.isEmpty(order.buildingName)}">
-												<span th:text="#{admin.address.building}">Building</span>:
-												<span th:text="${order.buildingName}"></span>
-											</span>
-											<span style="display:block;"
-												th:if="${not #strings.isEmpty(order.roomNumber)}">
-												<span th:text="#{admin.address.room}">Room</span>:
-												<span th:text="${order.roomNumber}"></span>
+									<td class="address-cell" th:attr="data-label=#{admin.col.address}">
+										<div class="cell-icon-row">
+											<svg class="cell-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+												<path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z"></path>
+												<circle cx="12" cy="10" r="2.3"></circle>
+											</svg>
+											<span class="cell-group-text address-text">
+												<span>
+													<span th:text="#{admin.zip}">ZIP</span>: <span
+														th:text="${order.zipCode}"></span>
+												</span>
+												<span th:text="${order.address}"></span>
+												<span th:if="${not #strings.isEmpty(order.addressDetail)}">
+													<span th:text="#{admin.address.detail}">丁目・番地・号</span>:
+													<span th:text="${order.addressDetail}"></span>
+												</span>
+												<span th:if="${not #strings.isEmpty(order.buildingName)}">
+													<span th:text="#{admin.address.building}">Building</span>:
+													<span th:text="${order.buildingName}"></span>
+												</span>
+												<span th:if="${not #strings.isEmpty(order.roomNumber)}">
+													<span th:text="#{admin.address.room}">Room</span>:
+													<span th:text="${order.roomNumber}"></span>
+												</span>
 											</span>
 										</div>
 									</td>
 									<td class="products-cell" th:attr="data-label=#{admin.col.product}">
+										<div class="products-cell-heading" th:text="#{admin.col.product}">Product</div>
 										<div class="order-products-panel">
 											<div th:if="${#lists.isEmpty(order.items)}" style="color:#999;">-</div>
 											<ul class="order-item-list" th:if="${!#lists.isEmpty(order.items)}">
