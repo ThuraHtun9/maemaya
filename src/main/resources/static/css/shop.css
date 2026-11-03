@@ -565,14 +565,12 @@
             color: var(--brand-primary);
         }
 
+        /* Plain muted text (no pill), matching the plain category tabs. */
         .category-count {
-            background: #f7eee1;
-            border: 1px solid var(--brand-line);
             color: var(--brand-muted);
-            border-radius: 999px;
-            padding: 4px 10px;
-            font-size: 0.82rem;
-            font-weight: 700;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
         /* No border-box/shadow of its own - it sits directly on
@@ -585,10 +583,10 @@
         .shop-category-bar {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
             flex-wrap: nowrap;
             margin: 14px 0 18px 0;
-            padding: 10px 0 12px 0;
+            padding: 4px 0 0 0;
             border: none;
             border-bottom: 1px solid var(--brand-line);
             border-radius: 0;
@@ -596,8 +594,7 @@
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-            scrollbar-color: #d3b282 #f8efe3;
+            scrollbar-width: none;
             position: sticky;
             top: 0;
             z-index: 20;
@@ -616,7 +613,20 @@
         }
 
         .shop-category-bar::-webkit-scrollbar {
-            height: 8px;
+            height: 0;
+        }
+
+        /* Mouse/trackpad screens keep a thin scrollbar so the tabs can be
+           dragged sideways; touch screens swipe and need none. */
+        @media (hover: hover) and (pointer: fine) {
+            .shop-category-bar {
+                scrollbar-width: thin;
+                scrollbar-color: #d3b282 transparent;
+            }
+
+            .shop-category-bar::-webkit-scrollbar {
+                height: 6px;
+            }
         }
 
         .shop-category-bar::-webkit-scrollbar-track {
@@ -629,33 +639,39 @@
             border-radius: 999px;
         }
 
+        /* Plain text tabs (no pill/box): the selected filter is marked by
+           a line under it that sits on the bar's own bottom border. */
         .shop-category-link {
             flex: 0 0 auto;
             white-space: nowrap;
             text-decoration: none;
-            min-height: 38px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: 1px solid var(--brand-line);
-            background: #fff;
-            color: var(--brand-primary);
+            min-height: 44px;
+            padding: 8px 10px 6px 10px;
+            border: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            background: none;
+            color: var(--brand-muted);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 0.92rem;
             font-weight: 700;
-            transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+            transition: color 0.16s ease, border-color 0.16s ease;
         }
 
         .shop-category-link:hover {
-            background: #fff6e9;
-            border-color: #cfae86;
+            color: var(--brand-primary);
         }
 
         .shop-category-link.is-active {
-            background: var(--brand-primary);
-            color: #fff;
-            border-color: transparent;
+            color: var(--brand-primary);
+            border-bottom-color: var(--brand-primary);
+        }
+
+        .shop-category-link:focus-visible {
+            outline: 2px solid var(--brand-primary);
+            outline-offset: -4px;
         }
 
         /* Flexbox, not CSS Grid, and crucially flex-grow:0 on the
@@ -946,12 +962,12 @@
             }
         }
 
-        /* Scrollspy highlight on the category chip whose section is
-           currently in view while scrolling the "All" listing - separate
-           from .is-active, which still marks the real selected filter. */
+        /* Scrollspy: the tab of the section currently in view while
+           scrolling the "All" listing - a gold line, kept distinct from the
+           dark line of .is-active (the real selected filter). */
         .shop-category-link.is-in-view:not(.is-active) {
-            border-color: var(--brand-accent);
-            background: #fff6e9;
+            color: var(--brand-primary);
+            border-bottom-color: var(--brand-accent);
         }
 
         /* ---- Search from the sticky category bar (#barSearch) ---- */
@@ -960,38 +976,41 @@
         }
 
         html.js-bar-search .bar-search-toggle {
-            /* First item of the sticky category bar; sticky inside the bar's
-               own horizontal scroll so it stays put while chips scroll
-               under it. The bar-colored spread on the right lets chips fade
-               out under it instead of cutting off at a hard edge. */
+            /* Last item of the sticky category bar, pinned to its right edge
+               (sticky inside the bar's own horizontal scroll) while the tabs
+               scroll under it. The bar-colored spread on its left fades the
+               tabs out instead of cutting them off at a hard edge. */
             position: sticky;
-            left: 0;
+            right: 0;
             z-index: 1;
             flex: 0 0 auto;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 38px;
-            height: 38px;
-            padding: 0;
-            border-radius: 50%;
-            border: 1px solid var(--brand-line);
-            background: #fff;
+            gap: 6px;
+            min-width: 44px;
+            height: 44px;
+            margin-left: auto;
+            padding: 0 10px;
+            border: none;
+            border-radius: 0;
+            background: var(--brand-bg-soft);
             color: var(--brand-primary);
             cursor: pointer;
-            box-shadow: 10px 0 8px -2px var(--brand-bg-soft);
+            box-shadow: -14px 0 10px -4px var(--brand-bg-soft);
         }
 
-        /* Active search: the round button grows into a pill showing the
-           query, so the current search stays visible in the bar. */
+        /* Active search: the button also shows the query, so the current
+           search stays visible in the bar. */
         html.js-bar-search .bar-search-toggle.has-query {
-            width: auto;
             max-width: 46vw;
-            gap: 6px;
-            padding: 0 12px 0 10px;
-            border-radius: 999px;
-            border-color: var(--brand-accent);
-            background: #fff6e9;
+            color: var(--brand-primary);
+        }
+
+        /* The search button now covers the right edge, so the separate
+           "more categories" fade isn't needed when it is shown. */
+        html.js-bar-search .shop-category-bar.has-more-right::after {
+            display: none;
         }
 
         .bar-search-query {
@@ -1004,8 +1023,7 @@
         }
 
         html.js-bar-search .bar-search-toggle:hover {
-            background: #fff6e9;
-            border-color: #cfae86;
+            color: var(--brand-primary-hover);
         }
 
         .bar-search-toggle:focus-visible,
@@ -1106,12 +1124,6 @@
             background: #f4eadb;
         }
 
-        @media (max-width: 860px) {
-            html.js-bar-search .bar-search-toggle {
-                width: 34px;
-                height: 34px;
-            }
-        }
 
         @media (prefers-reduced-motion: reduce) {
             .bar-search.is-open {
@@ -1254,14 +1266,14 @@
 
         @media (max-width: 860px) {
             .shop-category-bar {
-                padding: 0 0 8px 0;
-                gap: 6px;
+                padding: 0;
+                gap: 2px;
             }
 
             .shop-category-link {
-                min-height: 34px;
-                padding: 7px 12px;
-                font-size: 0.81rem;
+                min-height: 44px;
+                padding: 8px 9px 6px 9px;
+                font-size: 0.88rem;
             }
 
             .pagination-shell {

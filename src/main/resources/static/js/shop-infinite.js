@@ -563,7 +563,11 @@
         const barRect = bar.getBoundingClientRect();
         const linkRect = link.getBoundingClientRect();
         const leftPad = 12;
-        const rightPad = 44; // clears the right-edge "more" fade
+        // Clear the search button pinned at the bar's right end (or the
+        // "more" fade when there is no button).
+        const toggle = bar.querySelector(".bar-search-toggle");
+        const toggleWidth = toggle && toggle.offsetParent ? toggle.getBoundingClientRect().width : 0;
+        const rightPad = Math.max(44, toggleWidth + 20);
         let delta = 0;
         if (linkRect.left < barRect.left + leftPad) {
             delta = linkRect.left - barRect.left - leftPad;

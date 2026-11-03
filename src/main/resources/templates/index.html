@@ -182,9 +182,16 @@
 				</div>
 
 				<nav th:unless="${isOutOfStockView}" class="shop-category-bar" aria-label="Shop categories">
-					<!-- Search shortcut that stays reachable in the sticky bar while
-						scrolling; opens #barSearch (outside this fragment). Shown only
-						when JS is running (html.js-bar-search, set by shop.js). -->
+					<a class="shop-category-link" th:classappend="${activeCategory == 'all'} ? ' is-active'"
+						th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>
+					<a class="shop-category-link" th:each="shopCategory : ${shopCategories}"
+						th:classappend="${shopCategory == activeCategory} ? ' is-active'"
+						th:href="@{/(category=${shopCategory},page=1,lang=${#locale.language},q=${searchQuery})}"
+						th:text="${categoryDisplayNames.get(shopCategory) ?: shopCategory}">Category</a>
+					<!-- Search shortcut at the right end of the sticky bar (pinned
+						there while the category tabs scroll under it); opens #barSearch
+						(outside this fragment). Shown only when JS is running
+						(html.js-bar-search, set by shop.js). -->
 					<!-- While a search is active the button also shows the query
 						("🔍 premium"), so the current search stays visible after the
 						search box is closed, after Back, or after a reload. -->
@@ -200,12 +207,6 @@
 						<span class="bar-search-query" th:if="${!#strings.isEmpty(searchQuery)}"
 							th:text="${searchQuery}">query</span>
 					</button>
-					<a class="shop-category-link" th:classappend="${activeCategory == 'all'} ? ' is-active'"
-						th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>
-					<a class="shop-category-link" th:each="shopCategory : ${shopCategories}"
-						th:classappend="${shopCategory == activeCategory} ? ' is-active'"
-						th:href="@{/(category=${shopCategory},page=1,lang=${#locale.language},q=${searchQuery})}"
-						th:text="${categoryDisplayNames.get(shopCategory) ?: shopCategory}">Category</a>
 				</nav>
 
 				<div class="category-section" th:each="entry : ${productsByCategory}"
