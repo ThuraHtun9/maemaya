@@ -58,8 +58,6 @@
 })();
 
 (function () {
-    const searchInput = document.getElementById("productSearch");
-    const searchForm = document.getElementById("shopSearchForm");
     const resultsWrapper = document.querySelector(".menu-section");
     const flashHost = document.getElementById("flashHost");
     const cartButton = document.querySelector(".cart-btn");
@@ -301,9 +299,8 @@
     // ---- AJAX shop results navigation (search / category / pagination) ----
     let activeAbortController = null;
 
-    // Keep the header forms (outside #shopResults, so never re-rendered by
-    // an AJAX swap) in step with the result set on screen: the search form
-    // searches within the current category, and the language switcher
+    // Keep the forms outside #shopResults (never re-rendered by an AJAX
+    // swap) in step with the result set on screen: the language switcher
     // reloads the same category + search instead of the one the page was
     // first rendered with. page=1 because infinite scroll restores how far
     // the customer had loaded on its own (see shop-infinite.js).
@@ -312,20 +309,14 @@
             const parsed = new URL(url, window.location.origin);
             const category = parsed.searchParams.get("category") || "all";
             const query = parsed.searchParams.get("q") || "";
-            if (searchForm) {
-                const categoryInput = searchForm.querySelector('input[name="category"]');
-                if (categoryInput) {
-                    categoryInput.value = category;
-                }
+            // The search box shows the query of the results on screen
+            // (matters for back/forward) - but never overwrite it while it is
+            // being typed in, where a slower earlier response would eat newer
+            // keystrokes.
+            const barInput = document.getElementById("barSearchInput");
+            if (barInput && document.activeElement !== barInput) {
+                barInput.value = query;
             }
-            // Search boxes show the query of the results on screen (matters
-            // for back/forward) - but never overwrite a box being typed in,
-            // where a slower earlier response would eat newer keystrokes.
-            [searchInput, document.getElementById("barSearchInput")].forEach((input) => {
-                if (input && document.activeElement !== input) {
-                    input.value = query;
-                }
-            });
             const langForm = document.querySelector(".lang-form");
             if (langForm) {
                 const setField = (name, value) => {
@@ -412,146 +403,122 @@
         }));
     }
 
-    // Search input: debounce, then fetch results via AJAX instead of a full reload.
-    if (searchInput && searchForm) {
-        // reload လုပ်ပြီးချိန်မှာ cursor ကို search box ထဲမှာပြန်ထားပေးဖို့
-        if (searchInput.value) {
-            searchInput.focus();
-            const end = searchInput.value.length;
-            searchInput.setSelectionRange(end, end);
-        }
+    // ---- Product search ----
+    // Search lives in the sticky category bar: its search button opens
+    // #barSearch pinned to the top of the screen, reachable from anywhere in
+    // the list (the old header search box was removed). Searches run over
+    // AJAX within the category currently on screen.
+    const barSearch = document.getElementById("barSearch");
+    const barInput = document.getElementById("barSearchInput");
+    if (barSearch && barInput) {
+        document.documentElement.classList.add("js-bar-search");
 
         let debounceTimer = null;
         const DEBOUNCE_DELAY = 900; // milliseconds
 
-        const runSearch = () => {
+        const resultsState = () => {
+            const root = document.getElementById("shopResults");
+            return {
+                category: (root && root.dataset.activeCategory) || "all",
+                query: (root && root.dataset.searchQuery) || ""
+            };
+        };
+
+        const cancelPendingSearch = () => {
             if (debounceTimer) {
                 clearTimeout(debounceTimer);
                 debounceTimer = null;
             }
-            const categoryInput = searchForm.querySelector('input[name="category"]');
-            const langInput = searchForm.querySelector('input[name="lang"]');
-            const params = new URLSearchParams();
-            params.set("category", categoryInput ? categoryInput.value : "all");
-            params.set("page", "1");
-            if (langInput && langInput.value) {
-                params.set("lang", langInput.value);
-            }
-            params.set("q", searchInput.value.trim());
-            loadShopResults(`${searchForm.action}?${params.toString()}`);
         };
 
-        searchInput.addEventListener("input", () => {
-            if (debounceTimer) {
-                clearTimeout(debounceTimer);
+        const runSearch = () => {
+            cancelPendingSearch();
+            const params = new URLSearchParams();
+            params.set("category", resultsState().category);
+            params.set("page", "1");
+            if (document.documentElement.lang) {
+                params.set("lang", document.documentElement.lang);
             }
+            params.set("q", barInput.value.trim());
+            loadShopResults(`${barSearch.action}?${params.toString()}`);
+        };
+
+        const isBarOpen = () => !barSearch.hidden;
+        const setToggleExpanded = () => {
+            document.querySelectorAll(".bar-search-toggle").forEach((toggle) => {
+                toggle.setAttribute("aria-expanded", isBarOpen() ? "true" : "false");
+            });
+        };
+        const focusToggle = () => {
+            const toggle = document.querySelector(".bar-search-toggle");
+            if (toggle) {
+                toggle.focus({ preventScroll: true });
+            }
+        };
+
+        const openBar = () => {
+            if (!isBarOpen()) {
+                barInput.value = resultsState().query;
+                barSearch.hidden = false;
+                barSearch.classList.add("is-open");
+                setToggleExpanded();
+            }
+            // Focus in the same tap so the phone keyboard opens right away.
+            barInput.focus({ preventScroll: true });
+            const end = barInput.value.length;
+            barInput.setSelectionRange(end, end);
+        };
+
+        // Closing also clears the search (applied or still being typed) and
+        // returns to the full list; just opening and closing changes nothing.
+        const closeBar = () => {
+            if (!isBarOpen()) {
+                return;
+            }
+            const hadSearch = resultsState().query !== "" || barInput.value.trim() !== "";
+            barSearch.classList.remove("is-open");
+            barSearch.hidden = true;
+            setToggleExpanded();
+            barInput.value = "";
+            if (hadSearch) {
+                runSearch(); // empty query; also aborts a search still in flight
+            } else {
+                cancelPendingSearch();
+            }
+            focusToggle();
+        };
+
+        // Delegated: the toggle lives in #shopResults and is replaced on
+        // every results update.
+        document.addEventListener("click", (event) => {
+            if (event.target.closest(".bar-search-toggle")) {
+                event.preventDefault();
+                openBar();
+            }
+        });
+
+        barInput.addEventListener("input", () => {
+            cancelPendingSearch();
             debounceTimer = setTimeout(runSearch, DEBOUNCE_DELAY);
         });
 
-        // Enter searches right away through the same AJAX path (it used to
-        // fall through to a full page reload while the debounce was pending).
-        searchForm.addEventListener("submit", (event) => {
+        // Enter searches right away (data-no-page-transition on the form
+        // keeps smooth-ui.js from also submitting it as a page load).
+        barSearch.addEventListener("submit", (event) => {
             event.preventDefault();
             runSearch();
+            barInput.blur(); // close the phone keyboard so results are visible
         });
 
-        // ---- Search opened from the sticky category bar ----
-        // The bar's search button opens #barSearch pinned to the top of the
-        // screen, so searching doesn't require scrolling back up to the
-        // header. It drives the header box (same debounce, same AJAX search,
-        // same history entry), so the two always agree.
-        const barSearch = document.getElementById("barSearch");
-        const barInput = document.getElementById("barSearchInput");
-        if (barSearch && barInput) {
-            document.documentElement.classList.add("js-bar-search");
-
-            const isBarOpen = () => !barSearch.hidden;
-            const setToggleExpanded = () => {
-                document.querySelectorAll(".bar-search-toggle").forEach((toggle) => {
-                    toggle.setAttribute("aria-expanded", isBarOpen() ? "true" : "false");
-                });
-            };
-            const focusToggle = () => {
-                const toggle = document.querySelector(".bar-search-toggle");
-                if (toggle) {
-                    toggle.focus({ preventScroll: true });
-                }
-            };
-
-            const openBar = () => {
-                if (!isBarOpen()) {
-                    barInput.value = searchInput.value;
-                    barSearch.hidden = false;
-                    barSearch.classList.add("is-open");
-                    setToggleExpanded();
-                }
-                // Focus in the same tap so the phone keyboard opens right away.
-                barInput.focus({ preventScroll: true });
-                const end = barInput.value.length;
-                barInput.setSelectionRange(end, end);
-            };
-
-            // Closing also clears an active search and returns to the full
-            // list (the category chips come back into view).
-            const closeBar = () => {
-                if (!isBarOpen()) {
-                    return;
-                }
-                const hadQuery = searchInput.value.trim() !== "";
-                barSearch.classList.remove("is-open");
-                barSearch.hidden = true;
-                setToggleExpanded();
-                barInput.value = "";
-                if (hadQuery) {
-                    searchInput.value = "";
-                    runSearch();
-                } else if (debounceTimer) {
-                    clearTimeout(debounceTimer);
-                    debounceTimer = null;
-                }
-                focusToggle();
-            };
-
-            // Delegated: the toggle lives in #shopResults and is replaced on
-            // every results update.
-            document.addEventListener("click", (event) => {
-                if (event.target.closest(".bar-search-toggle")) {
-                    event.preventDefault();
-                    openBar();
-                }
-            });
-
-            barInput.addEventListener("input", () => {
-                searchInput.value = barInput.value;
-                if (debounceTimer) {
-                    clearTimeout(debounceTimer);
-                }
-                debounceTimer = setTimeout(runSearch, DEBOUNCE_DELAY);
-            });
-
-            searchInput.addEventListener("input", () => {
-                if (isBarOpen()) {
-                    barInput.value = searchInput.value;
-                }
-            });
-
-            barSearch.addEventListener("submit", (event) => {
+        barSearch.querySelector(".bar-search-close").addEventListener("click", closeBar);
+        barSearch.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
                 event.preventDefault();
-                searchInput.value = barInput.value;
-                runSearch();
-                barInput.blur(); // close the phone keyboard so results are visible
-            });
+                closeBar();
+            }
+        });
 
-            barSearch.querySelector(".bar-search-close").addEventListener("click", closeBar);
-            barSearch.addEventListener("keydown", (event) => {
-                if (event.key === "Escape") {
-                    event.preventDefault();
-                    closeBar();
-                }
-            });
-
-            document.addEventListener("shop:resultsReplaced", setToggleExpanded);
-        }
+        document.addEventListener("shop:resultsReplaced", setToggleExpanded);
     }
 
     // Category / pagination links: intercept clicks via delegation so the

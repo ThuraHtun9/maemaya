@@ -38,7 +38,9 @@
     // is still ~800px below the viewport.
     const SENTINEL_ROOT_MARGIN = "0px 0px 800px 0px";
     const SCROLL_SAVE_DEBOUNCE_MS = 300;
-    const RESTORE_CONCURRENCY = 4;
+    // Restore fetches run in parallel; 6 = the per-host connection limit,
+    // so a typical return (a handful of pages) completes in one round trip.
+    const RESTORE_CONCURRENCY = 6;
     const RESTORE_MAX_EXTRA_PAGES = 40;
     // Scrollspy "reading line": just under the sticky category bar. The
     // observed band runs from there to 20% of the viewport height.
@@ -798,12 +800,34 @@
         saveBrowsingPosition: saveHistoryState
     });
 
+    // The page stays hidden (html.is-restoring, set before first paint by
+    // the inline script in index.html) until the restore has reloaded the
+    // earlier products and jumped to the saved spot - so it appears there
+    // directly instead of flashing the top of the list first.
+    function revealPage() {
+        document.documentElement.classList.remove("is-restoring");
+    }
+
+    function restoreThenReveal() {
+        let restore;
+        try {
+            restore = Promise.resolve(restoreBrowsingPosition());
+        } catch (error) {
+            restore = Promise.resolve();
+        }
+        return restore.catch(() => {}).then(revealPage);
+    }
+
     init();
     if (dom) {
         const type = navigationType();
         if (type === "back_forward" || type === "reload") {
-            restoreBrowsingPosition();
+            restoreThenReveal();
+        } else {
+            revealPage();
         }
+    } else {
+        revealPage();
     }
 
     document.addEventListener("shop:resultsReplaced", (event) => {
@@ -813,7 +837,13 @@
             return;
         }
         if (event.detail && event.detail.restore) {
-            restoreBrowsingPosition();
+            // Back/forward inside the page (e.g. from a category to "All"):
+            // same treatment - hide until the saved spot is back.
+            const saved = readSavedState();
+            if (saved && (saved.page > pageState.currentPage || saved.scrollY > 0)) {
+                document.documentElement.classList.add("is-restoring");
+            }
+            restoreThenReveal();
         } else {
             revealResultsTop();
             saveHistoryState();

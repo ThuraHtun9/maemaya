@@ -5,6 +5,29 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script>document.documentElement.classList.add("js-motion"); window.setTimeout(function () {if (document.body) {document.body.classList.add("page-ready");} }, 400);</script>
+	<!-- Returning to the shop (Back / "Continue Shopping" / reload) with a
+		saved browsing position: keep the page hidden until shop-infinite.js
+		has reloaded the earlier products and jumped to that spot, instead of
+		showing the top of the list first and then jumping. Runs before the
+		first paint. Failsafes: the timeout below, and a CSS animation in
+		shop.css that reveals the page after 2.5s even if no script runs. -->
+	<script>
+		(function () {
+			try {
+				var saved = history.state && history.state.maeMayaShop;
+				var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+				var type = nav ? nav.type : "";
+				if (saved && (saved.page > 1 || saved.scrollY > 0) && (type === "back_forward" || type === "reload")) {
+					document.documentElement.classList.add("is-restoring");
+					window.setTimeout(function () {
+						document.documentElement.classList.remove("is-restoring");
+					}, 3000);
+				}
+			} catch (error) {
+				// no history state access - page just shows normally
+			}
+		})();
+	</script>
 	<meta name="_csrf" th:content="${_csrf.token}">
 	<meta name="_csrf_header" th:content="${_csrf.headerName}">
 	<meta name="cart-request-failed-message" th:content="#{index.cart.requestFailed}">
@@ -42,17 +65,6 @@
 						<img th:src="@{/images/maemaya.jpg}" class="brand-logo-mark" alt="Mae Ma Ya logo">
 						<span class="brand-wordmark">မေ့မရ</span>
 					</h1>
-					<!-- data-no-page-transition: shop.js runs this search over AJAX;
-						without it smooth-ui.js would also fire a full-page form.submit(). -->
-					<form id="shopSearchForm" class="shop-search-form" th:action="@{/}" method="get"
-						data-no-page-transition>
-						<input type="hidden" name="category" th:value="${activeCategory}">
-						<input type="hidden" name="lang" th:value="${#locale.language}">
-						<label class="sr-only" for="productSearch" th:text="#{index.search.placeholder}">Search
-							products</label>
-						<input id="productSearch" name="q" class="shop-search-input" type="search"
-							th:value="${searchQuery}" th:placeholder="#{index.search.placeholder}">
-					</form>
 				</div>
 				<div class="header-right">
 					<nav class="utility-links">
@@ -149,7 +161,7 @@
 						<line x1="16" y1="16" x2="20.5" y2="20.5"></line>
 					</svg>
 					<input id="barSearchInput" class="bar-search-input" type="search" name="q" autocomplete="off"
-						enterkeyhint="search" th:placeholder="#{index.search.placeholder}">
+						enterkeyhint="search" th:value="${searchQuery}" th:placeholder="#{index.search.placeholder}">
 					<button type="button" class="bar-search-close" th:aria-label="#{index.search.close}"
 						th:title="#{index.search.close}">
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -173,13 +185,20 @@
 					<!-- Search shortcut that stays reachable in the sticky bar while
 						scrolling; opens #barSearch (outside this fragment). Shown only
 						when JS is running (html.js-bar-search, set by shop.js). -->
+					<!-- While a search is active the button also shows the query
+						("🔍 premium"), so the current search stays visible after the
+						search box is closed, after Back, or after a reload. -->
 					<button type="button" class="bar-search-toggle" aria-controls="barSearch" aria-expanded="false"
-						th:aria-label="#{index.search.open}" th:title="#{index.search.open}">
+						th:classappend="${!#strings.isEmpty(searchQuery)} ? ' has-query'"
+						th:title="#{index.search.open}">
+						<span class="sr-only" th:text="#{index.search.open}">Search products</span>
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 							stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 							<circle cx="11" cy="11" r="6.5"></circle>
 							<line x1="16" y1="16" x2="20.5" y2="20.5"></line>
 						</svg>
+						<span class="bar-search-query" th:if="${!#strings.isEmpty(searchQuery)}"
+							th:text="${searchQuery}">query</span>
 					</button>
 					<a class="shop-category-link" th:classappend="${activeCategory == 'all'} ? ' is-active'"
 						th:href="@{/(category='all',page=1,lang=${#locale.language},q=${searchQuery})}">All</a>

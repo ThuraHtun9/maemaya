@@ -379,29 +379,8 @@
             }
         }
 
-        .shop-search-form {
-            margin: 0;
-            flex: 1 1 380px;
-            min-width: 200px;
-            max-width: 620px;
-        }
 
-        .shop-search-input {
-            width: 100%;
-            border: 1px solid var(--brand-line);
-            border-radius: 999px;
-            padding: 10px 14px;
-            font-family: inherit;
-            font-size: 0.92rem;
-            color: var(--brand-text);
-            background: #fff;
-        }
 
-        .shop-search-input:focus {
-            outline: 0;
-            border-color: #c58e4e;
-            box-shadow: 0 0 0 3px rgba(197, 142, 78, 0.16);
-        }
 
         .sr-only {
             position: absolute;
@@ -1003,6 +982,27 @@
             box-shadow: 10px 0 8px -2px var(--brand-bg-soft);
         }
 
+        /* Active search: the round button grows into a pill showing the
+           query, so the current search stays visible in the bar. */
+        html.js-bar-search .bar-search-toggle.has-query {
+            width: auto;
+            max-width: 46vw;
+            gap: 6px;
+            padding: 0 12px 0 10px;
+            border-radius: 999px;
+            border-color: var(--brand-accent);
+            background: #fff6e9;
+        }
+
+        .bar-search-query {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
         html.js-bar-search .bar-search-toggle:hover {
             background: #fff6e9;
             border-color: #cfae86;
@@ -1117,6 +1117,28 @@
             .bar-search.is-open {
                 animation: none;
             }
+        }
+
+        /* Hidden while a saved browsing position is being restored (see the
+           inline script in index.html's <head> and shop-infinite.js), so
+           the top of the list never flashes before the jump. The animation
+           is a failsafe: it reveals the page after 2.5s even if the script
+           that normally removes .is-restoring never runs. */
+        html.is-restoring body {
+            visibility: hidden;
+            animation: restore-failsafe 0s linear 2.5s forwards;
+        }
+
+        @keyframes restore-failsafe {
+            to {
+                visibility: visible;
+            }
+        }
+
+        /* Children that set visibility: visible themselves would still show
+           through a hidden body - the floating cart is the only one. */
+        html.is-restoring .floating-cart {
+            visibility: hidden;
         }
 
         /* smooth-ui.css leaves body at transform: translate3d(0,0,0) after
@@ -1948,9 +1970,6 @@
         }
 
         @media (max-width: 1460px) {
-            .shop-search-form {
-                max-width: 460px;
-            }
 
             .utility-btn {
                 min-height: 32px;
@@ -1968,9 +1987,6 @@
                 display: inline-block;
             }
 
-            .shop-search-form {
-                max-width: 500px;
-            }
         }
 
         @media (max-width: 980px) {
@@ -1990,16 +2006,7 @@
                 font-size: 1.45rem;
             }
 
-            .shop-search-form {
-                flex: 0 1 220px;
-                min-width: 150px;
-                max-width: 300px;
-            }
 
-            .shop-search-input {
-                padding: 8px 10px;
-                font-size: 0.84rem;
-            }
 
             .cart-btn {
                 min-height: 32px;
@@ -2030,11 +2037,6 @@
                 min-width: 0;
             }
 
-            .shop-search-form {
-                flex: 1 1 160px;
-                min-width: 110px;
-                max-width: 260px;
-            }
 
             .header-right {
                 width: auto;
@@ -2074,16 +2076,7 @@
                 letter-spacing: 0.01em;
             }
 
-            .shop-search-form {
-                flex: 0 1 120px;
-                min-width: 90px;
-                max-width: 165px;
-            }
 
-            .shop-search-input {
-                padding: 7px 8px;
-                font-size: 0.72rem;
-            }
 
             .header-right {
                 gap: 6px;
@@ -2231,9 +2224,6 @@
         }
 
         @media (max-width: 430px) {
-            .shop-search-form {
-                max-width: 110px;
-            }
 
             .brand-wordmark {
                 font-size: 0.9rem;
